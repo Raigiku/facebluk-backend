@@ -1,1 +1,1 @@
-export * as Event from './event';
+export * as Event from './event'

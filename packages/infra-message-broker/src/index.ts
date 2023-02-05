@@ -1,2 +1,1 @@
-export * as MessageBroker from './message-broker';
-
+export * as MessageBroker from './message-broker'

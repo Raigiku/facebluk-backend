@@ -1,4 +1,4 @@
-import { BusinessRuleError, ES, TaggedType } from '..';
+import { BusinessRuleError, ES, TaggedType } from '..'
 
 export type SubCategoriesRegistry = {
   [key: string]: { name: string; subCategories: string[] }

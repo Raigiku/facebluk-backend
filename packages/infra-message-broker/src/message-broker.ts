@@ -11,4 +11,3 @@ export const publishEvent =
   }
 
 export { amqp, Config }
-

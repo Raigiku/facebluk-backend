@@ -1,6 +1,5 @@
-
 // events
-export type Event = 2;
+export type Event = 2
 
 // export class CreatedEvent extends TaggedClass<'product-created'> {
 //   private constructor(

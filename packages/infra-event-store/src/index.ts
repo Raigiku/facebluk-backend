@@ -1,2 +1,1 @@
-export * as EventStore from './event-store';
-
+export * as EventStore from './event-store'
