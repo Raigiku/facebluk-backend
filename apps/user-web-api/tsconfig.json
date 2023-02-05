@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "references": [
+    { "path": "../../packages/domain" },
+    { "path": "../../packages/infra-user-auth" },
+    { "path": "../../packages/infra-event-store" },
+    { "path": "../../packages/infra-message-broker" },
+  ]
+}

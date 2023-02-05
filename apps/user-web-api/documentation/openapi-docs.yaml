@@ -1,0 +1,72 @@
+openapi: 3.0.0
+info:
+  title: Facebluk User Command API
+  version: 1.0.0
+  description: These are the APIs exposed by our backend SDK. To be consumed by the frontend only.
+servers:
+  - url: http://localhost:3000/api
+    description: API
+tags:
+  - name: Posts
+paths:
+  /posts/create:
+    post:
+      operationId: createPost
+      summary: Create a new user post
+      description: |
+        With this route you can create a new Facebluk post
+        for your authenticated user
+      tags:
+        - Posts
+      requestBody:
+        description: Payload
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - description
+                - userId
+              properties:
+                description:
+                  type: string
+                  maxLength: 500
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: The user post was created successfully
+        '422':
+          $ref: '#/components/responses/BusinessRuleError'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+components:
+  responses:
+    BusinessRuleError:
+      description: BusinessRuleError
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - requestId
+              - message
+            properties:
+              requestId:
+                type: string
+                format: uuid
+              message:
+                type: string
+    UnexpectedError:
+      description: UnexpectedError
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string

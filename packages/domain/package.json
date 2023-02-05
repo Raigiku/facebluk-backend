@@ -1,0 +1,15 @@
+{
+  "name": "@facebluk/domain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^9.0.0"
+  }
+}

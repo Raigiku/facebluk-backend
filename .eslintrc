@@ -1,0 +1,22 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parserOptions": {
+    "project": ["tsconfig.json"]
+  },
+  "rules": {
+    "no-undef": "off",
+    "no-console": "warn",
+    "no-return-await": "error",
+    "require-await": "error",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/await-thenable": "error"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "apps/admin-web-api" },
+    { "path": "apps/user-web-api" },
+    { "path": "packages/domain" },
+    { "path": "packages/infra-user-auth" },
+    { "path": "packages/infra-common" },
+    { "path": "packages/infra-event-store" },
+    { "path": "packages/infra-message-broker" }
+  ]
+}

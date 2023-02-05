@@ -1,0 +1,16 @@
+{
+  "name": "@facebluk/infra-event-store",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@facebluk/domain": "^1.0.0",
+    "pg": "^8.9.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.6.6"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@facebluk/infra-common",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "devDependencies": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

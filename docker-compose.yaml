@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  event-store-db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=shopping-event-store
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    ports:
+      - '5433:5432'
+    volumes:
+      - ./docker-data/event-store-db:/var/lib/postgresql/data
+
+  event-store-db-test:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=shopping-event-store-test
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    ports:
+      - '5434:5432'
+    volumes:
+      - ./docker-data/event-store-db-test:/var/lib/postgresql/data
+
+  message-broker:
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    ports:
+      - '5672:5672'
+      - '15672:15672'
