@@ -1,4 +1,4 @@
-import { BusinessRuleError, ES, TaggedType } from '..'
+import { BusinessRuleError, ES, TaggedType } from '..';
 
 export type SubCategoriesRegistry = {
   [key: string]: { name: string; subCategories: string[] }
@@ -16,7 +16,7 @@ export const newA = (
   subCategories: SubCategoriesRegistry,
   validate: FnValidate
 ): [Aggregate, CreatedEvent] => {
-  const aggregateData = ES.Aggregate.newA(requestId, ES.Aggregate.validate)
+  const aggregateData = ES.Aggregate.newA()
   return [
     validate(requestId, {
       data: aggregateData,
@@ -39,7 +39,7 @@ export const replace = (
   subCategories: SubCategoriesRegistry,
   validate: FnValidate
 ): [Aggregate, ReplacedEvent] => {
-  const updatedAggregateData = ES.Aggregate.increaseVersion(requestId, aggregate.data, ES.Aggregate.validate)
+  const updatedAggregateData = ES.Aggregate.increaseVersion(requestId, aggregate.data)
   return [
     validate(requestId, {
       data: updatedAggregateData,

@@ -7,14 +7,14 @@ export type Aggregate = {
   readonly description: string
 }
 
-export const newA = (requestId: string, description: string, userId: string): [Aggregate, CreatedEvent] => {
-  const aggregateData = ES.Aggregate.newA(requestId, ES.Aggregate.validate)
+export const newA = (description: string, userId: string): [Aggregate, CreatedEvent] => {
+  const aggregateData = ES.Aggregate.newA()
   return [
-    validate(requestId, {
+    {
       data: aggregateData,
       description,
       userId,
-    }),
+    },
     {
       tag: POST_CREATED,
       data: ES.Event.newA(aggregateData),
@@ -31,17 +31,12 @@ export const POST_CREATED = 'post-created'
 
 export type CreatedEvent = TaggedType<typeof POST_CREATED> & {
   readonly data: ES.Event.Data
-  readonly userId: string
-  readonly description: string
-}
+} & Omit<Aggregate, 'data'>
 
 // validation
-export type FnValidate = (requestId: string, aggregate: Aggregate) => Aggregate
-
-export const validate = (requestId: string, aggregate: Aggregate): Aggregate => {
-  validateDescription(requestId, aggregate.description)
-  Uuid.validate(requestId, aggregate.userId)
-  return aggregate
+export const validateInputFields = (requestId: string, description: string, userId: string) => {
+  validateDescription(requestId, description)
+  Uuid.validate(requestId, userId, 'userId')
 }
 
 export const validateDescription = (requestId: string, description: string) => {

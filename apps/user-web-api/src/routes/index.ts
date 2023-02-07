@@ -1,8 +1,14 @@
-import { FastifyPluginCallback } from "fastify"
-import { createPostRoute } from "./posts"
+import { FastifyPluginCallback } from 'fastify'
+import { sendFriendRequestRoute } from './friend-requests'
+import { createPostRoute } from './posts'
 
 export const postsRoutes: FastifyPluginCallback = async (fastify, options, done) => {
   await fastify.register(createPostRoute)
+  done()
+}
+
+export const friendRequestsRoutes: FastifyPluginCallback = async (fastify, options, done) => {
+  await fastify.register(sendFriendRequestRoute)
   done()
 }
 

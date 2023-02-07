@@ -1,4 +1,4 @@
-import { CMD, ES, INT } from '@facebluk/domain'
+import { CMD, INT } from '@facebluk/domain'
 import { Common } from '@facebluk/infra-common'
 import { EventStore } from '@facebluk/infra-event-store'
 import { MessageBroker } from '@facebluk/infra-message-broker'
@@ -7,13 +7,13 @@ import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '..'
 
-export const createPostRoute: FastifyPluginCallback = (fastify, options, done) => {
-  fastify.post<{ Body: Static<typeof bodySchema> }>('/create', routeOptions, async (request, reply) => {
-    await CMD.CreatePost.handle(
+export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, done) => {
+  fastify.post<{ Body: Static<typeof bodySchema> }>('/send', routeOptions, async (request, reply) => {
+    await CMD.SendFriendRequest.handle(
       {
         id: request.id,
-        description: request.body.description,
-        userId: request.body.userId,
+        fromUserId: request.body.fromUserId,
+        toUserId: request.body.toUserId,
       },
       {
         getUserById: UserAuth.Accessor.getUserById(fastify.userAuthConn, Common.Logger.log(request.log), request.id),
@@ -30,8 +30,8 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
 }
 
 const bodySchema = Type.Object({
-  description: Type.String({ minLength: 1, maxLength: ES.Post.DESCRIPTION_MAX_LENGTH }),
-  userId: Type.String({ minLength: 1, format: 'uuid' }),
+  fromUserId: Type.String({ minLength: 1, format: 'uuid' }),
+  toUserId: Type.String({ minLength: 1, format: 'uuid' }),
 })
 
 const responseSchema = {

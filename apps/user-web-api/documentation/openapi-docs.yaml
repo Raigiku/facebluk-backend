@@ -8,6 +8,7 @@ servers:
     description: API
 tags:
   - name: Posts
+  - name: Friend Requests 
 paths:
   /posts/create:
     post:
@@ -34,9 +35,43 @@ paths:
                   maxLength: 500
                 userId:
                   type: string
+                  format: uuid
       responses:
         '200':
           description: The user post was created successfully
+        '422':
+          $ref: '#/components/responses/BusinessRuleError'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+  /friend-requests/send:
+    post:
+      operationId: sendFriendRequest
+      summary: Sends a new friend request
+      description: |
+        With this route you can send a friend request
+        from a user to another one
+      tags:
+        - Friend Requests
+      requestBody:
+        description: Payload
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fromUserId
+                - toUserId
+              properties:
+                fromUserId:
+                  type: string
+                  format: uuid
+                toUserId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: The friend request was sent successfully
         '422':
           $ref: '#/components/responses/BusinessRuleError'
         '500':

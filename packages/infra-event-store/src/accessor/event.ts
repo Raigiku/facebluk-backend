@@ -7,6 +7,8 @@ export const determineTableName = (event: ES.Event.AnyEvent) =>
     ? 'category_event'
     : event.tag.includes('post')
     ? 'post_event'
+    : event.tag.includes('friend-request')
+    ? 'friend_request_event'
     : (() => {
         throw new Error('undefined table')
       })()

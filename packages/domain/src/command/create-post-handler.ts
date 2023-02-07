@@ -1,12 +1,14 @@
 import { BusinessRuleError, ES, INT, UA } from '../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
+  ES.Post.validateInputFields(req.id, req.description, req.userId)
+
   const user = await deps.getUserById(req.userId)
-  if (user === undefined) throw new BusinessRuleError(req.requestId, 'the user does not exist')
+  if (user === undefined) throw new BusinessRuleError(req.id, 'the user does not exist')
 
-  const [, createdEvent] = ES.Post.newA(req.requestId, req.description, req.userId)
+  const [, createdPostEvent] = ES.Post.newA(req.id, req.description)
 
-  await deps.processEvent(createdEvent)
+  await deps.processEvent(createdPostEvent)
 }
 
 export type Dependencies = {
@@ -15,7 +17,7 @@ export type Dependencies = {
 }
 
 export type Request = {
-  requestId: string
+  id: string
   userId: string
   description: string
 }
