@@ -1,4 +1,5 @@
-import { CMD, ES, INT, Uuid } from '@facebluk/domain'
+import { CMD, ES, INT } from '@facebluk/domain'
+import { Common } from '@facebluk/infra-common'
 import { EventStore } from '@facebluk/infra-event-store'
 import { MessageBroker } from '@facebluk/infra-message-broker'
 import { UserAuth } from '@facebluk/infra-user-auth'
@@ -8,15 +9,14 @@ import { businessRuleErrorResponseSchema } from '..'
 
 export const createPostRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>('/create', routeOptions, async (request, reply) => {
-    const qwe = request.log
     await CMD.CreatePost.handle(
       {
-        requestId: Uuid.newA(),
+        requestId: request.id,
         description: request.body.description,
         userId: request.body.userId,
       },
       {
-        getUserById: UserAuth.Accessor.getUserById(fastify.userAuthConn),
+        getUserById: UserAuth.Accessor.getUserById(fastify.userAuthConn, Common.Logger.log(request.log), request.id),
         processEvent: INT.Event.processEvent(
           EventStore.Accessor.Event.persistEvent(fastify.eventStoreConn),
           MessageBroker.publishEvent(request.msgBrokerChannel),

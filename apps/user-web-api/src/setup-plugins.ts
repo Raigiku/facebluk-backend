@@ -8,11 +8,6 @@ import * as Config from './config'
 import { fastifyCommonConfig, fastifyEventStoreConn, fastifyMsgBrokerConn, fastifyUserAuthConn } from './plugins'
 
 const setupPlugins = async (server: FastifyInstance, webApiConfig: Config.Data, commonConfig: Common.Config.Data) => {
-  // setup our plugins
-  await server.register(fastifyCommonConfig, commonConfig)
-  await server.register(fastifyUserAuthConn)
-  await server.register(fastifyMsgBrokerConn)
-  await server.register(fastifyEventStoreConn)
   // setup fastify plugins
   await server.register(fastifyCors, {
     origin: webApiConfig.consumerUrl,
@@ -29,6 +24,11 @@ const setupPlugins = async (server: FastifyInstance, webApiConfig: Config.Data, 
   await server.register(fastifySwaggerUi, {
     routePrefix: '/swagger',
   })
+  // setup our plugins
+  await server.register(fastifyCommonConfig, commonConfig)
+  await server.register(fastifyUserAuthConn)
+  await server.register(fastifyMsgBrokerConn)
+  await server.register(fastifyEventStoreConn)
 }
 
 export default setupPlugins

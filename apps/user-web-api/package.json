@@ -22,6 +22,7 @@
     "fastify-plugin": "^4.5.0"
   },
   "devDependencies": {
-    "@types/node": "^18.11.19"
+    "@types/node": "^18.11.19",
+    "pino-pretty": "^9.1.1"
   }
 }

@@ -8,7 +8,7 @@
     "plugin:@typescript-eslint/recommended"
   ],
   "parserOptions": {
-    "project": ["tsconfig.json"]
+    "project": ["tsconfig.base.json"]
   },
   "rules": {
     "no-undef": "off",

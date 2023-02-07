@@ -27,4 +27,24 @@
         </createTable>
         <addPrimaryKey tableName="category_event" columnNames="aggregate_id,aggregate_version" />
     </changeSet>
+
+    <changeSet id="2" author="diego">
+        <createTable tableName="post_event">
+            <column name="aggregate_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="aggregate_version" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="data" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamptz">
+                <constraints nullable="false" />
+            </column>
+            <column name="published" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

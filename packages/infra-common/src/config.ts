@@ -1,16 +1,15 @@
+import { Logger } from '@facebluk/domain'
+
 export type Data = {
   environment: EnvironmentVar
-  logLevel: LogLevel
+  logLevel: Logger.LogLevel
 }
 
 export const newA = (): Data => {
   const environment = process.env.ENVIRONMENT! as EnvironmentVar
-  const logLevel = process.env.LOGLEVEL! as LogLevel
+  const logLevel = process.env.LOGLEVEL! as Logger.LogLevel
   return { environment, logLevel }
 }
 
 export const environmentVars = ['local', 'development', 'production'] as const
 export type EnvironmentVar = (typeof environmentVars)[number]
-
-export const logLevels = ['fatal', 'error', 'warn', 'info', 'debug', 'trace'] as const
-export type LogLevel = (typeof logLevels)[number]
