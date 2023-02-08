@@ -6,7 +6,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
   const user = await deps.getUserById(req.userId)
   if (user === undefined) throw new BusinessRuleError(req.id, 'the user does not exist')
 
-  const [, createdPostEvent] = ES.Post.newA(req.id, req.description)
+  const [, createdPostEvent] = ES.Post.newA(req.description, req.userId)
 
   await deps.processEvent(createdPostEvent)
 }

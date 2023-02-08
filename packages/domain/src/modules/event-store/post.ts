@@ -1,13 +1,13 @@
 import { ES } from '..'
 import { BusinessRuleError, TaggedType, Uuid } from '../common'
 
-export type Aggregate = {
+export type DefaultAggregate = {
   readonly data: ES.Aggregate.Data
   readonly userId: string
   readonly description: string
 }
 
-export const newA = (description: string, userId: string): [Aggregate, CreatedEvent] => {
+export const newA = (description: string, userId: string): [DefaultAggregate, CreatedEvent] => {
   const aggregateData = ES.Aggregate.newA()
   return [
     {
@@ -16,10 +16,12 @@ export const newA = (description: string, userId: string): [Aggregate, CreatedEv
       userId,
     },
     {
-      tag: POST_CREATED,
       data: ES.Event.newA(aggregateData),
-      description,
-      userId,
+      payload: {
+        tag: POST_CREATED,
+        description,
+        userId,
+      },
     },
   ]
 }
@@ -28,10 +30,14 @@ export const newA = (description: string, userId: string): [Aggregate, CreatedEv
 export type Event = CreatedEvent
 
 export const POST_CREATED = 'post-created'
-
-export type CreatedEvent = TaggedType<typeof POST_CREATED> & {
+export type CreatedEventPayload = TaggedType<typeof POST_CREATED> & {
+  readonly userId: string
+  readonly description: string
+}
+export type CreatedEvent = {
   readonly data: ES.Event.Data
-} & Omit<Aggregate, 'data'>
+  readonly payload: CreatedEventPayload
+}
 
 // validation
 export const validateInputFields = (requestId: string, description: string, userId: string) => {

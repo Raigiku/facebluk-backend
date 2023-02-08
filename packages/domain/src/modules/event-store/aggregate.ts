@@ -3,14 +3,16 @@ import { BusinessRuleError, Uuid } from '../common'
 export type Data = {
   readonly id: string
   readonly version: bigint
+  readonly createdAt: Date
 }
 
 export const newA = (): Data => ({
   id: Uuid.newA(),
   version: 1n,
+  createdAt: new Date(),
 })
 
-export const increaseVersion = (requestId: string, data: Data): Data => ({
+export const increaseVersion = (data: Data): Data => ({
   ...data,
   version: data.version + 1n,
 })

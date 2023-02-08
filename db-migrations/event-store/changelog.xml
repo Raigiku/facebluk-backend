@@ -15,7 +15,7 @@
             <column name="aggregate_version" type="bigint">
                 <constraints nullable="false" />
             </column>
-            <column name="data" type="jsonb">
+            <column name="payload" type="jsonb">
                 <constraints nullable="false" />
             </column>
             <column name="created_at" type="timestamptz">
@@ -36,7 +36,7 @@
             <column name="aggregate_version" type="bigint">
                 <constraints nullable="false" />
             </column>
-            <column name="data" type="jsonb">
+            <column name="payload" type="jsonb">
                 <constraints nullable="false" />
             </column>
             <column name="created_at" type="timestamptz">
@@ -46,6 +46,7 @@
                 <constraints nullable="false" />
             </column>
         </createTable>
+        <addPrimaryKey tableName="post_event" columnNames="aggregate_id,aggregate_version" />
     </changeSet>
 
     <changeSet id="3" author="diego">
@@ -56,7 +57,7 @@
             <column name="aggregate_version" type="bigint">
                 <constraints nullable="false" />
             </column>
-            <column name="data" type="jsonb">
+            <column name="payload" type="jsonb">
                 <constraints nullable="false" />
             </column>
             <column name="created_at" type="timestamptz">
@@ -66,5 +67,6 @@
                 <constraints nullable="false" />
             </column>
         </createTable>
+        <addPrimaryKey tableName="friend_request_event" columnNames="aggregate_id,aggregate_version" />
     </changeSet>
 </databaseChangeLog>

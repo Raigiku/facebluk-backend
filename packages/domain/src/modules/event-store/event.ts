@@ -14,6 +14,10 @@ export const newA = (aggregate: ES.Aggregate.Data): Data => ({
   published: false,
 })
 
+export type AnyEventPayload =
+  | Pick<ES.Post.Event, 'payload'>
+  | Pick<ES.Category.Event, 'payload'>
+  | Pick<ES.FriendRequest.Event, 'payload'>
 export type AnyEvent = ES.Post.Event | ES.Category.Event | ES.FriendRequest.Event
 export type FnPersistEvent = (event: AnyEvent) => Promise<void>
 export type FnMarkEventAsSent = (event: AnyEvent) => Promise<void>

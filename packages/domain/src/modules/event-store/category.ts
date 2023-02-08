@@ -1,56 +1,51 @@
-import { BusinessRuleError, ES, TaggedType } from '..';
+import { BusinessRuleError, ES, TaggedType } from '..'
 
-export type SubCategoriesRegistry = {
-  [key: string]: { name: string; subCategories: string[] }
-}
-
-export type Aggregate = {
+export type DefaultAggregate = {
   readonly data: ES.Aggregate.Data
   readonly name: string
   readonly subCategories: SubCategoriesRegistry
 }
+export type SubCategoriesRegistry = {
+  [key: string]: { name: string; subCategories: string[] }
+}
 
-export const newA = (
-  requestId: string,
-  name: string,
-  subCategories: SubCategoriesRegistry,
-  validate: FnValidate
-): [Aggregate, CreatedEvent] => {
+export const newA = (name: string, subCategories: SubCategoriesRegistry): [DefaultAggregate, CreatedEvent] => {
   const aggregateData = ES.Aggregate.newA()
   return [
-    validate(requestId, {
-      data: aggregateData,
-      name: name,
-      subCategories: subCategories,
-    }),
     {
-      tag: CATEGORY_CREATED,
+      data: aggregateData,
+      name,
+      subCategories,
+    },
+    {
       data: ES.Event.newA(aggregateData),
-      name: name,
-      subCategories: subCategories,
+      payload: {
+        tag: CATEGORY_CREATED,
+        name,
+        subCategories,
+      },
     },
   ]
 }
-
 export const replace = (
-  requestId: string,
-  aggregate: Aggregate,
+  aggregate: DefaultAggregate,
   name: string,
-  subCategories: SubCategoriesRegistry,
-  validate: FnValidate
-): [Aggregate, ReplacedEvent] => {
-  const updatedAggregateData = ES.Aggregate.increaseVersion(requestId, aggregate.data)
+  subCategories: SubCategoriesRegistry
+): [DefaultAggregate, ReplacedEvent] => {
+  const updatedAggregateData = ES.Aggregate.increaseVersion(aggregate.data)
   return [
-    validate(requestId, {
-      data: updatedAggregateData,
-      name: name,
-      subCategories: subCategories,
-    }),
     {
-      tag: CATEGORY_REPLACED,
+      data: updatedAggregateData,
+      name,
+      subCategories,
+    },
+    {
       data: ES.Event.newA(updatedAggregateData),
-      name: name,
-      subCategories: subCategories,
+      payload: {
+        tag: CATEGORY_REPLACED,
+        name,
+        subCategories,
+      },
     },
   ]
 }
@@ -59,32 +54,34 @@ export const replace = (
 export type Event = CreatedEvent | ReplacedEvent
 
 export const CATEGORY_CREATED = 'category-created'
-
-export type CreatedEvent = TaggedType<typeof CATEGORY_CREATED> & {
-  readonly data: ES.Event.Data
+export type CreatedEventPayload = TaggedType<typeof CATEGORY_CREATED> & {
   readonly name: string
   readonly subCategories: SubCategoriesRegistry
+}
+export type CreatedEvent = {
+  readonly data: ES.Event.Data
+  readonly payload: CreatedEventPayload
 }
 
 export const CATEGORY_REPLACED = 'category-replaced'
-
-export type ReplacedEvent = TaggedType<typeof CATEGORY_REPLACED> & {
-  readonly data: ES.Event.Data
+export type ReplacedEventPayload = TaggedType<typeof CATEGORY_REPLACED> & {
   readonly name: string
   readonly subCategories: SubCategoriesRegistry
 }
+export type ReplacedEvent = {
+  readonly data: ES.Event.Data
+  readonly payload: ReplacedEventPayload
+}
 
 // validation
-export type FnValidate = (requestId: string, aggregate: Aggregate) => Aggregate
-
-export const validate = (requestId: string, aggregate: Aggregate): Aggregate => {
-  validateName(requestId, aggregate.name)
-  for (const key in aggregate.subCategories) {
-    const { name, subCategories } = aggregate.subCategories[key]
-    validateName(requestId, name)
-    if (subCategories.length > MAX_SUBCATEGORIES) throw categoryExceedsSubCategoryMaxAmountError(requestId, name)
+export const validateInputFields = (requestId: string, name: string, subCategories: SubCategoriesRegistry) => {
+  validateName(requestId, name)
+  for (const key in subCategories) {
+    const subCategory = subCategories[key]
+    validateName(requestId, subCategory.name)
+    if (subCategory.subCategories.length > MAX_SUBCATEGORIES)
+      throw categoryExceedsSubCategoryMaxAmountError(requestId, name)
   }
-  return aggregate
 }
 
 export const validateName = (requestId: string, name: string) => {
@@ -105,6 +102,6 @@ export const MAX_SUBCATEGORIES = 5
 
 // accessors
 export type FnGetCount = () => Promise<number>
-export type FnGet = (id: string) => Promise<ES.Category.Aggregate | undefined>
-export type FnPersistEvent = (event: ES.Category.Event) => Promise<void>
-export type FnMarkEventAsSent = (event: ES.Category.Event) => Promise<void>
+export type FnGet = (id: string) => Promise<DefaultAggregate | undefined>
+export type FnPersistEvent = (event: Event) => Promise<void>
+export type FnMarkEventAsSent = (event: Event) => Promise<void>

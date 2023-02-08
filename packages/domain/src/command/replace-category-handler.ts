@@ -1,16 +1,12 @@
 import { BusinessRuleError, ES, INT } from '../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
+  ES.Category.validateInputFields(req.id, req.name, req.subCategories)
+
   const foundCategory = await deps.getCategory(req.id)
   if (foundCategory === undefined) throw categoryNotFoundError(req.requestId)
 
-  const [, replacedEvent] = ES.Category.replace(
-    req.requestId,
-    foundCategory,
-    req.name,
-    req.subCategories,
-    ES.Category.validate
-  )
+  const [, replacedEvent] = ES.Category.replace(foundCategory, req.name, req.subCategories)
 
   await deps.processEvent(replacedEvent)
 }

@@ -10,6 +10,6 @@ export const processEvent =
   ): FnProcessEvent =>
   async (event: ES.Event.AnyEvent) => {
     await persistEvent(event)
-    await publishEvent(event.tag, event)
+    await publishEvent(event.payload.tag, event)
     await markEventAsSent(event)
   }

@@ -1,13 +1,13 @@
-import { ES, omitKey } from '@facebluk/domain'
+import { ES } from '@facebluk/domain'
 import { Pool } from 'pg'
 import { eventTableKey } from '.'
 
 export const determineTableName = (event: ES.Event.AnyEvent) =>
-  event.tag.includes('category')
+  event.payload.tag.includes('category')
     ? 'category_event'
-    : event.tag.includes('post')
+    : event.payload.tag.includes('post')
     ? 'post_event'
-    : event.tag.includes('friend-request')
+    : event.payload.tag.includes('friend-request')
     ? 'friend_request_event'
     : (() => {
         throw new Error('undefined table')
@@ -24,17 +24,11 @@ export const persistEvent =
         ${eventTableKey('aggregate_version')},
         ${eventTableKey('created_at')},
         ${eventTableKey('published')},
-        ${eventTableKey('data')}
+        ${eventTableKey('payload')}
       )
       VALUES ($1, $2, $3, $4, $5)
     `,
-      [
-        event.data.aggregateId,
-        event.data.aggregateVersion,
-        event.data.createdAt,
-        event.data.published,
-        omitKey('data', event),
-      ]
+      [event.data.aggregateId, event.data.aggregateVersion, event.data.createdAt, event.data.published, event.payload]
     )
   }
 

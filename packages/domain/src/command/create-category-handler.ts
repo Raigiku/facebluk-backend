@@ -1,10 +1,12 @@
 import { BusinessRuleError, ES, INT } from '../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const categoryCount = await deps.getCategoriesCount()
-  if (categoryCount > 20) throw maxCategoriesCreatedError(req.requestId)
+  ES.Category.validateInputFields(req.id, req.name, req.subCategories)
 
-  const [, createdEvent] = ES.Category.newA(req.requestId, req.name, req.subCategories, ES.Category.validate)
+  const categoryCount = await deps.getCategoriesCount()
+  if (categoryCount > 20) throw maxCategoriesCreatedError(req.id)
+
+  const [, createdEvent] = ES.Category.newA(req.name, req.subCategories)
 
   await deps.processEvent(createdEvent)
 }
@@ -15,7 +17,7 @@ export type Dependencies = {
 }
 
 export type Request = {
-  requestId: string
+  id: string
   name: string
   subCategories: ES.Category.SubCategoriesRegistry
 }
