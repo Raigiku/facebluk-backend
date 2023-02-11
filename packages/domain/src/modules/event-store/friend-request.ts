@@ -1,25 +1,30 @@
 import { BusinessRuleError, ES, TaggedType, Uuid } from '..'
 
-export type Aggregate = DefaultAggregate | AcceptedAggregate | RejectedAggregate | CancelledAggregate
-export type DefaultAggregate = {
+export type Aggregate = PendingAggregate | AcceptedAggregate | RejectedAggregate | CancelledAggregate
+export type AggregateData = {
   readonly data: ES.Aggregate.Data
   readonly fromUserId: string
   readonly toUserId: string
 }
-export type AcceptedAggregate = DefaultAggregate & {
-  readonly acceptedAt: Date
-}
-export type RejectedAggregate = DefaultAggregate & {
-  readonly rejectedAt: Date
-}
-export type CancelledAggregate = DefaultAggregate & {
-  readonly cancelledAt: Date
-}
+export type PendingAggregate = AggregateData & TaggedType<'pending-aggregate'>
 
-export const newA = (fromUserId: string, toUserId: string): [DefaultAggregate, SentEvent] => {
+export type AcceptedAggregate = AggregateData & {
+  readonly acceptedAt: Date
+} & TaggedType<'accepted-aggregate'>
+
+export type RejectedAggregate = AggregateData & {
+  readonly rejectedAt: Date
+} & TaggedType<'rejected-aggregate'>
+
+export type CancelledAggregate = AggregateData & {
+  readonly cancelledAt: Date
+} & TaggedType<'cancelled-aggregate'>
+
+export const newA = (fromUserId: string, toUserId: string): [PendingAggregate, SentEvent] => {
   const aggregateData = ES.Aggregate.newA()
   return [
     {
+      tag: 'pending-aggregate',
       data: aggregateData,
       fromUserId,
       toUserId,
@@ -27,54 +32,63 @@ export const newA = (fromUserId: string, toUserId: string): [DefaultAggregate, S
     {
       data: ES.Event.newA(aggregateData),
       payload: {
-        tag: FRIEND_REQUEST_SENT,
+        tag: 'friend-request-sent',
         fromUserId,
         toUserId,
       },
     },
   ]
 }
-export const accept = (friendRequest: DefaultAggregate): [AcceptedAggregate, AcceptedEvent] => {
+export const accept = (friendRequest: PendingAggregate): [AcceptedAggregate, AcceptedEvent] => {
   const acceptedAt = new Date()
+  const updatedVersionAggregate = ES.Aggregate.increaseVersion(friendRequest.data)
   return [
     {
       ...friendRequest,
+      data: updatedVersionAggregate,
+      tag: 'accepted-aggregate',
       acceptedAt,
     },
     {
-      data: ES.Event.newA(friendRequest.data),
+      data: ES.Event.newA(updatedVersionAggregate),
       payload: {
-        tag: FRIEND_REQUEST_ACCEPTED,
+        tag: 'friend-request-accepted',
       },
     },
   ]
 }
-export const cancel = (friendRequest: DefaultAggregate): [CancelledAggregate, CancelledEvent] => {
+export const cancel = (friendRequest: PendingAggregate): [CancelledAggregate, CancelledEvent] => {
   const cancelledAt = new Date()
+  const updatedVersionAggregate = ES.Aggregate.increaseVersion(friendRequest.data)
   return [
     {
       ...friendRequest,
+      data: updatedVersionAggregate,
+      tag: 'cancelled-aggregate',
       cancelledAt,
     },
     {
-      data: ES.Event.newA(friendRequest.data),
+      data: ES.Event.newA(updatedVersionAggregate),
       payload: {
-        tag: FRIEND_REQUEST_CANCELLED,
+        tag: 'friend-request-cancelled',
       },
     },
   ]
 }
-export const reject = (friendRequest: DefaultAggregate): [RejectedAggregate, RejectedEvent] => {
+export const reject = (friendRequest: PendingAggregate): [RejectedAggregate, RejectedEvent] => {
   const rejectedAt = new Date()
+  const updatedVersionAggregate = ES.Aggregate.increaseVersion(friendRequest.data)
   return [
     {
       ...friendRequest,
+      data: updatedVersionAggregate,
+      tag: 'rejected-aggregate',
       rejectedAt,
     },
     {
-      data: ES.Event.newA(friendRequest.data),
+      data: ES.Event.newA(updatedVersionAggregate),
       payload: {
-        tag: FRIEND_REQUEST_REJECTED,
+        tag: 'friend-request-rejected',
       },
     },
   ]
@@ -84,29 +98,25 @@ export const reject = (friendRequest: DefaultAggregate): [RejectedAggregate, Rej
 export type Event = SentEvent | AcceptedEvent | CancelledEvent | RejectedEvent
 export type EventPayload = Record<string, never>
 
-export const FRIEND_REQUEST_REJECTED = 'friend-request-rejected'
-export type RejectedEventPayload = TaggedType<typeof FRIEND_REQUEST_REJECTED>
+export type RejectedEventPayload = TaggedType<'friend-request-rejected'>
 export type RejectedEvent = {
   readonly data: ES.Event.Data
   readonly payload: RejectedEventPayload
 }
 
-export const FRIEND_REQUEST_CANCELLED = 'friend-request-cancelled'
-export type CancelledEventPayload = TaggedType<typeof FRIEND_REQUEST_CANCELLED>
+export type CancelledEventPayload = TaggedType<'friend-request-cancelled'>
 export type CancelledEvent = {
   readonly data: ES.Event.Data
   readonly payload: CancelledEventPayload
 }
 
-export const FRIEND_REQUEST_ACCEPTED = 'friend-request-accepted'
-export type AcceptedEventPayload = TaggedType<typeof FRIEND_REQUEST_ACCEPTED>
+export type AcceptedEventPayload = TaggedType<'friend-request-accepted'>
 export type AcceptedEvent = {
   readonly data: ES.Event.Data
   readonly payload: AcceptedEventPayload
 }
 
-export const FRIEND_REQUEST_SENT = 'friend-request-sent'
-export type SentEventPayload = TaggedType<typeof FRIEND_REQUEST_SENT> & {
+export type SentEventPayload = TaggedType<'friend-request-sent'> & {
   readonly fromUserId: string
   readonly toUserId: string
 }
@@ -126,4 +136,5 @@ export const fromUserCannotBeToUser = (requestId: string) =>
   new BusinessRuleError(requestId, 'toUserId cannot be fromUserId')
 
 // accessors
-export type FnGet = (id: string) => Promise<DefaultAggregate | undefined>
+export type FnGet = (id: string) => Promise<Aggregate | undefined>
+export type FnGetLastBetweenUsers = (fromUserId: string, toUserId: string) => Promise<Aggregate | undefined>

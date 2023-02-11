@@ -9,7 +9,7 @@ import { businessRuleErrorResponseSchema } from '..'
 
 export const createPostRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>('/create', routeOptions, async (request, reply) => {
-    await CMD.CreatePost.handle(
+    const response = await CMD.CreatePost.handle(
       {
         id: request.id,
         description: request.body.description,
@@ -24,7 +24,7 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
         ),
       }
     )
-    await reply.status(200).send()
+    await reply.status(200).send(response)
   })
   done()
 }
@@ -37,6 +37,9 @@ const bodySchema = Type.Object({
 const responseSchema = {
   200: {
     type: 'object',
+    properties: {
+      postId: { type: 'string' },
+    },
   },
   ...businessRuleErrorResponseSchema,
 }

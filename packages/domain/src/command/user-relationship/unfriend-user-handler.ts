@@ -1,7 +1,7 @@
-import { BusinessRuleError, ES, INT, UA } from '../modules'
+import { BusinessRuleError, INT, UA, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  ES.FriendRequest.validateInputFields(req.id, req.fromUserId, req.toUserId)
+  validateInputFields(req)
 
   const fromUser = await deps.getUserById(req.fromUserId)
   if (fromUser === undefined) throw new BusinessRuleError(req.id, 'the from user does not exist')
@@ -9,9 +9,15 @@ export const handle = async (req: Request, deps: Dependencies) => {
   const toUser = await deps.getUserById(req.toUserId)
   if (toUser === undefined) throw new BusinessRuleError(req.id, 'the to user does not exist')
 
-  const [, createdFriendRequestEvent] = ES.FriendRequest.newA(req.fromUserId, req.toUserId)
 
-  await deps.processEvent(createdFriendRequestEvent)
+  await deps.processEvent(createdPostEvent)
+
+  return { postId: createdPostEvent.data.aggregateId }
+}
+
+const validateInputFields = (req: Request) => {
+  Uuid.validate(req.id, req.fromUserId, 'fromUserId')
+  Uuid.validate(req.id, req.toUserId, 'toUserId')
 }
 
 export type Dependencies = {

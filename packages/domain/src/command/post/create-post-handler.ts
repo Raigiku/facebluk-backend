@@ -1,6 +1,6 @@
-import { BusinessRuleError, ES, INT, UA } from '../modules'
+import { BusinessRuleError, ES, INT, UA } from '../../modules'
 
-export const handle = async (req: Request, deps: Dependencies) => {
+export const handle = async (req: Request, deps: Dependencies): Promise<Response> => {
   ES.Post.validateInputFields(req.id, req.description, req.userId)
 
   const user = await deps.getUserById(req.userId)
@@ -9,6 +9,8 @@ export const handle = async (req: Request, deps: Dependencies) => {
   const [, createdPostEvent] = ES.Post.newA(req.description, req.userId)
 
   await deps.processEvent(createdPostEvent)
+
+  return { postId: createdPostEvent.data.aggregateId }
 }
 
 export type Dependencies = {
@@ -20,4 +22,8 @@ export type Request = {
   id: string
   userId: string
   description: string
+}
+
+export type Response = {
+  postId: string
 }

@@ -1,4 +1,4 @@
-import { BusinessRuleError, ES, INT } from '../modules'
+import { BusinessRuleError, ES, INT } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   ES.Category.validateInputFields(req.id, req.name, req.subCategories)

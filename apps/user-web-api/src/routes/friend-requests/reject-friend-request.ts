@@ -7,42 +7,37 @@ import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '..'
 
-export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, done) => {
-  fastify.post<{ Body: Static<typeof bodySchema> }>('/send', routeOptions, async (request, reply) => {
-    const response = await CMD.SendFriendRequest.handle(
+export const rejectFriendRequestRoute: FastifyPluginCallback = (fastify, options, done) => {
+  fastify.post<{ Body: Static<typeof bodySchema> }>('/reject', routeOptions, async (request, reply) => {
+    await CMD.RejectFriendRequest.handle(
       {
         id: request.id,
-        fromUserId: request.body.fromUserId,
-        toUserId: request.body.toUserId,
+        friendRequestId: request.body.friendRequestId,
+        userId: request.body.userId,
       },
       {
-        getUserById: UserAuth.Accessor.getUserById(fastify.userAuthConn, Common.Logger.log(request.log), request.id),
-        getLastFriendRequestBetweenUsers: EventStore.Accessor.FriendRequest.getLastFriendRequestBetweenUsers(
-          fastify.eventStoreConn
-        ),
+        getFriendRequestById: EventStore.Accessor.FriendRequest.get(fastify.eventStoreConn),
         processEvent: INT.Event.processEvent(
           EventStore.Accessor.Event.persistEvent(fastify.eventStoreConn),
           MessageBroker.publishEvent(request.msgBrokerChannel),
           EventStore.Accessor.Event.markEventAsSent(fastify.eventStoreConn)
         ),
+        getUserById: UserAuth.Accessor.getUserById(fastify.userAuthConn, Common.Logger.log(request.log), request.id),
       }
     )
-    await reply.status(200).send(response)
+    await reply.status(200).send()
   })
   done()
 }
 
 const bodySchema = Type.Object({
-  fromUserId: Type.String({ minLength: 1, format: 'uuid' }),
-  toUserId: Type.String({ minLength: 1, format: 'uuid' }),
+  userId: Type.String({ minLength: 1, format: 'uuid' }),
+  friendRequestId: Type.String({ minLength: 1, format: 'uuid' }),
 })
 
 const responseSchema = {
   200: {
     type: 'object',
-    properties: {
-      friendRequestId: { type: 'string' },
-    },
   },
   ...businessRuleErrorResponseSchema,
 }

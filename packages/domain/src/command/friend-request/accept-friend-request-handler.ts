@@ -1,10 +1,13 @@
-import { BusinessRuleError, ES, INT, UA, Uuid } from '../modules'
+import { BusinessRuleError, ES, INT, UA, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  Uuid.validate(req.id, req.friendRequestId, 'friendRequestId')
+  validateInputFields(req)
 
-  const friendRequest = await deps.getFriendRequestById(req.friendRequestId)
+  const friendRequest = await deps.getFriendRequest(req.friendRequestId)
   if (friendRequest === undefined) throw new BusinessRuleError(req.id, 'the friend request does not exist')
+
+  if (friendRequest.tag !== 'pending-aggregate')
+    throw new BusinessRuleError(req.id, 'the friend request is not pending')
 
   const user = await deps.getUserById(req.userId)
   if (user === undefined) throw new BusinessRuleError(req.id, 'user not found')
@@ -12,14 +15,19 @@ export const handle = async (req: Request, deps: Dependencies) => {
   if (friendRequest.toUserId !== user.id)
     throw new BusinessRuleError(req.id, 'the user is not the receiver of the friend request')
 
-  const [, rejectedFriendRequestEvent] = ES.FriendRequest.reject(friendRequest)
+  const [, acceptedFriendRequestEvent] = ES.FriendRequest.accept(friendRequest)
 
-  await deps.processEvent(rejectedFriendRequestEvent)
+  await deps.processEvent(acceptedFriendRequestEvent)
+}
+
+const validateInputFields = (req: Request) => {
+  Uuid.validate(req.id, req.friendRequestId, 'friendRequestId')
+  Uuid.validate(req.id, req.userId, 'userId')
 }
 
 export type Dependencies = {
   readonly getUserById: UA.User.FnGetById
-  readonly getFriendRequestById: ES.FriendRequest.FnGet
+  readonly getFriendRequest: ES.FriendRequest.FnGet
   readonly processEvent: INT.Event.FnProcessEvent
 }
 

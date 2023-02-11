@@ -69,4 +69,25 @@
         </createTable>
         <addPrimaryKey tableName="friend_request_event" columnNames="aggregate_id,aggregate_version" />
     </changeSet>
+
+    <changeSet id="4" author="diego">
+        <createTable tableName="user_relationship_event">
+            <column name="aggregate_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="aggregate_version" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="payload" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamptz">
+                <constraints nullable="false" />
+            </column>
+            <column name="published" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="user_relationship_event" columnNames="aggregate_id,aggregate_version" />
+    </changeSet>
 </databaseChangeLog>

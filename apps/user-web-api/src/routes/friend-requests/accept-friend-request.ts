@@ -17,7 +17,7 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
       },
       {
         getUserById: UserAuth.Accessor.getUserById(fastify.userAuthConn, Common.Logger.log(request.log), request.id),
-        getFriendRequestById: EventStore.Accessor.FriendRequest.get(fastify.eventStoreConn),
+        getFriendRequest: EventStore.Accessor.FriendRequest.get(fastify.eventStoreConn),
         processEvent: INT.Event.processEvent(
           EventStore.Accessor.Event.persistEvent(fastify.eventStoreConn),
           MessageBroker.publishEvent(request.msgBrokerChannel),
