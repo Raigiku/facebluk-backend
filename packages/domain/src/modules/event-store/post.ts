@@ -16,7 +16,7 @@ export const newA = (description: string, userId: string): [DefaultAggregate, Cr
       userId,
     },
     {
-      data: ES.Event.newA(aggregateData),
+      data: ES.Event.newA(aggregateData, aggregateData.createdAt),
       payload: {
         tag: POST_CREATED,
         description,
@@ -46,14 +46,14 @@ export const validateInputFields = (requestId: string, description: string, user
 }
 
 export const validateDescription = (requestId: string, description: string) => {
-  if (description.length > DESCRIPTION_MAX_LENGTH) throw descriptionLongerThanMaxLengthError(requestId)
-  if (description.length === 0) throw descriptionCannotBeEmptyError(requestId)
+  if (description.length > DESCRIPTION_MAX_LENGTH) throw errors.descriptionLongerThanMaxLength(requestId)
+  if (description.length === 0) throw errors.descriptionCannotBeEmpty(requestId)
 }
 
-export const descriptionLongerThanMaxLengthError = (requestId: string) =>
-  new BusinessRuleError(requestId, `description cannot be longer than ${DESCRIPTION_MAX_LENGTH} characters`)
-
-export const descriptionCannotBeEmptyError = (requestId: string) =>
-  new BusinessRuleError(requestId, 'description cannot be empty')
+export const errors = {
+  descriptionLongerThanMaxLength: (requestId: string) =>
+    new BusinessRuleError(requestId, `description cannot be longer than ${DESCRIPTION_MAX_LENGTH} characters`),
+  descriptionCannotBeEmpty: (requestId: string) => new BusinessRuleError(requestId, 'description cannot be empty'),
+}
 
 export const DESCRIPTION_MAX_LENGTH = 500

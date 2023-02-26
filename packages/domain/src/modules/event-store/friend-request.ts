@@ -30,7 +30,7 @@ export const newA = (fromUserId: string, toUserId: string): [PendingAggregate, S
       toUserId,
     },
     {
-      data: ES.Event.newA(aggregateData),
+      data: ES.Event.newA(aggregateData, aggregateData.createdAt),
       payload: {
         tag: 'friend-request-sent',
         fromUserId,
@@ -50,7 +50,7 @@ export const accept = (friendRequest: PendingAggregate): [AcceptedAggregate, Acc
       acceptedAt,
     },
     {
-      data: ES.Event.newA(updatedVersionAggregate),
+      data: ES.Event.newA(updatedVersionAggregate, acceptedAt),
       payload: {
         tag: 'friend-request-accepted',
       },
@@ -68,7 +68,7 @@ export const cancel = (friendRequest: PendingAggregate): [CancelledAggregate, Ca
       cancelledAt,
     },
     {
-      data: ES.Event.newA(updatedVersionAggregate),
+      data: ES.Event.newA(updatedVersionAggregate, cancelledAt),
       payload: {
         tag: 'friend-request-cancelled',
       },
@@ -86,7 +86,7 @@ export const reject = (friendRequest: PendingAggregate): [RejectedAggregate, Rej
       rejectedAt,
     },
     {
-      data: ES.Event.newA(updatedVersionAggregate),
+      data: ES.Event.newA(updatedVersionAggregate, rejectedAt),
       payload: {
         tag: 'friend-request-rejected',
       },
@@ -96,7 +96,6 @@ export const reject = (friendRequest: PendingAggregate): [RejectedAggregate, Rej
 
 // events
 export type Event = SentEvent | AcceptedEvent | CancelledEvent | RejectedEvent
-export type EventPayload = Record<string, never>
 
 export type RejectedEventPayload = TaggedType<'friend-request-rejected'>
 export type RejectedEvent = {
@@ -129,12 +128,13 @@ export type SentEvent = {
 export const validateInputFields = (requestId: string, fromUserId: string, toUserId: string) => {
   Uuid.validate(requestId, fromUserId, 'fromUserId')
   Uuid.validate(requestId, toUserId, 'toUserId')
-  if (fromUserId === toUserId) throw fromUserCannotBeToUser(requestId)
+  if (fromUserId === toUserId) throw errors.fromUserCannotBeToUser(requestId)
 }
 
-export const fromUserCannotBeToUser = (requestId: string) =>
-  new BusinessRuleError(requestId, 'toUserId cannot be fromUserId')
+export const errors = {
+  fromUserCannotBeToUser: (requestId: string) => new BusinessRuleError(requestId, 'toUserId cannot be fromUserId'),
+}
 
 // accessors
 export type FnGet = (id: string) => Promise<Aggregate | undefined>
-export type FnGetLastBetweenUsers = (fromUserId: string, toUserId: string) => Promise<Aggregate | undefined>
+export type FnGetLastBetweenUsers = (userAId: string, userBId: string) => Promise<Aggregate | undefined>

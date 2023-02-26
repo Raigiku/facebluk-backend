@@ -9,6 +9,7 @@ servers:
 tags:
   - name: Posts
   - name: Friend Requests
+  - name: User Relationships
 paths:
   /posts/create:
     post:
@@ -191,6 +192,102 @@ paths:
       responses:
         '200':
           description: The friend request was cancelled successfully
+        '422':
+          $ref: '#/components/responses/BusinessRuleError'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+  /user-relationships/block:
+    post:
+      operationId: blockUser
+      summary: Blocks a user
+      description: |
+        With this route you can block another user
+      tags:
+        - User Relationships
+      requestBody:
+        description: Payload
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fromUserId
+                - toUserId
+              properties:
+                fromUserId:
+                  type: string
+                  format: uuid
+                toUserId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: The user was blocked successfully
+        '422':
+          $ref: '#/components/responses/BusinessRuleError'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+  /user-relationships/unblock:
+    post:
+      operationId: unblockUser
+      summary: Unblocks a user
+      description: |
+        With this route you can unblock another user
+      tags:
+        - User Relationships
+      requestBody:
+        description: Payload
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fromUserId
+                - toUserId
+              properties:
+                fromUserId:
+                  type: string
+                  format: uuid
+                toUserId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: The user was unblocked successfully
+        '422':
+          $ref: '#/components/responses/BusinessRuleError'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+  /user-relationships/unfriend:
+    post:
+      operationId: unfriendUser
+      summary: Unfriends a user
+      description: |
+        With this route you can unfriend another user
+      tags:
+        - User Relationships
+      requestBody:
+        description: Payload
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fromUserId
+                - toUserId
+              properties:
+                fromUserId:
+                  type: string
+                  format: uuid
+                toUserId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: The user was unfriended successfully
         '422':
           $ref: '#/components/responses/BusinessRuleError'
         '500':

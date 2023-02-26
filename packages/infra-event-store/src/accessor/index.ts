@@ -1,7 +1,7 @@
 import { ES } from '@facebluk/domain'
-export * as Category from './category'
 export * as Event from './event'
 export * as FriendRequest from './friend-request'
+export * as UserRelationship from './user-relationship'
 
 export type EventTable = {
   readonly aggregate_id: string

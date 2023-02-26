@@ -28,23 +28,18 @@ export const getLastFriendRequestBetweenUsers =
       `
         select *
         from (
-            select 
-              fre2.${eventTableKey('aggregate_id')}, 
-              max(fre2.${eventTableKey('aggregate_version')}) as ${eventTableKey('aggregate_version')}
-            from (
-              select fre.${eventTableKey('aggregate_id')}
-              from ${TABLE_NAME} fre 
-              where fre.${eventTableKey('aggregate_version')} = 1 and 
-                (fre.${eventTableKey('payload')}->>'toUserId' = $1 and
-                fre.${eventTableKey('payload')}->>'fromUserId' = $2) or
-                (fre.${eventTableKey('payload')}->>'toUserId' = $2 and
-                fre.${eventTableKey('payload')}->>'fromUserId' = $1)
-            ) a
-          join ${TABLE_NAME} fre2 on fre2.${eventTableKey('aggregate_id')} = a.${eventTableKey('aggregate_id')}
-          group by fre2.${eventTableKey('aggregate_id')}
-        ) b
-        join ${TABLE_NAME} fre3 on b.${eventTableKey('aggregate_id')} = fre3.${eventTableKey('aggregate_id')} and
-          b.${eventTableKey('aggregate_version')} = fre3.${eventTableKey('aggregate_version')};
+          select fre.${eventTableKey('aggregate_id')} 
+          from ${TABLE_NAME} fre 
+          where fre.${eventTableKey('aggregate_version')} = 1 and 
+            (fre.${eventTableKey('payload')}->>'toUserId' = $1 and
+            fre.${eventTableKey('payload')}->>'fromUserId' = $2) or
+            (fre.${eventTableKey('payload')}->>'toUserId' = $2 and
+            fre.${eventTableKey('payload')}->>'fromUserId' = $1)
+          order by fre.${eventTableKey('created_at')} desc
+          limit 1
+        ) a
+        join ${TABLE_NAME} fre2 on fre2.${eventTableKey('aggregate_id')} = a.${eventTableKey('aggregate_id')}
+        order by fre2.${eventTableKey('created_at')} asc
       `,
       [toUserId, fromUserId]
     )

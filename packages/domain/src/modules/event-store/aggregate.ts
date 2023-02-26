@@ -20,9 +20,10 @@ export const increaseVersion = (data: Data): Data => ({
 // validation
 export const validate = (requestId: string, data: Data): Data => {
   Uuid.validate(requestId, data.id, 'id')
-  if (data.version <= 0) throw versionNotPositiveError(requestId)
+  if (data.version <= 0) throw errors.versionNotPositive(requestId)
   return data
 }
 
-export const versionNotPositiveError = (requestId: string) =>
-  new BusinessRuleError(requestId, 'aggregate version must be positive')
+export const errors = {
+  versionNotPositive: (requestId: string) => new BusinessRuleError(requestId, 'aggregate version must be positive'),
+}

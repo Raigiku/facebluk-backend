@@ -1,8 +1,12 @@
 import { FastifyPluginCallback } from 'fastify'
-import { acceptFriendRequestRoute, sendFriendRequestRoute } from './friend-requests'
-import { cancelFriendRequestRoute } from './friend-requests/cancel-friend-request'
-import { rejectFriendRequestRoute } from './friend-requests/reject-friend-request'
+import {
+  acceptFriendRequestRoute,
+  cancelFriendRequestRoute,
+  rejectFriendRequestRoute,
+  sendFriendRequestRoute
+} from './friend-requests'
 import { createPostRoute } from './posts'
+import { blockUserRoute, unblockUserRoute, unfriendUserRoute } from './user-relationship'
 
 export const postsRoutes: FastifyPluginCallback = async (fastify, options, done) => {
   await fastify.register(createPostRoute)
@@ -14,6 +18,13 @@ export const friendRequestsRoutes: FastifyPluginCallback = async (fastify, optio
   await fastify.register(acceptFriendRequestRoute)
   await fastify.register(rejectFriendRequestRoute)
   await fastify.register(cancelFriendRequestRoute)
+  done()
+}
+
+export const userRelationshipsRoutes: FastifyPluginCallback = async (fastify, options, done) => {
+  await fastify.register(blockUserRoute)
+  await fastify.register(unblockUserRoute)
+  await fastify.register(unfriendUserRoute)
   done()
 }
 

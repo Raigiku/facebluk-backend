@@ -3,9 +3,7 @@ import { Pool } from 'pg'
 import { eventTableKey } from '.'
 
 export const determineTableName = (event: ES.Event.AnyEvent) =>
-  event.payload.tag.includes('category')
-    ? 'category_event'
-    : event.payload.tag.includes('post')
+  event.payload.tag.includes('post')
     ? 'post_event'
     : event.payload.tag.includes('friend-request')
     ? 'friend_request_event'
