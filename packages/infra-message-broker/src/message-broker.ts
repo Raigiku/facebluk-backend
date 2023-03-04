@@ -7,7 +7,7 @@ export const publishEvent =
   (channel: amqp.Channel): MB.FnPublishMsg =>
   async (exchange: string, msg: object) => {
     await channel.assertExchange(exchange, 'fanout', { durable: true })
-    channel.publish(exchange, '', Buffer.from(Common.JsonSerializer.serialize(msg)))
+    channel.publish(exchange, '', Buffer.from(Common.JsonSerializer.serialize(msg)), { persistent: true })
   }
 
 export { amqp, Config }
