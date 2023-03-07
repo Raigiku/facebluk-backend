@@ -1,6 +1,6 @@
 import { ES, MB } from '..'
 
-export type FnProcessEvent = (event: ES.Event.AnyEvent) => Promise<void>
+export type FnProcessEvent = (requestId: string, userId: string, event: ES.Event.AnyEvent) => Promise<void>
 
 export const processEvent =
   (
@@ -8,8 +8,8 @@ export const processEvent =
     publishEvent: MB.FnPublishMsg,
     markEventAsSent: ES.Event.FnMarkEventAsSent
   ): FnProcessEvent =>
-  async (event: ES.Event.AnyEvent) => {
+  async (requestId: string, userId: string, event: ES.Event.AnyEvent) => {
     await persistEvent(event)
-    await publishEvent(event.payload.tag, event)
+    await publishEvent(requestId, userId, event.payload.tag, event)
     await markEventAsSent(event)
   }

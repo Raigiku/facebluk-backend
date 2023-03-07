@@ -17,7 +17,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
 
   const [, acceptedFriendRequestEvent] = ES.FriendRequest.accept(friendRequest)
 
-  await deps.processEvent(acceptedFriendRequestEvent)
+  await deps.processEvent(req.id, req.userId, acceptedFriendRequestEvent)
 }
 
 const validateInputFields = (req: Request) => {

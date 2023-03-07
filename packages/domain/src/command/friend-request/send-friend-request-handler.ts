@@ -26,7 +26,7 @@ export const handle = async (req: Request, deps: Dependencies): Promise<Response
 
   const [, createdFriendRequestEvent] = ES.FriendRequest.newA(req.fromUserId, req.toUserId)
 
-  await deps.processEvent(createdFriendRequestEvent)
+  await deps.processEvent(req.id, req.fromUserId, createdFriendRequestEvent)
 
   return { friendRequestId: createdFriendRequestEvent.data.aggregateId }
 }

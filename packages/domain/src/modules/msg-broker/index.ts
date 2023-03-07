@@ -1,1 +1,1 @@
-export type FnPublishMsg = (exchange: string, msg: object) => Promise<void>
+export type FnPublishMsg = (requestId: string, userId: string, exchange: string, msg: object) => Promise<void>

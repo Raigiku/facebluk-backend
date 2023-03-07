@@ -21,7 +21,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
 
   const [, unfriendedEvent] = ES.UserRelationship.unfriend(req.fromUserId, req.toUserId)
 
-  await deps.processEvent(unfriendedEvent)
+  await deps.processEvent(req.id, req.fromUserId, unfriendedEvent)
 }
 
 const validateInputFields = (req: Request) => {

@@ -8,7 +8,7 @@ export const handle = async (req: Request, deps: Dependencies): Promise<Response
 
   const [, createdPostEvent] = ES.Post.newA(req.description, req.userId)
 
-  await deps.processEvent(createdPostEvent)
+  await deps.processEvent(req.id, req.userId, createdPostEvent)
 
   return { postId: createdPostEvent.data.aggregateId }
 }

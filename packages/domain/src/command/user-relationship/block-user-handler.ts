@@ -11,7 +11,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
 
   const [, blockedEvent] = ES.UserRelationship.block(req.fromUserId, req.toUserId)
 
-  await deps.processEvent(blockedEvent)
+  await deps.processEvent(req.id, req.fromUserId, blockedEvent)
 }
 
 const validateInputFields = (req: Request) => {
