@@ -7,7 +7,7 @@ export type Data = {
   readonly published: boolean
 }
 
-export const newA = (aggregate: ES.Aggregate.Data, createdAt: Date): Data => ({
+export const create = (aggregate: ES.Aggregate.Data, createdAt: Date): Data => ({
   aggregateId: aggregate.id,
   aggregateVersion: aggregate.version,
   createdAt,
@@ -18,6 +18,12 @@ export type AnyEventPayload =
   | Pick<ES.Post.Event, 'payload'>
   | Pick<ES.FriendRequest.Event, 'payload'>
   | Pick<ES.UserRelationship.Event, 'payload'>
-export type AnyEvent = ES.Post.Event | ES.FriendRequest.Event | ES.UserRelationship.Event
+  | Pick<ES.User.Event, 'payload'>
+export type AnyEvent =
+  | ES.Post.Event
+  | ES.FriendRequest.Event
+  | ES.UserRelationship.Event
+  | ES.User.Event
 export type FnPersistEvent = (event: AnyEvent) => Promise<void>
+export type FnPersistEvents = (events: AnyEvent[]) => Promise<void>
 export type FnMarkEventAsSent = (event: AnyEvent) => Promise<void>

@@ -1,0 +1,16 @@
+{
+  "name": "@facebluk/adhoc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@facebluk/infra-file-storage": "workspace:*",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.19"
+  }
+}

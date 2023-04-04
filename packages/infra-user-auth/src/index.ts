@@ -1,1 +1,2 @@
-export * as UserAuth from './user-auth'
+export * as UserAuth from './user-auth';
+

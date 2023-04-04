@@ -2,23 +2,21 @@ import { Uuid } from '@facebluk/domain'
 import { Common } from '@facebluk/infra-common'
 import * as dotenv from 'dotenv'
 import Fastify from 'fastify'
+import { setupErrorHandling, setupPlugins, setupRoutes } from './common'
 import * as Config from './config'
-import setupErrorHandling from './setup-error-handling'
-import setupPlugins from './setup-plugins'
-import setupRoutes from './setup-routes'
 
 const runServer = async () => {
-  const commonConfig = Common.Config.newA()
+  const commonConfig = Common.Config.create()
   const server = Fastify({
     genReqId() {
-      return Uuid.newA()
+      return Uuid.create()
     },
     logger: {
       level: commonConfig.logLevel,
       transport: commonConfig.environment === 'production' ? undefined : { target: 'pino-pretty' },
     },
   })
-  const webApiConfig = Config.newA()
+  const webApiConfig = Config.create()
   await setupPlugins(server, webApiConfig, commonConfig)
   setupErrorHandling(server)
   await setupRoutes(server)

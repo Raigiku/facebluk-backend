@@ -10,18 +10,47 @@ tags:
   - name: Posts
   - name: Friend Requests
   - name: User Relationships
+  - name: Users
 paths:
+  /users/register:
+    post:
+      operationId: registerUser
+      summary: Register a new user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  maxLength: 100
+                profilePicture:
+                  type: string
+                  format: binary
+            encoding:
+              profilePicture:
+                contentType: image/png, image/jpeg
+      responses:
+        '200':
+          description: Success
+        '422':
+          $ref: '#/components/responses/BusinessRuleError'
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
   /posts/create:
     post:
       operationId: createPost
       summary: Create a new user post
-      description: |
-        With this route you can create a new Facebluk post
-        for your authenticated user
       tags:
         - Posts
       requestBody:
-        description: Payload
         required: true
         content:
           application/json:
@@ -29,17 +58,13 @@ paths:
               type: object
               required:
                 - description
-                - userId
               properties:
                 description:
                   type: string
                   maxLength: 500
-                userId:
-                  type: string
-                  format: uuid
       responses:
         '200':
-          description: The user post was created successfully
+          description: Success
           content:
             application/json:
               schema:
@@ -54,13 +79,11 @@ paths:
           $ref: '#/components/responses/BusinessRuleError'
         '500':
           $ref: '#/components/responses/UnexpectedError'
+
   /friend-requests/send:
     post:
       operationId: sendFriendRequest
       summary: Sends a new friend request
-      description: |
-        With this route you can send a friend request
-        from a user to another one
       tags:
         - Friend Requests
       requestBody:
@@ -71,18 +94,14 @@ paths:
             schema:
               type: object
               required:
-                - fromUserId
                 - toUserId
               properties:
-                fromUserId:
-                  type: string
-                  format: uuid
                 toUserId:
                   type: string
                   format: uuid
       responses:
         '200':
-          description: The friend request was sent successfully
+          description: Success
           content:
             application/json:
               schema:
@@ -97,13 +116,11 @@ paths:
           $ref: '#/components/responses/BusinessRuleError'
         '500':
           $ref: '#/components/responses/UnexpectedError'
+
   /friend-requests/accept:
     post:
       operationId: acceptFriendRequest
       summary: Accepts a pending friend request
-      description: |
-        With this route you can accept a pending friend 
-        request
       tags:
         - Friend Requests
       requestBody:
@@ -114,29 +131,23 @@ paths:
             schema:
               type: object
               required:
-                - userId
                 - friendRequestId
               properties:
-                userId:
-                  type: string
-                  format: uuid
                 friendRequestId:
                   type: string
                   format: uuid
       responses:
         '200':
-          description: The friend request was accepted successfully
+          description: Success
         '422':
           $ref: '#/components/responses/BusinessRuleError'
         '500':
           $ref: '#/components/responses/UnexpectedError'
+
   /friend-requests/cancel:
     post:
       operationId: cancelFriendRequest
       summary: Cancels a pending friend request
-      description: |
-        With this route you can cancel a pending friend 
-        request
       tags:
         - Friend Requests
       requestBody:
@@ -147,29 +158,23 @@ paths:
             schema:
               type: object
               required:
-                - userId
                 - friendRequestId
               properties:
-                userId:
-                  type: string
-                  format: uuid
                 friendRequestId:
                   type: string
                   format: uuid
       responses:
         '200':
-          description: The friend request was cancelled successfully
+          description: Success
         '422':
           $ref: '#/components/responses/BusinessRuleError'
         '500':
           $ref: '#/components/responses/UnexpectedError'
+
   /friend-requests/reject:
     post:
       operationId: rejectFriendRequest
       summary: Rejects a pending friend request
-      description: |
-        With this route you can reject a pending friend 
-        request
       tags:
         - Friend Requests
       requestBody:
@@ -180,28 +185,23 @@ paths:
             schema:
               type: object
               required:
-                - userId
                 - friendRequestId
               properties:
-                userId:
-                  type: string
-                  format: uuid
                 friendRequestId:
                   type: string
                   format: uuid
       responses:
         '200':
-          description: The friend request was cancelled successfully
+          description: Success
         '422':
           $ref: '#/components/responses/BusinessRuleError'
         '500':
           $ref: '#/components/responses/UnexpectedError'
+
   /user-relationships/block:
     post:
       operationId: blockUser
       summary: Blocks a user
-      description: |
-        With this route you can block another user
       tags:
         - User Relationships
       requestBody:
@@ -212,28 +212,23 @@ paths:
             schema:
               type: object
               required:
-                - fromUserId
                 - toUserId
               properties:
-                fromUserId:
-                  type: string
-                  format: uuid
                 toUserId:
                   type: string
                   format: uuid
       responses:
         '200':
-          description: The user was blocked successfully
+          description: Success
         '422':
           $ref: '#/components/responses/BusinessRuleError'
         '500':
           $ref: '#/components/responses/UnexpectedError'
+
   /user-relationships/unblock:
     post:
       operationId: unblockUser
       summary: Unblocks a user
-      description: |
-        With this route you can unblock another user
       tags:
         - User Relationships
       requestBody:
@@ -244,28 +239,23 @@ paths:
             schema:
               type: object
               required:
-                - fromUserId
                 - toUserId
               properties:
-                fromUserId:
-                  type: string
-                  format: uuid
                 toUserId:
                   type: string
                   format: uuid
       responses:
         '200':
-          description: The user was unblocked successfully
+          description: Success
         '422':
           $ref: '#/components/responses/BusinessRuleError'
         '500':
           $ref: '#/components/responses/UnexpectedError'
+
   /user-relationships/unfriend:
     post:
       operationId: unfriendUser
       summary: Unfriends a user
-      description: |
-        With this route you can unfriend another user
       tags:
         - User Relationships
       requestBody:
@@ -276,24 +266,25 @@ paths:
             schema:
               type: object
               required:
-                - fromUserId
                 - toUserId
               properties:
-                fromUserId:
-                  type: string
-                  format: uuid
                 toUserId:
                   type: string
                   format: uuid
       responses:
         '200':
-          description: The user was unfriended successfully
+          description: Success
         '422':
           $ref: '#/components/responses/BusinessRuleError'
         '500':
           $ref: '#/components/responses/UnexpectedError'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   responses:
     BusinessRuleError:
       description: BusinessRuleError
@@ -321,3 +312,5 @@ components:
             properties:
               message:
                 type: string
+security:
+  - bearerAuth: []

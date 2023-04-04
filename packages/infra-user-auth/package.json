@@ -7,7 +7,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@facebluk/domain": "^1.0.0",
+    "@facebluk/domain": "workspace:*",
     "@supabase/supabase-js": "^2.7.1"
   }
 }

@@ -6,8 +6,14 @@ export type Data = {
   readonly createdAt: Date
 }
 
-export const newA = (): Data => ({
-  id: Uuid.newA(),
+export const create = (): Data => ({
+  id: Uuid.create(),
+  version: 1n,
+  createdAt: new Date(),
+})
+
+export const createWithId = (id: string): Data => ({
+  id,
   version: 1n,
   createdAt: new Date(),
 })
@@ -25,5 +31,6 @@ export const validate = (requestId: string, data: Data): Data => {
 }
 
 export const errors = {
-  versionNotPositive: (requestId: string) => new BusinessRuleError(requestId, 'aggregate version must be positive'),
+  versionNotPositive: (requestId: string) =>
+    new BusinessRuleError(requestId, 'aggregate version must be positive'),
 }

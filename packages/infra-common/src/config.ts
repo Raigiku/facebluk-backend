@@ -5,7 +5,7 @@ export type Data = {
   logLevel: Logger.LogLevel
 }
 
-export const newA = (): Data => {
+export const create = (): Data => {
   const environment = process.env.ENVIRONMENT! as EnvironmentVar
   const logLevel = process.env.LOGLEVEL! as Logger.LogLevel
   return { environment, logLevel }

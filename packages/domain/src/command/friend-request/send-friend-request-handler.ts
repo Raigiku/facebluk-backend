@@ -1,34 +1,37 @@
-import { BusinessRuleError, ES, INT, UA } from '../../modules'
+import { BusinessRuleError, ES, INT, UA, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies): Promise<Response> => {
-  ES.FriendRequest.validateInputFields(req.id, req.fromUserId, req.toUserId)
-
-  const userRelationship = await deps.getUserRelationship(req.fromUserId, req.toUserId)
-  if (userRelationship?.tag === 'block-aggregate') {
-    if (userRelationship.fromUserId === req.fromUserId)
-      throw new BusinessRuleError(req.id, 'you have blocked this user')
-    if (userRelationship.fromUserId === req.toUserId)
-      throw new BusinessRuleError(req.id, 'the other user has blocked you')
-  }
-
-  const lastFriendRequest = await deps.getLastFriendRequestBetweenUsers(req.fromUserId, req.toUserId)
-  if (lastFriendRequest !== undefined) {
-    if (lastFriendRequest.tag === 'pending-aggregate') throw errors.alreadyPendingFriendRequest(req.id)
-    if (lastFriendRequest.tag === 'accepted-aggregate' && userRelationship === undefined)
-      throw errors.theUsersAreAlreadyFriends(req.id)
-  }
-
-  const fromUser = await deps.getUserById(req.fromUserId)
-  if (fromUser === undefined) throw errors.fromUserDoesNotExist(req.id)
+  validateInputFields(req.id, req.userId, req.toUserId)
 
   const toUser = await deps.getUserById(req.toUserId)
   if (toUser === undefined) throw errors.toUserDoesNotExist(req.id)
 
-  const [, createdFriendRequestEvent] = ES.FriendRequest.newA(req.fromUserId, req.toUserId)
+  const userRelationship = await deps.getUserRelationship(req.userId, req.toUserId)
+  if (userRelationship?.blockedStatus.tag === 'blocked') {
+    if (userRelationship.blockedStatus.fromUserId === req.userId)
+      throw new BusinessRuleError(req.id, 'you have blocked this user')
 
-  await deps.processEvent(req.id, req.fromUserId, createdFriendRequestEvent)
+    if (userRelationship.blockedStatus.fromUserId === req.toUserId)
+      throw new BusinessRuleError(req.id, 'the other user has blocked you')
+  }
+
+  if (userRelationship?.friendStatus.tag === 'friended')
+    throw errors.theUsersAreAlreadyFriends(req.id)
+
+  const lastFriendRequest = await deps.getLastFriendRequestBetweenUsers(req.userId, req.toUserId)
+  if (lastFriendRequest?.status.tag === 'pending') throw errors.alreadyPendingFriendRequest(req.id)
+
+  const [, createdFriendRequestEvent] = ES.FriendRequest.create(req.userId, req.toUserId)
+
+  await deps.processEvent(req.id, createdFriendRequestEvent)
 
   return { friendRequestId: createdFriendRequestEvent.data.aggregateId }
+}
+
+const validateInputFields = (requestId: string, userId: string, toUserId: string) => {
+  Uuid.validate(requestId, userId, 'userId')
+  Uuid.validate(requestId, toUserId, 'toUserId')
+  if (userId === toUserId) throw errors.fromUserCannotBeToUser(requestId)
 }
 
 export type Dependencies = {
@@ -39,19 +42,22 @@ export type Dependencies = {
 }
 
 export type Request = {
-  id: string
-  fromUserId: string
-  toUserId: string
+  readonly id: string
+  readonly userId: string
+  readonly toUserId: string
 }
 
 export type Response = {
-  friendRequestId: string
+  readonly friendRequestId: string
 }
 
 export const errors = {
-  fromUserDoesNotExist: (requestId: string) => new BusinessRuleError(requestId, 'the from user does not exist'),
-  toUserDoesNotExist: (requestId: string) => new BusinessRuleError(requestId, 'the to user does not exist'),
+  toUserDoesNotExist: (requestId: string) =>
+    new BusinessRuleError(requestId, 'the to user does not exist'),
   alreadyPendingFriendRequest: (requestId: string) =>
     new BusinessRuleError(requestId, 'there is an already pending friend request'),
-  theUsersAreAlreadyFriends: (requestId: string) => new BusinessRuleError(requestId, 'the users already are friends'),
+  theUsersAreAlreadyFriends: (requestId: string) =>
+    new BusinessRuleError(requestId, 'the users already are friends'),
+  fromUserCannotBeToUser: (requestId: string) =>
+    new BusinessRuleError(requestId, 'toUserId cannot be fromUserId'),
 }

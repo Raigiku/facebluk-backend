@@ -1,24 +1,24 @@
 import { ES } from '..'
-import { BusinessRuleError, TaggedType, Uuid } from '../common'
+import { BusinessRuleError, TaggedType } from '../common'
 
-export type DefaultAggregate = {
-  readonly data: ES.Aggregate.Data
+export type Aggregate = {
+  readonly aggregate: ES.Aggregate.Data
   readonly userId: string
   readonly description: string
 }
 
-export const newA = (description: string, userId: string): [DefaultAggregate, CreatedEvent] => {
-  const aggregateData = ES.Aggregate.newA()
+export const create = (description: string, userId: string): [Aggregate, CreatedEvent] => {
+  const aggregateData = ES.Aggregate.create()
   return [
     {
-      data: aggregateData,
+      aggregate: aggregateData,
       description,
       userId,
     },
     {
-      data: ES.Event.newA(aggregateData, aggregateData.createdAt),
+      data: ES.Event.create(aggregateData, aggregateData.createdAt),
       payload: {
-        tag: POST_CREATED,
+        tag: 'post-created',
         description,
         userId,
       },
@@ -29,8 +29,7 @@ export const newA = (description: string, userId: string): [DefaultAggregate, Cr
 // events
 export type Event = CreatedEvent
 
-export const POST_CREATED = 'post-created'
-export type CreatedEventPayload = TaggedType<typeof POST_CREATED> & {
+export type CreatedEventPayload = TaggedType<'post-created'> & {
   readonly userId: string
   readonly description: string
 }
@@ -40,11 +39,6 @@ export type CreatedEvent = {
 }
 
 // validation
-export const validateInputFields = (requestId: string, description: string, userId: string) => {
-  validateDescription(requestId, description)
-  Uuid.validate(requestId, userId, 'userId')
-}
-
 export const validateDescription = (requestId: string, description: string) => {
   if (description.length > DESCRIPTION_MAX_LENGTH) throw errors.descriptionLongerThanMaxLength(requestId)
   if (description.length === 0) throw errors.descriptionCannotBeEmpty(requestId)

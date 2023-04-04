@@ -1,7 +1,6 @@
 {
   "files": [],
   "references": [
-    { "path": "apps/admin-web-api" },
     { "path": "apps/user-web-api" },
     { "path": "packages/domain" },
     { "path": "packages/infra-user-auth" },

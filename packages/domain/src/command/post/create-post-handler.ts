@@ -1,29 +1,30 @@
-import { BusinessRuleError, ES, INT, UA } from '../../modules'
+import { ES, INT, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies): Promise<Response> => {
-  ES.Post.validateInputFields(req.id, req.description, req.userId)
+  validateInputFields(req)
 
-  const user = await deps.getUserById(req.userId)
-  if (user === undefined) throw new BusinessRuleError(req.id, 'the user does not exist')
+  const [, createdPostEvent] = ES.Post.create(req.description, req.userId)
 
-  const [, createdPostEvent] = ES.Post.newA(req.description, req.userId)
-
-  await deps.processEvent(req.id, req.userId, createdPostEvent)
+  await deps.processEvent(req.id, createdPostEvent)
 
   return { postId: createdPostEvent.data.aggregateId }
 }
 
+const validateInputFields = (req: Request) => {
+  ES.Post.validateDescription(req.id, req.description)
+  Uuid.validate(req.id, req.userId, 'userId')
+}
+
 export type Dependencies = {
-  readonly getUserById: UA.User.FnGetById
   readonly processEvent: INT.Event.FnProcessEvent
 }
 
 export type Request = {
-  id: string
-  userId: string
-  description: string
+  readonly id: string
+  readonly userId: string
+  readonly description: string
 }
 
 export type Response = {
-  postId: string
+  readonly postId: string
 }

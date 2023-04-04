@@ -1,23 +1,38 @@
-import { BusinessRuleError, ES, INT, UA, Uuid } from '../../modules'
+import { BusinessRuleError, ES, INT, Logger, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   validateInputFields(req)
 
   const friendRequest = await deps.getFriendRequest(req.friendRequestId)
-  if (friendRequest === undefined) throw new BusinessRuleError(req.id, 'the friend request does not exist')
+  if (friendRequest === undefined)
+    throw new BusinessRuleError(req.id, 'the friend request does not exist')
 
-  if (friendRequest.tag !== 'pending-aggregate')
+  if (friendRequest.status.tag !== 'pending')
     throw new BusinessRuleError(req.id, 'the friend request is not pending')
 
-  const user = await deps.getUserById(req.userId)
-  if (user === undefined) throw new BusinessRuleError(req.id, 'user not found')
-
-  if (friendRequest.toUserId !== user.id)
+  if (friendRequest.toUserId !== req.userId)
     throw new BusinessRuleError(req.id, 'the user is not the receiver of the friend request')
 
-  const [, acceptedFriendRequestEvent] = ES.FriendRequest.accept(friendRequest)
+  const userRelationship = await deps.getUserRelationshipBetween(
+    friendRequest.fromUserId,
+    friendRequest.toUserId
+  )
 
-  await deps.processEvent(req.id, req.userId, acceptedFriendRequestEvent)
+  const [, acceptedFriendRequestEvent] = ES.FriendRequest.accept(friendRequest)
+  const [, friendedRelationshipEvent] =
+    userRelationship === undefined
+      ? ES.UserRelationship.newFriend(friendRequest.fromUserId, friendRequest.toUserId)
+      : ES.UserRelationship.friend(
+          userRelationship,
+          friendRequest.fromUserId,
+          friendRequest.toUserId
+        )
+
+  await deps.processEvents(
+    req.id,
+    [acceptedFriendRequestEvent, friendedRelationshipEvent],
+    req.userId
+  )
 }
 
 const validateInputFields = (req: Request) => {
@@ -26,13 +41,14 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  readonly getUserById: UA.User.FnGetById
+  readonly log: Logger.FnLog
   readonly getFriendRequest: ES.FriendRequest.FnGet
-  readonly processEvent: INT.Event.FnProcessEvent
+  readonly getUserRelationshipBetween: ES.UserRelationship.FnGetBetweenUsers
+  readonly processEvents: INT.Event.FnProcessEvents
 }
 
 export type Request = {
-  id: string
-  userId: string
-  friendRequestId: string
+  readonly id: string
+  readonly userId: string
+  readonly friendRequestId: string
 }

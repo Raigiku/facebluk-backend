@@ -8,27 +8,6 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
                         http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
     <changeSet id="1" author="diego">
-        <createTable tableName="category_event">
-            <column name="aggregate_id" type="uuid">
-                <constraints nullable="false" />
-            </column>
-            <column name="aggregate_version" type="bigint">
-                <constraints nullable="false" />
-            </column>
-            <column name="payload" type="jsonb">
-                <constraints nullable="false" />
-            </column>
-            <column name="created_at" type="timestamptz">
-                <constraints nullable="false" />
-            </column>
-            <column name="published" type="boolean">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-        <addPrimaryKey tableName="category_event" columnNames="aggregate_id,aggregate_version" />
-    </changeSet>
-
-    <changeSet id="2" author="diego">
         <createTable tableName="post_event">
             <column name="aggregate_id" type="uuid">
                 <constraints nullable="false" />
@@ -49,7 +28,7 @@
         <addPrimaryKey tableName="post_event" columnNames="aggregate_id,aggregate_version" />
     </changeSet>
 
-    <changeSet id="3" author="diego">
+    <changeSet id="2" author="diego">
         <createTable tableName="friend_request_event">
             <column name="aggregate_id" type="uuid">
                 <constraints nullable="false" />
@@ -70,7 +49,7 @@
         <addPrimaryKey tableName="friend_request_event" columnNames="aggregate_id,aggregate_version" />
     </changeSet>
 
-    <changeSet id="4" author="diego">
+    <changeSet id="3" author="diego">
         <createTable tableName="user_relationship_event">
             <column name="aggregate_id" type="uuid">
                 <constraints nullable="false" />
@@ -88,6 +67,29 @@
                 <constraints nullable="false" />
             </column>
         </createTable>
-        <addPrimaryKey tableName="user_relationship_event" columnNames="aggregate_id,aggregate_version" />
+        <addPrimaryKey tableName="user_relationship_event"
+            columnNames="aggregate_id,aggregate_version" />
+    </changeSet>
+
+    <changeSet id="4" author="diego">
+        <createTable tableName="user_event">
+            <column name="aggregate_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="aggregate_version" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="payload" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamptz">
+                <constraints nullable="false" />
+            </column>
+            <column name="published" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="user_event"
+            columnNames="aggregate_id,aggregate_version" />
     </changeSet>
 </databaseChangeLog>

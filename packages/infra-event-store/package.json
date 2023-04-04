@@ -7,7 +7,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@facebluk/domain": "^1.0.0",
+    "@facebluk/domain": "workspace:*",
     "pg": "^8.9.0"
   },
   "devDependencies": {

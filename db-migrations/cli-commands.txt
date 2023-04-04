@@ -1,3 +1,5 @@
+first place the .jar files inside the /lib dir
+
 liquibase --defaults-file=x.properties registerChangeLog
 liquibase --defaults-file=x.properties update
 liquibase --defaults-file=x.properties rollbackCount 1
