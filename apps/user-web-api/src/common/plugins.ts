@@ -1,72 +1,72 @@
 import { Common } from '@facebluk/infra-common'
-import { EventStore } from '@facebluk/infra-event-store'
-import { MessageBroker } from '@facebluk/infra-message-broker'
-import { UserAuth } from '@facebluk/infra-user-auth'
+import { PostgreSQL } from '@facebluk/infra-postgresql'
+import { RabbitMQ } from '@facebluk/infra-rabbitmq'
+import { Supabase } from '@facebluk/infra-supabase'
 import { FastifyPluginCallback } from 'fastify'
 import fp from 'fastify-plugin'
 
 declare module 'fastify' {
   interface FastifyInstance {
-    msgBrokerConn: MessageBroker.amqp.Connection
-    eventStoreConn: EventStore.pg.Pool
-    userAuthFileStorageConn: UserAuth.SupabaseClient
+    rabbitmqConn: RabbitMQ.amqp.Connection
+    postgreSqlConn: PostgreSQL.pg.Pool
+    supabaseConn: Supabase.SupabaseClient
     commonConfig: Common.Config.Data
   }
 
   interface FastifyRequest {
-    msgBrokerChannel: MessageBroker.amqp.Channel
+    rabbitmqChannel: RabbitMQ.amqp.Channel
   }
 }
 
-const msgBrokerConnPlugin: FastifyPluginCallback = async (fastify, options, done) => {
-  const config = MessageBroker.Config.create()
-  const connection = await MessageBroker.amqp.connect(config.connectionString)
+const rabbitmqConnPlugin: FastifyPluginCallback = async (fastify, options, done) => {
+  const config = RabbitMQ.Config.create()
+  const connection = await RabbitMQ.amqp.connect(config.connectionString)
 
   fastify.addHook('onClose', async () => {
     await connection.close()
   })
 
   fastify.addHook('preHandler', async (request) => {
-    request.msgBrokerChannel = await connection.createChannel()
+    request.rabbitmqChannel = await connection.createChannel()
   })
 
   fastify.addHook('onSend', async (request) => {
-    if (request.msgBrokerChannel === undefined) {
-      request.msgBrokerChannel = await connection.createChannel()
+    if (request.rabbitmqChannel === undefined) {
+      request.rabbitmqChannel = await connection.createChannel()
     }
-    await request.msgBrokerChannel.close()
+    await request.rabbitmqChannel.close()
   })
   done()
 }
-export const fastifyMsgBrokerConn = fp(msgBrokerConnPlugin, {
-  name: 'fastify-msg-broker-conn',
+export const fastifyrabbitmqConn = fp(rabbitmqConnPlugin, {
+  name: 'fastify-rabbitmq-conn',
 })
 
-const eventStoreConnPlugin: FastifyPluginCallback = (fastify, options, done) => {
-  if (!fastify.eventStoreConn) {
-    const config = EventStore.Config.create()
+const postgreSqlConnPlugin: FastifyPluginCallback = (fastify, options, done) => {
+  if (!fastify.postgreSqlConn) {
+    const config = PostgreSQL.Config.create()
 
-    fastify.decorate('eventStoreConn', new EventStore.pg.Pool(config))
+    fastify.decorate('postgreSqlConn', new PostgreSQL.pg.Pool(config))
 
     fastify.addHook('onClose', async () => {
-      await fastify.eventStoreConn.end()
+      await fastify.postgreSqlConn.end()
     })
   }
   done()
 }
-export const fastifyEventStoreConn = fp(eventStoreConnPlugin, {
-  name: 'fastify-event-store-conn',
+export const fastifyPostgreSqlConn = fp(postgreSqlConnPlugin, {
+  name: 'fastify-postgresql-conn',
 })
 
-const userAuthFileStorageConnPlugin: FastifyPluginCallback = (fastify, options, done) => {
-  if (!fastify.userAuthFileStorageConn) {
-    const config = UserAuth.Config.create()
-    fastify.decorate('userAuthFileStorageConn', UserAuth.createSupabaseClient(config))
+const supabaseConnPlugin: FastifyPluginCallback = (fastify, options, done) => {
+  if (!fastify.supabaseConn) {
+    const config = Supabase.Config.create()
+    fastify.decorate('supabaseConn', Supabase.createSupabaseClient(config))
   }
   done()
 }
-export const fastifyUserAuthFileStorageConn = fp(userAuthFileStorageConnPlugin, {
-  name: 'fastify-user-auth-file-storage-conn',
+export const fastifySupabaseConn = fp(supabaseConnPlugin, {
+  name: 'fastify-supabase-conn',
 })
 
 const commonConfigPlugin: FastifyPluginCallback<Common.Config.Data> = (fastify, options, done) => {

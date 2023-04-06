@@ -1,8 +1,8 @@
 import { CMD, INT } from '@facebluk/domain'
 import { Common } from '@facebluk/infra-common'
-import { EventStore } from '@facebluk/infra-event-store'
-import { MessageBroker } from '@facebluk/infra-message-broker'
-import { UserAuth } from '@facebluk/infra-user-auth'
+import { PostgreSQL } from '@facebluk/infra-postgresql'
+import { RabbitMQ } from '@facebluk/infra-rabbitmq'
+import { Supabase } from '@facebluk/infra-supabase'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '../common'
@@ -12,7 +12,7 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
     '/accept',
     routeOptions,
     async (request, reply) => {
-      const jwt: UserAuth.AuthJwt = await request.jwtVerify()
+      const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
       await CMD.AcceptFriendRequest.handle(
         {
           id: request.id,
@@ -21,15 +21,15 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
         },
         {
           log: Common.Logger.log(request.log),
-          getUserRelationshipBetween: EventStore.Accessor.UserRelationship.getBetweenUsers(
-            fastify.eventStoreConn
+          getUserRelationshipBetween: PostgreSQL.UserRelationship.getBetweenUsers(
+            fastify.postgreSqlConn
           ),
-          getFriendRequest: EventStore.Accessor.FriendRequest.get(fastify.eventStoreConn),
+          getFriendRequest: PostgreSQL.FriendRequest.get(fastify.postgreSqlConn),
           processEvents: INT.Event.processEvents(
             Common.Logger.log(request.log),
-            EventStore.Accessor.Event.persistEvents(fastify.eventStoreConn),
-            MessageBroker.publishEvent(request.msgBrokerChannel),
-            EventStore.Accessor.Event.markEventAsSent(fastify.eventStoreConn)
+            PostgreSQL.Common.persistEvents(fastify.postgreSqlConn),
+            RabbitMQ.publishEvent(request.rabbitmqChannel),
+            PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
           ),
         }
       )

@@ -25,11 +25,11 @@ importers:
 
   apps/adhoc:
     specifiers:
-      '@facebluk/infra-file-storage': workspace:*
+      '@facebluk/infra-supabase': workspace:*
       '@types/node': ^18.11.19
       dotenv: ^16.0.3
     dependencies:
-      '@facebluk/infra-file-storage': link:../../packages/infra-file-storage
+      '@facebluk/infra-supabase': link:../../packages/infra-supabase
       dotenv: 16.0.3
     devDependencies:
       '@types/node': 18.15.3
@@ -38,10 +38,9 @@ importers:
     specifiers:
       '@facebluk/domain': workspace:*
       '@facebluk/infra-common': workspace:*
-      '@facebluk/infra-event-store': workspace:*
-      '@facebluk/infra-file-storage': workspace:*
-      '@facebluk/infra-message-broker': workspace:*
-      '@facebluk/infra-user-auth': workspace:*
+      '@facebluk/infra-postgresql': workspace:*
+      '@facebluk/infra-rabbitmq': workspace:*
+      '@facebluk/infra-supabase': workspace:*
       '@fastify/cors': ^8.2.0
       '@fastify/jwt': ^6.7.1
       '@fastify/multipart': ^7.5.0
@@ -57,10 +56,9 @@ importers:
     dependencies:
       '@facebluk/domain': link:../../packages/domain
       '@facebluk/infra-common': link:../../packages/infra-common
-      '@facebluk/infra-event-store': link:../../packages/infra-event-store
-      '@facebluk/infra-file-storage': link:../../packages/infra-file-storage
-      '@facebluk/infra-message-broker': link:../../packages/infra-message-broker
-      '@facebluk/infra-user-auth': link:../../packages/infra-user-auth
+      '@facebluk/infra-postgresql': link:../../packages/infra-postgresql
+      '@facebluk/infra-rabbitmq': link:../../packages/infra-rabbitmq
+      '@facebluk/infra-supabase': link:../../packages/infra-supabase
       '@fastify/cors': 8.2.1
       '@fastify/jwt': 6.7.1
       '@fastify/multipart': 7.5.0
@@ -98,7 +96,7 @@ importers:
       '@facebluk/domain': link:../domain
       fastify: 4.14.1
 
-  packages/infra-event-store:
+  packages/infra-postgresql:
     specifiers:
       '@facebluk/domain': workspace:*
       '@types/pg': ^8.6.6
@@ -109,15 +107,7 @@ importers:
     devDependencies:
       '@types/pg': 8.6.6
 
-  packages/infra-file-storage:
-    specifiers:
-      '@facebluk/domain': workspace:*
-      '@supabase/supabase-js': ^2.7.1
-    dependencies:
-      '@facebluk/domain': link:../domain
-      '@supabase/supabase-js': 2.11.0
-
-  packages/infra-message-broker:
+  packages/infra-rabbitmq:
     specifiers:
       '@facebluk/domain': workspace:*
       '@facebluk/infra-common': workspace:*
@@ -130,7 +120,7 @@ importers:
     devDependencies:
       '@types/amqplib': 0.10.1
 
-  packages/infra-user-auth:
+  packages/infra-supabase:
     specifiers:
       '@facebluk/domain': workspace:*
       '@supabase/supabase-js': ^2.7.1

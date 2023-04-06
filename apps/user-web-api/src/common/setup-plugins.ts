@@ -1,5 +1,5 @@
 import { Common } from '@facebluk/infra-common'
-import { UserAuth } from '@facebluk/infra-user-auth'
+import { Supabase } from '@facebluk/infra-supabase'
 import fastifyCors from '@fastify/cors'
 import fastifyJwt from '@fastify/jwt'
 import fastifyMultipart from '@fastify/multipart'
@@ -8,10 +8,10 @@ import { fastifySwagger } from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import { FastifyInstance } from 'fastify'
 import {
-  fastifyCommonConfig,
-  fastifyEventStoreConn,
-  fastifyMsgBrokerConn,
-  fastifyUserAuthFileStorageConn,
+    fastifyCommonConfig,
+    fastifyPostgreSqlConn,
+    fastifySupabaseConn,
+    fastifyrabbitmqConn,
 } from '.'
 import * as Config from '../config'
 
@@ -21,7 +21,7 @@ export const setupPlugins = async (
   commonConfig: Common.Config.Data
 ) => {
   // init env configs
-  const userAuthConfig = UserAuth.Config.create()
+  const userAuthConfig = Supabase.Config.create()
   // setup fastify plugins
   await server.register(fastifyMultipart, {
     addToBody: true,
@@ -46,7 +46,7 @@ export const setupPlugins = async (
   })
   // setup our plugins
   await server.register(fastifyCommonConfig, commonConfig)
-  await server.register(fastifyUserAuthFileStorageConn)
-  await server.register(fastifyMsgBrokerConn)
-  await server.register(fastifyEventStoreConn)
+  await server.register(fastifySupabaseConn)
+  await server.register(fastifyrabbitmqConn)
+  await server.register(fastifyPostgreSqlConn)
 }

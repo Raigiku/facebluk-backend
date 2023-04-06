@@ -6,7 +6,7 @@
     "start:user-api": "npx tsc --build && npx ts-node ./apps/user-web-api/src/index.ts",
     "start:adhoc": "npx tsc --build && npx ts-node ./apps/adhoc/src/index.ts",
     "build": "npx tsc --build",
-    "clean": "rimraf \"node_modules\" \"packages/**/dist\" \"packages/**/node_modules\" \"packages/**/coverage\" \"packages/**/*.tsbuildinfo\"",
+    "clean": "rimraf --glob \"./packages/**/node_modules\" \"./apps/**/node_modules\" \"./packages/**/dist\" \"./apps/**/dist\" \"./packages/**/coverage\" \"./apps/**/coverage\" \"./packages/**/*.tsbuildinfo\" \"./apps/**/*.tsbuildinfo\"",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"packages/**/*.{js,json,yml,md,ts}\""
   },

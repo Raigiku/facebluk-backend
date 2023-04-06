@@ -1,11 +1,11 @@
 import { BusinessRuleError } from './business-rule-error'
 
 export type Data = {
-  readonly bytes: Buffer
+  readonly bytes: ArrayBuffer
   readonly fileType: string
 }
 
-export const create = (bytes: Buffer, fileType: string): Data => ({
+export const create = (bytes: ArrayBuffer, fileType: string): Data => ({
   bytes,
   fileType,
 })

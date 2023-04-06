@@ -1,7 +1,7 @@
 import { CMD, INT } from '@facebluk/domain'
-import { EventStore } from '@facebluk/infra-event-store'
-import { MessageBroker } from '@facebluk/infra-message-broker'
-import { UserAuth } from '@facebluk/infra-user-auth'
+import { PostgreSQL } from "@facebluk/infra-postgresql"
+import { RabbitMQ } from "@facebluk/infra-rabbitmq"
+import { Supabase } from '@facebluk/infra-supabase'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '../common'
@@ -11,7 +11,7 @@ export const rejectFriendRequestRoute: FastifyPluginCallback = (fastify, options
     '/reject',
     routeOptions,
     async (request, reply) => {
-      const jwt: UserAuth.AuthJwt = await request.jwtVerify()
+      const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
       await CMD.RejectFriendRequest.handle(
         {
           id: request.id,
@@ -19,11 +19,11 @@ export const rejectFriendRequestRoute: FastifyPluginCallback = (fastify, options
           userId: jwt.sub,
         },
         {
-          getFriendRequestById: EventStore.Accessor.FriendRequest.get(fastify.eventStoreConn),
+          getFriendRequestById: PostgreSQL.FriendRequest.get(fastify.postgreSqlConn),
           processEvent: INT.Event.processEvent(
-            EventStore.Accessor.Event.persistEvent(fastify.eventStoreConn),
-            MessageBroker.publishEvent(request.msgBrokerChannel),
-            EventStore.Accessor.Event.markEventAsSent(fastify.eventStoreConn)
+            PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
+            RabbitMQ.publishEvent(request.rabbitmqChannel),
+            PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
           ),
         }
       )

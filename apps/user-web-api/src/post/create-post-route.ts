@@ -1,7 +1,7 @@
 import { CMD, ES, INT } from '@facebluk/domain'
-import { EventStore } from '@facebluk/infra-event-store'
-import { MessageBroker } from '@facebluk/infra-message-broker'
-import { UserAuth } from '@facebluk/infra-user-auth'
+import { PostgreSQL } from '@facebluk/infra-postgresql'
+import { RabbitMQ } from '@facebluk/infra-rabbitmq'
+import { Supabase } from '@facebluk/infra-supabase'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '../common'
@@ -11,7 +11,7 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
     '/create',
     routeOptions,
     async (request, reply) => {
-      const jwt: UserAuth.AuthJwt = await request.jwtVerify()
+      const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
       const response = await CMD.CreatePost.handle(
         {
           id: request.id,
@@ -20,9 +20,9 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
         },
         {
           processEvent: INT.Event.processEvent(
-            EventStore.Accessor.Event.persistEvent(fastify.eventStoreConn),
-            MessageBroker.publishEvent(request.msgBrokerChannel),
-            EventStore.Accessor.Event.markEventAsSent(fastify.eventStoreConn)
+            PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
+            RabbitMQ.publishEvent(request.rabbitmqChannel),
+            PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
           ),
         }
       )
@@ -33,7 +33,7 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
 }
 
 const bodySchema = Type.Object({
-  description: Type.String({ minLength: 1, maxLength: ES.Post.DESCRIPTION_MAX_LENGTH }),
+  description: Type.String({ minLength: 1, maxLength: ES.Post.descriptionMaxLength }),
 })
 
 const responseSchema = {

@@ -6,9 +6,8 @@
   },
   "references": [
     { "path": "../../packages/domain" },
-    { "path": "../../packages/infra-user-auth" },
-    { "path": "../../packages/infra-event-store" },
-    { "path": "../../packages/infra-message-broker" },
-    { "path": "../../packages/infra-file-storage" },
+    { "path": "../../packages/infra-postgresql" },
+    { "path": "../../packages/infra-supabase" },
+    { "path": "../../packages/infra-rabbitmq" },
   ]
 }

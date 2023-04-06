@@ -1,8 +1,8 @@
 import { CMD, INT } from '@facebluk/domain'
 import { Common } from '@facebluk/infra-common'
-import { EventStore } from '@facebluk/infra-event-store'
-import { MessageBroker } from '@facebluk/infra-message-broker'
-import { UserAuth } from '@facebluk/infra-user-auth'
+import { PostgreSQL } from '@facebluk/infra-postgresql'
+import { RabbitMQ } from '@facebluk/infra-rabbitmq'
+import { Supabase } from '@facebluk/infra-supabase'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '../common'
@@ -12,7 +12,7 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
     '/send',
     routeOptions,
     async (request, reply) => {
-      const jwt: UserAuth.AuthJwt = await request.jwtVerify()
+      const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
       const response = await CMD.SendFriendRequest.handle(
         {
           id: request.id,
@@ -20,22 +20,18 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
           toUserId: request.body.toUserId,
         },
         {
-          getUserById: UserAuth.Accessor.getUserById(
-            fastify.userAuthFileStorageConn,
+          getUserById: Supabase.UserAuth.User.getById(
+            fastify.supabaseConn,
             Common.Logger.log(request.log),
             request.id
           ),
           getLastFriendRequestBetweenUsers:
-            EventStore.Accessor.FriendRequest.getLastFriendRequestBetweenUsers(
-              fastify.eventStoreConn
-            ),
-          getUserRelationship: EventStore.Accessor.UserRelationship.getBetweenUsers(
-            fastify.eventStoreConn
-          ),
+            PostgreSQL.FriendRequest.getLastFriendRequestBetweenUsers(fastify.postgreSqlConn),
+          getUserRelationship: PostgreSQL.UserRelationship.getBetweenUsers(fastify.postgreSqlConn),
           processEvent: INT.Event.processEvent(
-            EventStore.Accessor.Event.persistEvent(fastify.eventStoreConn),
-            MessageBroker.publishEvent(request.msgBrokerChannel),
-            EventStore.Accessor.Event.markEventAsSent(fastify.eventStoreConn)
+            PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
+            RabbitMQ.publishEvent(request.rabbitmqChannel),
+            PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
           ),
         }
       )

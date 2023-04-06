@@ -1,13 +1,12 @@
-import { FileStorage } from '@facebluk/infra-file-storage'
+import { Supabase } from '@facebluk/infra-supabase'
 import dotenv from 'dotenv'
 
 const main = async () => {
   dotenv.config()
 
-  const fileStorageConfig = FileStorage.Config.create()
-  const supabaseClient = FileStorage.createSupabaseClient(fileStorageConfig)
-
-  for (const bucketName of FileStorage.fileBucketNames) {
+  const supabaseConfig = Supabase.Config.create()
+  const supabaseClient = Supabase.createSupabaseClient(supabaseConfig) 
+  for (const bucketName of Supabase.FileStorage.fileBucketNames) {
     const getBuckerRes = await supabaseClient.storage.getBucket(bucketName)
     if (getBuckerRes.error !== null) {
       if (getBuckerRes.error.message === 'The resource was not found') {

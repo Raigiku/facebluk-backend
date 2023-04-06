@@ -1,15 +1,14 @@
 import { BusinessRuleError, CMD, INT, RequestImage } from '@facebluk/domain'
 import { Common } from '@facebluk/infra-common'
-import { EventStore } from '@facebluk/infra-event-store'
-import { FileStorage } from '@facebluk/infra-file-storage'
-import { MessageBroker } from '@facebluk/infra-message-broker'
-import { UserAuth } from '@facebluk/infra-user-auth'
+import { PostgreSQL } from '@facebluk/infra-postgresql'
+import { RabbitMQ } from '@facebluk/infra-rabbitmq'
+import { Supabase } from '@facebluk/infra-supabase'
 import { FastifyPluginCallback } from 'fastify'
 import { FormFile } from '../common'
 
 export const registerUserRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post('/register', async (request, reply) => {
-    const jwt: UserAuth.AuthJwt = await request.jwtVerify()
+    const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
 
     const formData = request.body as FormData
 
@@ -32,34 +31,32 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
           formData.profilePicture === undefined
             ? undefined
             : RequestImage.create(
-                formData.profilePicture[0].data,
+                formData.profilePicture[0].data.buffer,
                 formData.profilePicture[0].mimetype
               ),
       },
       {
-        getUserById: UserAuth.Accessor.getUserById(
-          fastify.userAuthFileStorageConn,
+        getUserById: Supabase.UserAuth.User.getById(
+          fastify.supabaseConn,
           Common.Logger.log(fastify.log),
           request.id
         ),
-        getUserProfilePictureUrl: FileStorage.Accessor.User.getProfilePictureUrl(
-          fastify.userAuthFileStorageConn
+        getUserProfilePictureUrl: Supabase.FileStorage.User.getProfilePictureUrl(
+          fastify.supabaseConn
         ),
-        uploadProfilePicture: FileStorage.Accessor.User.uploadProfilePicture(
-          fastify.userAuthFileStorageConn
-        ),
-        markUserAsRegistered: UserAuth.Accessor.markUserAsRegistered(
-          fastify.userAuthFileStorageConn,
+        uploadProfilePicture: Supabase.FileStorage.User.uploadProfilePicture(fastify.supabaseConn),
+        markUserAsRegistered: Supabase.UserAuth.User.markAsRegistered(
+          fastify.supabaseConn,
           Common.Logger.log(fastify.log),
           request.id
         ),
-        getRegisteredUserEvent: EventStore.Accessor.User.getRegisteredUserEvent(
-          fastify.eventStoreConn
+        getRegisteredUserEvent: PostgreSQL.User.getRegisteredUserEvent(
+          fastify.postgreSqlConn
         ),
         processEvent: INT.Event.processEvent(
-          EventStore.Accessor.Event.persistEvent(fastify.eventStoreConn),
-          MessageBroker.publishEvent(request.msgBrokerChannel),
-          EventStore.Accessor.Event.markEventAsSent(fastify.eventStoreConn)
+          PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
+          RabbitMQ.publishEvent(request.rabbitmqChannel),
+          PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
         ),
       }
     )

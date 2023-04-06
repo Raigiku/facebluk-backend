@@ -32,8 +32,8 @@ export const create = (
 // events
 export type Event = RegisteredUserEvent
 
-export const REGISTERED_USER_EVENT_TAG = 'user-registered'
-export type RegisteredUserEventPayload = TaggedType<typeof REGISTERED_USER_EVENT_TAG> & {
+export const registeredUserEventTag = 'user-registered'
+export type RegisteredUserEventPayload = TaggedType<typeof registeredUserEventTag> & {
   readonly name: string
   readonly imageUrl?: string
 }
@@ -44,12 +44,12 @@ export type RegisteredUserEvent = {
 
 // validation
 export const validateName = (requestId: string, name: string) => {
-  if (name.length > NAME_MAX_LENGTH)
-    new BusinessRuleError(requestId, `name cannot be longer than ${NAME_MAX_LENGTH} characters`)
+  if (name.length > nameMaxLength)
+    new BusinessRuleError(requestId, `name cannot be longer than ${nameMaxLength} characters`)
   if (name.length === 0) throw new BusinessRuleError(requestId, 'name cannot be empty')
 }
 
-export const NAME_MAX_LENGTH = 100
+export const nameMaxLength = 100
 
 // accessors
 export type FnGetRegisteredUserEvent = (id: string) => Promise<RegisteredUserEvent | undefined>

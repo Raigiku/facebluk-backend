@@ -40,14 +40,14 @@ export type CreatedEvent = {
 
 // validation
 export const validateDescription = (requestId: string, description: string) => {
-  if (description.length > DESCRIPTION_MAX_LENGTH) throw errors.descriptionLongerThanMaxLength(requestId)
+  if (description.length > descriptionMaxLength) throw errors.descriptionLongerThanMaxLength(requestId)
   if (description.length === 0) throw errors.descriptionCannotBeEmpty(requestId)
 }
 
 export const errors = {
   descriptionLongerThanMaxLength: (requestId: string) =>
-    new BusinessRuleError(requestId, `description cannot be longer than ${DESCRIPTION_MAX_LENGTH} characters`),
+    new BusinessRuleError(requestId, `description cannot be longer than ${descriptionMaxLength} characters`),
   descriptionCannotBeEmpty: (requestId: string) => new BusinessRuleError(requestId, 'description cannot be empty'),
 }
 
-export const DESCRIPTION_MAX_LENGTH = 500
+export const descriptionMaxLength = 500

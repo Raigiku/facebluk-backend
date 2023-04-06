@@ -9,10 +9,9 @@
   "dependencies": {
     "@facebluk/domain": "workspace:*",
     "@facebluk/infra-common": "workspace:*",
-    "@facebluk/infra-event-store": "workspace:*",
-    "@facebluk/infra-file-storage": "workspace:*",
-    "@facebluk/infra-message-broker": "workspace:*",
-    "@facebluk/infra-user-auth": "workspace:*",
+    "@facebluk/infra-postgresql": "workspace:*",
+    "@facebluk/infra-rabbitmq": "workspace:*",
+    "@facebluk/infra-supabase": "workspace:*",
     "@fastify/cors": "^8.2.0",
     "@fastify/jwt": "^6.7.1",
     "@fastify/multipart": "^7.5.0",
