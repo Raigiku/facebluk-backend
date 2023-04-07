@@ -4,6 +4,9 @@ importers:
 
   .:
     devDependencies:
+      '@types/node':
+        specifier: ^18.11.19
+        version: 18.15.3
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.50.0
         version: 5.55.0(@typescript-eslint/parser@5.55.0)(eslint@8.36.0)(typescript@4.9.5)
@@ -34,10 +37,6 @@ importers:
       dotenv:
         specifier: ^16.0.3
         version: 16.0.3
-    devDependencies:
-      '@types/node':
-        specifier: ^18.11.19
-        version: 18.15.3
 
   apps/user-web-api:
     dependencies:
@@ -87,9 +86,6 @@ importers:
         specifier: ^4.5.0
         version: 4.5.0
     devDependencies:
-      '@types/node':
-        specifier: ^18.11.19
-        version: 18.15.3
       pino-pretty:
         specifier: ^9.1.1
         version: 9.4.0
