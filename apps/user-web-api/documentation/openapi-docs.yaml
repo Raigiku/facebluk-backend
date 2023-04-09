@@ -26,10 +26,15 @@ paths:
               type: object
               required:
                 - name
+                - alias
               properties:
                 name:
                   type: string
                   maxLength: 100
+                alias:
+                  type: string
+                  maxLength: 20
+                  pattern: '^[a-zA-Z0-9]+$'
                 profilePicture:
                   type: string
                   format: binary

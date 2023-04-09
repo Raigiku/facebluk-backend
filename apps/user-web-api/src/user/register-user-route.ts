@@ -15,6 +15,9 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
     if (formData.name === undefined)
       throw new BusinessRuleError(request.id, 'name is a required string field')
 
+      if (formData.alias === undefined)
+      throw new BusinessRuleError(request.id, 'alias is a required string field')
+
     if (formData.profilePicture !== undefined) {
       if (formData.profilePicture.length === 0)
         throw new BusinessRuleError(request.id, 'profile picture must have at least 1 image')
@@ -27,6 +30,7 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
         id: request.id,
         userId: jwt.sub,
         name: formData.name,
+        alias: formData.alias,
         profilePicture:
           formData.profilePicture === undefined
             ? undefined
@@ -68,5 +72,6 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
 
 type FormData = {
   readonly name?: string
+  readonly alias?:string
   readonly profilePicture?: FormFile[]
 }

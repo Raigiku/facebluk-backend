@@ -10,7 +10,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
 
   let registeredUserEvent = await deps.getRegisteredUserEvent(req.userId)
   if (registeredUserEvent === undefined) {
-    registeredUserEvent = ES.User.create(req.userId, req.name, profilePictureUrl)[1]
+    registeredUserEvent = ES.User.create(req.userId, req.name, req.alias, profilePictureUrl)[1]
     await deps.processEvent(req.id, registeredUserEvent)
   }
 
@@ -24,6 +24,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
 const validateInputFields = (req: Request) => {
   Uuid.validate(req.id, req.userId, 'userId')
   ES.User.validateName(req.id, req.name)
+  ES.User.validateAlias(req.id, req.alias)
   if (req.profilePicture !== undefined) RequestImage.validate(req.id, req.profilePicture)
 }
 
@@ -40,5 +41,6 @@ export type Request = {
   readonly id: string
   readonly userId: string
   readonly name: string
+  readonly alias: string
   readonly profilePicture?: RequestImage.Data
 }
