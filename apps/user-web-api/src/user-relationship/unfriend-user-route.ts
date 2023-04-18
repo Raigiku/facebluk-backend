@@ -12,7 +12,7 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
     '/unfriend',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
+      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
       await CMD.UnfriendUser.handle(
         {
           id: request.id,

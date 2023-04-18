@@ -12,7 +12,7 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
     '/accept',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
+      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
       await CMD.AcceptFriendRequest.handle(
         {
           id: request.id,

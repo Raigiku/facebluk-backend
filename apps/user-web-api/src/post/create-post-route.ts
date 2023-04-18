@@ -11,7 +11,7 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
     '/create',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
+      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
       const response = await CMD.CreatePost.handle(
         {
           id: request.id,

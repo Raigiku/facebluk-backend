@@ -1,2 +1,3 @@
-export * from './postgresql-event-accessor'
-export * from './postgresql-event-model'
+export * from './event-accessor'
+export * from './event-model'
+

@@ -11,7 +11,7 @@ export const cancelFriendRequestRoute: FastifyPluginCallback = (fastify, options
     '/cancel',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
+      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
       await CMD.CancelFriendRequest.handle(
         {
           id: request.id,

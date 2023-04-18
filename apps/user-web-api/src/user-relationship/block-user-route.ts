@@ -12,7 +12,7 @@ export const blockUserRoute: FastifyPluginCallback = (fastify, options, done) =>
     '/block',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
+      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
       await CMD.BlockUser.handle(
         {
           id: request.id,

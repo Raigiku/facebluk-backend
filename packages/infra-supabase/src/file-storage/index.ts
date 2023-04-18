@@ -1,6 +1,6 @@
-import * as User from './user'
+import { User } from './accessor'
 
 export const fileBucketNames = [...Object.values(User.bucketNames)]
 
-export { User }
+export * from './accessor'
 

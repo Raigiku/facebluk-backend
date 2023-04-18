@@ -8,7 +8,7 @@ import { FormFile } from '../common'
 
 export const registerUserRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post('/register', async (request, reply) => {
-    const jwt: Supabase.UserAuth.User.JwtModel = await request.jwtVerify()
+    const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
 
     const formData = request.body as FormData
 

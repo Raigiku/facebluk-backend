@@ -1,7 +1,7 @@
 import { ES } from '@facebluk/domain'
 import { Pool } from 'pg'
 import { FriendRequest, Post, User, UserRelationship } from '../postgresql'
-import { eventTableKey } from './postgresql-event-model'
+import { eventTableKey } from './event-model'
 
 const determineTableName = (event: ES.Event.AnyEvent) =>
   event.payload.tag.includes('post')
