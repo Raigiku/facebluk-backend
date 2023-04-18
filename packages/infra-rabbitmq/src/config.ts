@@ -3,5 +3,5 @@ export type Data = {
 }
 
 export const create = (): Data => ({
-  connectionString: process.env.MSG_BROKER_CONNECTION_STRING!,
+  connectionString: process.env.RABBITMQ_CONNECTION_STRING!,
 })
