@@ -15,7 +15,7 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
     if (formData.name === undefined)
       throw new BusinessRuleError(request.id, 'name is a required string field')
 
-      if (formData.alias === undefined)
+    if (formData.alias === undefined)
       throw new BusinessRuleError(request.id, 'alias is a required string field')
 
     if (formData.profilePicture !== undefined) {
@@ -54,9 +54,7 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
           Common.Logger.log(fastify.log),
           request.id
         ),
-        getRegisteredUserEvent: PostgreSQL.User.getRegisteredUserEvent(
-          fastify.postgreSqlConn
-        ),
+        getRegisteredUserEvent: PostgreSQL.User.getRegisteredUserEvent(fastify.postgreSqlConn),
         processEvent: INT.Event.processEvent(
           PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
           RabbitMQ.publishEvent(request.rabbitmqChannel),
@@ -72,6 +70,6 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
 
 type FormData = {
   readonly name?: string
-  readonly alias?:string
+  readonly alias?: string
   readonly profilePicture?: FormFile[]
 }

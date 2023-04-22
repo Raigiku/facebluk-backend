@@ -3,10 +3,11 @@ import { BusinessRuleError, ES, FS, INT, RequestImage, UA, Uuid } from '../../mo
 export const handle = async (req: Request, deps: Dependencies) => {
   validateInputFields(req)
 
-  let profilePictureUrl = deps.getUserProfilePictureUrl(req.userId)
-  if (profilePictureUrl === undefined)
-    if (req.profilePicture !== undefined)
-      profilePictureUrl = await deps.uploadProfilePicture(req.userId, req.profilePicture.bytes)
+  let profilePictureUrl: string | undefined = undefined
+  if (req.profilePicture !== undefined) {
+    await deps.uploadProfilePicture(req.userId, req.profilePicture.bytes)
+    profilePictureUrl = deps.getUserProfilePictureUrl(req.userId)
+  }
 
   let registeredUserEvent = await deps.getRegisteredUserEvent(req.userId)
   if (registeredUserEvent === undefined) {
@@ -30,8 +31,8 @@ const validateInputFields = (req: Request) => {
 
 export type Dependencies = {
   readonly getRegisteredUserEvent: ES.User.FnGetRegisteredUserEvent
-  readonly getUserProfilePictureUrl: FS.User.FnGetProfilePictureUrl
   readonly uploadProfilePicture: FS.User.FnUploadProfilePicture
+  readonly getUserProfilePictureUrl: FS.User.FnGetProfilePictureUrl
   readonly getUserById: UA.User.FnGetById
   readonly processEvent: INT.Event.FnProcessEvent
   readonly markUserAsRegistered: UA.User.FnMarkUserAsRegistered

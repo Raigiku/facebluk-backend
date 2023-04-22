@@ -1,3 +1,3 @@
 // accessors
-export type FnUploadProfilePicture = (userId: string, bytes: ArrayBuffer) => Promise<string>
+export type FnUploadProfilePicture = (userId: string, bytes: ArrayBuffer) => Promise<void>
 export type FnGetProfilePictureUrl = (userId: string) => string

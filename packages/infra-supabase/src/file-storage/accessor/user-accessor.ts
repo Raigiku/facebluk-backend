@@ -8,11 +8,10 @@ export const bucketNames = {
 export const uploadProfilePicture =
   (supabase: SupabaseClient): FS.User.FnUploadProfilePicture =>
   async (userId: string, bytes: ArrayBuffer) => {
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(bucketNames.userProfilePicture)
-      .upload(`user-profile-picture-${userId}`, bytes)
+      .upload(`user-profile-picture-${userId}`, bytes, { upsert: true })
     if (error !== null) throw error
-    return data.path
   }
 
 export const getProfilePictureUrl =
