@@ -67,3 +67,4 @@ export const validateAlias = (requestId: string, alias: string) => {
 
 // accessors
 export type FnGetRegisteredUserEvent = (id: string) => Promise<RegisteredUserEvent | undefined>
+export type FnIsAliasAvailable = (alias: string) => Promise<boolean>

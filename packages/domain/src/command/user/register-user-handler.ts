@@ -3,6 +3,9 @@ import { BusinessRuleError, ES, FS, INT, RequestImage, UA, Uuid } from '../../mo
 export const handle = async (req: Request, deps: Dependencies) => {
   validateInputFields(req)
 
+  const isAliasAvailable = await deps.isAliasAvailable(req.alias)
+  if (!isAliasAvailable) throw new BusinessRuleError(req.id, 'alias is already used')
+
   let profilePictureUrl: string | undefined = undefined
   if (req.profilePicture !== undefined) {
     await deps.uploadProfilePicture(req.userId, req.profilePicture.bytes)
@@ -30,6 +33,7 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
+  readonly isAliasAvailable: ES.User.FnIsAliasAvailable
   readonly getRegisteredUserEvent: ES.User.FnGetRegisteredUserEvent
   readonly uploadProfilePicture: FS.User.FnUploadProfilePicture
   readonly getUserProfilePictureUrl: FS.User.FnGetProfilePictureUrl

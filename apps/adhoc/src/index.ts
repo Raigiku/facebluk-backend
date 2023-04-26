@@ -3,9 +3,12 @@ import dotenv from 'dotenv'
 
 const main = async () => {
   dotenv.config()
+  await createFileStorageBuckets()
+}
 
+const createFileStorageBuckets = async () => {
   const supabaseConfig = Supabase.Config.create()
-  const supabaseClient = Supabase.createSupabaseClient(supabaseConfig) 
+  const supabaseClient = Supabase.createSupabaseClient(supabaseConfig)
   for (const bucketName of Supabase.FileStorage.fileBucketNames) {
     const getBuckerRes = await supabaseClient.storage.getBucket(bucketName)
     if (getBuckerRes.error !== null) {

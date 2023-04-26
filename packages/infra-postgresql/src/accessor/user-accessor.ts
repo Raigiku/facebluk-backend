@@ -27,3 +27,18 @@ export const getRegisteredUserEvent =
 
     return undefined
   }
+
+export const isAliasAvailable =
+  (pool: Pool): ES.User.FnIsAliasAvailable =>
+  async (alias: string) => {
+    const { rows } = await pool.query(
+      `
+      SELECT 1
+      FROM ${tableName} e
+      WHERE e.${eventTableKey('payload')}->>'tag' = $1
+        AND e.${eventTableKey('payload')}->>'alias' = $2
+    `,
+      [ES.User.registeredUserEventTag, alias]
+    )
+    return rows.length === 0
+  }

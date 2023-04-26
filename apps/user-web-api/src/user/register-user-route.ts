@@ -55,6 +55,7 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
           request.id
         ),
         getRegisteredUserEvent: PostgreSQL.User.getRegisteredUserEvent(fastify.postgreSqlConn),
+        isAliasAvailable: PostgreSQL.User.isAliasAvailable(fastify.postgreSqlConn),
         processEvent: INT.Event.processEvent(
           PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
           RabbitMQ.publishEvent(request.rabbitmqChannel),

@@ -8,6 +8,7 @@
   "license": "ISC",
   "dependencies": {
     "@facebluk/infra-supabase": "workspace:*",
+    "@facebluk/infra-postgresql": "workspace:*",
     "dotenv": "^16.0.3"
   }
 }
