@@ -25,9 +25,9 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  readonly getUserById: UA.User.FnGetById
-  readonly getUserRelationshipBetween: ES.UserRelationship.FnGetBetweenUsers
-  readonly processEvent: INT.Event.FnProcessEvent
+  getUserById: UA.User.FnGetById
+  getUserRelationshipBetween: ES.UserRelationship.FnGetBetweenUsers
+  processEvent: INT.Event.FnProcessEvent
 }
 
 export type Request = {

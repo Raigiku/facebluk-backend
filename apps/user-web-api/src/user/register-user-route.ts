@@ -70,7 +70,7 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
 }
 
 type FormData = {
-  readonly name?: string
-  readonly alias?: string
-  readonly profilePicture?: FormFile[]
+  name?: string
+  alias?: string
+  profilePicture?: FormFile[]
 }

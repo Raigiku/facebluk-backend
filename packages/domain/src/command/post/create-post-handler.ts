@@ -16,7 +16,7 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  readonly processEvent: INT.Event.FnProcessEvent
+  processEvent: INT.Event.FnProcessEvent
 }
 
 export type Request = {

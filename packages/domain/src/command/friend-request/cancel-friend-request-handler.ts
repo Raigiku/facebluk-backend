@@ -24,8 +24,8 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  readonly getFriendRequestById: ES.FriendRequest.FnGet
-  readonly processEvent: INT.Event.FnProcessEvent
+  getFriendRequestById: ES.FriendRequest.FnGet
+  processEvent: INT.Event.FnProcessEvent
 }
 
 export type Request = {

@@ -33,13 +33,13 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  readonly isAliasAvailable: ES.User.FnIsAliasAvailable
-  readonly getRegisteredUserEvent: ES.User.FnGetRegisteredUserEvent
-  readonly uploadProfilePicture: FS.User.FnUploadProfilePicture
-  readonly getUserProfilePictureUrl: FS.User.FnGetProfilePictureUrl
-  readonly getUserById: UA.User.FnGetById
-  readonly processEvent: INT.Event.FnProcessEvent
-  readonly markUserAsRegistered: UA.User.FnMarkUserAsRegistered
+  isAliasAvailable: ES.User.FnIsAliasAvailable
+  getRegisteredUserEvent: ES.User.FnGetRegisteredUserEvent
+  uploadProfilePicture: FS.User.FnUploadProfilePicture
+  getUserProfilePictureUrl: FS.User.FnGetProfilePictureUrl
+  getUserById: UA.User.FnGetById
+  processEvent: INT.Event.FnProcessEvent
+  markUserAsRegistered: UA.User.FnMarkUserAsRegistered
 }
 
 export type Request = {

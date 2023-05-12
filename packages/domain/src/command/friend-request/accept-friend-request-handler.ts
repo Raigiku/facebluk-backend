@@ -41,10 +41,10 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  readonly log: Logger.FnLog
-  readonly getFriendRequest: ES.FriendRequest.FnGet
-  readonly getUserRelationshipBetween: ES.UserRelationship.FnGetBetweenUsers
-  readonly processEvents: INT.Event.FnProcessEvents
+  log: Logger.FnLog
+  getFriendRequest: ES.FriendRequest.FnGet
+  getUserRelationshipBetween: ES.UserRelationship.FnGetBetweenUsers
+  processEvents: INT.Event.FnProcessEvents
 }
 
 export type Request = {

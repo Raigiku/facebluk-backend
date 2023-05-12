@@ -35,10 +35,10 @@ const validateInputFields = (requestId: string, userId: string, toUserId: string
 }
 
 export type Dependencies = {
-  readonly getUserRelationship: ES.UserRelationship.FnGetBetweenUsers
-  readonly getUserById: UA.User.FnGetById
-  readonly getLastFriendRequestBetweenUsers: ES.FriendRequest.FnGetLastBetweenUsers
-  readonly processEvent: INT.Event.FnProcessEvent
+  getUserRelationship: ES.UserRelationship.FnGetBetweenUsers
+  getUserById: UA.User.FnGetById
+  getLastFriendRequestBetweenUsers: ES.FriendRequest.FnGetLastBetweenUsers
+  processEvent: INT.Event.FnProcessEvent
 }
 
 export type Request = {
