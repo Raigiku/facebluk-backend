@@ -18,38 +18,70 @@ declare module 'fastify' {
   }
 }
 
-const rabbitmqConnPlugin: FastifyPluginCallback = async (fastify, options, done) => {
+const rabbitMqConnPlugin: FastifyPluginCallback = async (fastify, options, done) => {
   const config = RabbitMQ.Config.create()
-  const connection = await RabbitMQ.amqp.connect(config.connectionString)
+  let rabbitConn: RabbitMQ.amqp.Connection
+  try {
+    rabbitConn = await RabbitMQ.amqp.connect(config.connectionString)
+  } catch (error) {
+    throw new Error('RabbitMQ: could not connect', { cause: error })
+  }
 
   fastify.addHook('onClose', async () => {
-    await connection.close()
+    try {
+      await rabbitConn.close()
+    } catch (error) {
+      throw new Error('RabbitMQ: could not close', { cause: error })
+    }
   })
 
   fastify.addHook('preHandler', async (request) => {
-    request.rabbitmqChannel = await connection.createChannel()
+    try {
+      request.rabbitmqChannel = await rabbitConn.createChannel()
+    } catch (error) {
+      throw new Error('RabbitMQ: could not create channel', { cause: error })
+    }
   })
 
   fastify.addHook('onSend', async (request) => {
     if (request.rabbitmqChannel === undefined) {
-      request.rabbitmqChannel = await connection.createChannel()
+      try {
+        request.rabbitmqChannel = await rabbitConn.createChannel()
+      } catch (error) {
+        throw new Error('RabbitMQ: could not create channel', { cause: error })
+      }
     }
-    await request.rabbitmqChannel.close()
+    try {
+      await request.rabbitmqChannel.close()
+    } catch (error) {
+      throw new Error('RabbitMQ: could not close', { cause: error })
+    }
   })
   done()
 }
-export const fastifyrabbitmqConn = fp(rabbitmqConnPlugin, {
+export const fastifyRabbitMqConn = fp(rabbitMqConnPlugin, {
   name: 'fastify-rabbitmq-conn',
 })
 
-const postgreSqlConnPlugin: FastifyPluginCallback = (fastify, options, done) => {
+const postgreSqlConnPlugin: FastifyPluginCallback = async (fastify, options, done) => {
   if (!fastify.postgreSqlConn) {
     const config = PostgreSQL.Config.create()
+    const pgPool = new PostgreSQL.pg.Pool(config)
 
-    fastify.decorate('postgreSqlConn', new PostgreSQL.pg.Pool(config))
+    try {
+      await pgPool.connect()
+    } catch (error) {
+      throw new Error('PostgreSQL: could not connect', { cause: error })
+    }
+
+    fastify.decorate('postgreSqlConn', pgPool)
 
     fastify.addHook('onClose', async () => {
-      await fastify.postgreSqlConn.end()
+      try {
+        await fastify.postgreSqlConn.end()
+      } catch (error) {
+        throw new Error('PostgreSQL: could not close', { cause: error })
+      }
     })
   }
   done()

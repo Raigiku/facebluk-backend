@@ -8,10 +8,10 @@ import { fastifySwagger } from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import { FastifyInstance } from 'fastify'
 import {
-    fastifyCommonConfig,
-    fastifyPostgreSqlConn,
-    fastifySupabaseConn,
-    fastifyrabbitmqConn,
+  fastifyCommonConfig,
+  fastifyPostgreSqlConn,
+  fastifyRabbitMqConn,
+  fastifySupabaseConn,
 } from '.'
 import * as Config from '../config'
 
@@ -47,6 +47,6 @@ export const setupPlugins = async (
   // setup our plugins
   await server.register(fastifyCommonConfig, commonConfig)
   await server.register(fastifySupabaseConn)
-  await server.register(fastifyrabbitmqConn)
+  await server.register(fastifyRabbitMqConn)
   await server.register(fastifyPostgreSqlConn)
 }

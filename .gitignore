@@ -1,3 +1,4 @@
+prod.main.properties
 docker-data
 dist
 *.tsbuildinfo
