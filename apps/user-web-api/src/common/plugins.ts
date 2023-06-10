@@ -66,7 +66,13 @@ export const fastifyRabbitMqConn = fp(rabbitMqConnPlugin, {
 const postgreSqlConnPlugin: FastifyPluginCallback = async (fastify, options, done) => {
   if (!fastify.postgreSqlConn) {
     const config = PostgreSQL.Config.create()
-    const pgPool = new PostgreSQL.pg.Pool(config)
+    const pgPool = new PostgreSQL.pg.Pool({
+      host: config.host,
+      database: config.database,
+      user: config.username,
+      password: config.password,
+      port: config.port,
+    })
 
     try {
       await pgPool.connect()
