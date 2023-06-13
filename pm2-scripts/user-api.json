@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "command-user-api",
+      "script": "pnpm",
+      "args": "start:user-api:prod"
+    }
+  ]
+}
