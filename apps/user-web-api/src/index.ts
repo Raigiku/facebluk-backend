@@ -13,7 +13,7 @@ const runServer = async () => {
     },
     logger: {
       level: commonConfig.logLevel,
-      transport: commonConfig.environment === 'production' ? undefined : { target: 'pino-pretty' },
+      transport: { target: 'pino-pretty' },
     },
   })
   const webApiConfig = Config.create()
