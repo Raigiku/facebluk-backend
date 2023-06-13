@@ -31,6 +31,8 @@ export const setupPlugins = async (
   })
   await server.register(fastifyCors, {
     origin: webApiConfig.consumerUrl,
+    methods: '*',
+    allowedHeaders: '*',
     credentials: true,
   })
   await server.register(fastifyResponseValidation)
