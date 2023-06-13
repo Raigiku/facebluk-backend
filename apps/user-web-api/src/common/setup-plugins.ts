@@ -30,7 +30,7 @@ export const setupPlugins = async (
     secret: userAuthConfig.supabaseJwtSecret,
   })
   await server.register(fastifyCors, {
-    origin: webApiConfig.consumerUrl,
+    origin: '*',
     methods: '*',
     allowedHeaders: '*',
     credentials: true,
