@@ -1,44 +1,87 @@
 import { ES } from '@facebluk/domain'
 import { Pool } from 'pg'
-import { EventTable, eventTableKey, initEventDataFromEventTable } from '../common'
+import { registerEvent } from '../common'
 
-export const tableName = 'user_event'
+export const eventTableName = 'user_event'
+export const userTableName = 'user'
 
-export const getRegisteredUserEvent =
-  (pool: Pool): ES.User.FnGetRegisteredUserEvent =>
-  async (id: string) => {
-    const { rows } = await pool.query(
-      `
-        SELECT *
-        FROM ${tableName} e
-        WHERE e.${eventTableKey('aggregate_id')} = $1
-          AND e.${eventTableKey('payload')}->>'tag' = $2
-      `,
-      [id, ES.User.registeredUserEventTag]
-    )
-    if (rows.length === 0) return undefined
-
-    const event = rows[0] as EventTable
-    if (event.payload.tag === 'user-registered')
-      return {
-        data: initEventDataFromEventTable(event),
-        payload: event.payload,
-      }
-
-    return undefined
-  }
-
-export const isAliasAvailable =
-  (pool: Pool): ES.User.FnIsAliasAvailable =>
+export const aliasExists =
+  (pool: Pool): ES.User.FnAliasExists =>
   async (alias: string) => {
     const { rows } = await pool.query(
       `
       SELECT 1
-      FROM ${tableName} e
-      WHERE e.${eventTableKey('payload')}->>'tag' = $1
-        AND e.${eventTableKey('payload')}->>'alias' = $2
-    `,
-      [ES.User.registeredUserEventTag, alias]
+      FROM ${userTableName} u
+      WHERE u.${userTableKey('alias')} = $1
+      `,
+      [alias]
     )
-    return rows.length === 0
+    return rows.length !== 0
   }
+
+export const findOneById =
+  (pool: Pool): ES.User.FnFindOneById =>
+  async (userId: string) => {
+    const { rows } = await pool.query<UserTable>(
+      `
+      SELECT *
+      FROM ${userTableName} u
+      WHERE u.${userTableKey('id')} = $1
+      `,
+      [userId]
+    )
+    if (rows.length === 0) return undefined
+    return userTableToAggregate(rows[0])
+  }
+
+export const register =
+  (pool: Pool): ES.User.FnRegister =>
+  async (user: ES.User.Aggregate, event: ES.User.RegisteredUserEvent) => {
+    try {
+      await pool.query('BEGIN')
+      await pool.query(
+        `
+          INSERT INTO ${userTableName} (
+            ${userTableKey('id')},
+            ${userTableKey('version')},
+            ${userTableKey('created_at')},
+            ${userTableKey('alias')},
+            ${userTableKey('name')},
+            ${userTableKey('profile_picture_url')}
+          )
+          VALUES ($1, $2, $3, $4, $5, $6)
+        `,
+        [
+          user.aggregate.id,
+          user.aggregate.version,
+          user.aggregate.createdAt,
+          user.alias,
+          user.name,
+          user.profilePictureUrl,
+        ]
+      )
+      await registerEvent(pool, eventTableName, event)
+      await pool.query('COMMIT')
+    } catch (error) {
+      await pool.query('ROLLBACK')
+      throw error
+    }
+  }
+
+type UserTable = {
+  readonly id: string
+  readonly version: bigint
+  readonly created_at: Date
+  readonly alias: string
+  readonly name: string
+  readonly profile_picture_url?: string
+}
+
+const userTableKey = (k: keyof UserTable) => k
+
+const userTableToAggregate = (row: UserTable): ES.User.Aggregate => ({
+  aggregate: { id: row.id, version: row.version, createdAt: row.created_at },
+  alias: row.alias,
+  name: row.name,
+  profilePictureUrl: row.profile_picture_url,
+})

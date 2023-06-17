@@ -3,10 +3,10 @@ import { BusinessRuleError, ES, INT, UA, Uuid } from '../../modules'
 export const handle = async (req: Request, deps: Dependencies) => {
   validateInputFields(req)
 
-  const toUser = await deps.getUserById(req.toUserId)
+  const toUser = await deps.findUserById(req.toUserId)
   if (toUser === undefined) throw new BusinessRuleError(req.id, 'the to user does not exist')
 
-  const userRelationship = await deps.getUserRelationshipBetween(req.userId, toUser.id)
+  const userRelationship = await deps.findUserRelationshipBetween(req.userId, toUser.id)
   if (userRelationship?.friendStatus.tag !== 'friended')
     throw new BusinessRuleError(req.id, 'the users are not friends')
 
@@ -25,8 +25,8 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  getUserRelationshipBetween: ES.UserRelationship.FnGetBetweenUsers
-  getUserById: UA.User.FnGetById
+  findUserRelationshipBetween: ES.UserRelationship.FnFindOneBetweenUsers
+  findUserById: UA.User.FnFindOneById
   processEvent: INT.Event.FnProcessEvent
 }
 

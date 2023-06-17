@@ -20,7 +20,7 @@ describe('user-accessor', () => {
     await truncateTables(pgPool)
   })
 
-  describe(User.isAliasAvailable.name, () => {
+  describe(User.aliasExists.name, () => {
     test('when the alias exists then return false', async () => {
       const alias = 'alias1'
       await persistEvent(pgPool)({
@@ -32,7 +32,7 @@ describe('user-accessor', () => {
         },
         payload: { tag: 'user-registered', name: '', alias },
       })
-      const isAliasAvailable = await User.isAliasAvailable(pgPool)(alias)
+      const isAliasAvailable = await User.aliasExists(pgPool)(alias)
       expect(isAliasAvailable).toBeFalsy()
     })
 
@@ -46,7 +46,7 @@ describe('user-accessor', () => {
         },
         payload: { tag: 'user-registered', name: '', alias: 'camero' },
       })
-      const isAliasAvailable = await User.isAliasAvailable(pgPool)('alias1')
+      const isAliasAvailable = await User.aliasExists(pgPool)('alias1')
       expect(isAliasAvailable).toBeTruthy()
     })
   })

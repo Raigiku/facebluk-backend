@@ -20,7 +20,7 @@ export const unblockUserRoute: FastifyPluginCallback = (fastify, options, done) 
           toUserId: request.body.toUserId,
         },
         {
-          getUserRelationshipBetween: PostgreSQL.UserRelationship.getBetweenUsers(
+          findUserRelationshipBetween: PostgreSQL.UserRelationship.findOneBetweenUsers(
             fastify.postgreSqlConn
           ),
           processEvent: INT.Event.processEvent(
@@ -28,7 +28,7 @@ export const unblockUserRoute: FastifyPluginCallback = (fastify, options, done) 
             RabbitMQ.publishEvent(request.rabbitmqChannel),
             PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
           ),
-          getUserById: Supabase.UserAuth.User.getById(
+          findUserById: Supabase.UserAuth.User.findOneById(
             fastify.supabaseConn,
             Common.Logger.log(request.log),
             request.id

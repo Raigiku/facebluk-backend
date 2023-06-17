@@ -6,17 +6,11 @@ import { Supabase } from '@facebluk/infra-supabase'
 import { FastifyPluginCallback } from 'fastify'
 import { FormFile } from '../common'
 
-export const registerUserRoute: FastifyPluginCallback = (fastify, options, done) => {
-  fastify.post('/register', async (request, reply) => {
+export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, done) => {
+  fastify.post('/update-info', async (request, reply) => {
     const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
 
     const formData = request.body as FormData
-
-    if (formData.name === undefined)
-      throw new BusinessRuleError(request.id, 'name is a required string field')
-
-    if (formData.alias === undefined)
-      throw new BusinessRuleError(request.id, 'alias is a required string field')
 
     if (formData.profilePicture !== undefined) {
       if (formData.profilePicture.length === 0)
@@ -25,12 +19,11 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
         throw new BusinessRuleError(request.id, 'profile picture is a required file')
     }
 
-    await CMD.RegisterUser.handle(
+    await CMD.UpdateUserInfo.handle(
       {
         id: request.id,
         userId: jwt.sub,
         name: formData.name,
-        alias: formData.alias,
         profilePicture:
           formData.profilePicture === undefined
             ? undefined
@@ -40,26 +33,17 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
               ),
       },
       {
-        es_aliasExists: PostgreSQL.User.aliasExists(fastify.postgreSqlConn),
-        es_findUserById: PostgreSQL.User.findOneById(fastify.postgreSqlConn),
-        es_registerUser: PostgreSQL.User.register(fastify.postgreSqlConn),
-        ua_findUserById: Supabase.UserAuth.User.findOneById(
+        findUserById: Supabase.UserAuth.User.findOneById(
           fastify.supabaseConn,
           Common.Logger.log(fastify.log),
           request.id
         ),
-        fs_findUserProfilePictureUrl: Supabase.FileStorage.User.findProfilePictureUrl(
+        findUserProfilePictureUrl: Supabase.FileStorage.User.findProfilePictureUrl(
           fastify.supabaseConn
         ),
-        fs_uploadProfilePicture: Supabase.FileStorage.User.uploadProfilePicture(
-          fastify.supabaseConn
-        ),
-        ua_markUserAsRegistered: Supabase.UserAuth.User.markAsRegistered(
-          fastify.supabaseConn,
-          Common.Logger.log(fastify.log),
-          request.id
-        ),
-        int_processEvent: INT.Event.processEvent(
+        uploadProfilePicture: Supabase.FileStorage.User.uploadProfilePicture(fastify.supabaseConn),
+        processEvent: INT.Event.processEvent(
+          PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
           RabbitMQ.publishEvent(request.rabbitmqChannel),
           PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
         ),
@@ -73,6 +57,5 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
 
 type FormData = {
   name?: string
-  alias?: string
   profilePicture?: FormFile[]
 }

@@ -3,10 +3,10 @@ import { BusinessRuleError, ES, INT, UA, Uuid } from '../../modules'
 export const handle = async (req: Request, deps: Dependencies): Promise<Response> => {
   validateInputFields(req.id, req.userId, req.toUserId)
 
-  const toUser = await deps.getUserById(req.toUserId)
+  const toUser = await deps.ua_findUserById(req.toUserId)
   if (toUser === undefined) throw errors.toUserDoesNotExist(req.id)
 
-  const userRelationship = await deps.getUserRelationship(req.userId, req.toUserId)
+  const userRelationship = await deps.es_findUserRelationship(req.userId, req.toUserId)
   if (userRelationship?.blockedStatus.tag === 'blocked') {
     if (userRelationship.blockedStatus.fromUserId === req.userId)
       throw new BusinessRuleError(req.id, 'you have blocked this user')
@@ -18,14 +18,18 @@ export const handle = async (req: Request, deps: Dependencies): Promise<Response
   if (userRelationship?.friendStatus.tag === 'friended')
     throw errors.theUsersAreAlreadyFriends(req.id)
 
-  const lastFriendRequest = await deps.getLastFriendRequestBetweenUsers(req.userId, req.toUserId)
+  const lastFriendRequest = await deps.es_findLastFriendRequestBetweenUsers(
+    req.userId,
+    req.toUserId
+  )
   if (lastFriendRequest?.status.tag === 'pending') throw errors.alreadyPendingFriendRequest(req.id)
 
-  const [, createdFriendRequestEvent] = ES.FriendRequest.create(req.userId, req.toUserId)
+  const [friendRequest, sentEvent] = ES.FriendRequest.create(req.userId, req.toUserId)
 
-  await deps.processEvent(req.id, createdFriendRequestEvent)
+  await deps.es_registerFriendRequest(friendRequest, sentEvent)
+  await deps.int_processEvent(req.id, sentEvent)
 
-  return { friendRequestId: createdFriendRequestEvent.data.aggregateId }
+  return { friendRequestId: friendRequest.aggregate.id }
 }
 
 const validateInputFields = (requestId: string, userId: string, toUserId: string) => {
@@ -35,10 +39,13 @@ const validateInputFields = (requestId: string, userId: string, toUserId: string
 }
 
 export type Dependencies = {
-  getUserRelationship: ES.UserRelationship.FnGetBetweenUsers
-  getUserById: UA.User.FnGetById
-  getLastFriendRequestBetweenUsers: ES.FriendRequest.FnGetLastBetweenUsers
-  processEvent: INT.Event.FnProcessEvent
+  es_findUserRelationship: ES.UserRelationship.FnFindOneBetweenUsers
+  es_findLastFriendRequestBetweenUsers: ES.FriendRequest.FnFindOneLastBetweenUsers
+  es_registerFriendRequest: ES.FriendRequest.FnRegister
+
+  ua_findUserById: UA.User.FnFindOneById
+
+  int_processEvent: INT.Event.FnProcessEvent
 }
 
 export type Request = {

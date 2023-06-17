@@ -3,8 +3,8 @@ import { BusinessRuleError, ES, TaggedType } from '..'
 export type Aggregate = {
   readonly aggregate: ES.Aggregate.Data
   readonly name: string
-  readonly profilePictureUrl?: string
   readonly alias: string
+  readonly profilePictureUrl?: string
 }
 
 export const create = (
@@ -33,6 +33,30 @@ export const create = (
   ]
 }
 
+export const updateInfo = (
+  user: Aggregate,
+  name?: string,
+  profilePictureUrl?: string
+): [Aggregate, UpdatedUserInfoEvent] => {
+  const aggregateData = ES.Aggregate.increaseVersion(user.aggregate)
+  return [
+    {
+      ...user,
+      aggregate: aggregateData,
+      name: name ?? user.name,
+      profilePictureUrl: profilePictureUrl ?? user.profilePictureUrl,
+    },
+    {
+      data: ES.Event.create(aggregateData, new Date()),
+      payload: {
+        tag: 'user-info-updated',
+        name,
+        profilePictureUrl,
+      },
+    },
+  ]
+}
+
 // events
 export type Event = RegisteredUserEvent
 
@@ -45,6 +69,16 @@ export type RegisteredUserEventPayload = TaggedType<typeof registeredUserEventTa
 export type RegisteredUserEvent = {
   readonly data: ES.Event.Data
   readonly payload: RegisteredUserEventPayload
+}
+
+export const updatedUserInfoEventTag = 'user-info-updated'
+export type UpdatedUserInfoEventPayload = TaggedType<typeof updatedUserInfoEventTag> & {
+  readonly name?: string
+  readonly profilePictureUrl?: string
+}
+export type UpdatedUserInfoEvent = {
+  readonly data: ES.Event.Data
+  readonly payload: UpdatedUserInfoEventPayload
 }
 
 // validation
@@ -66,5 +100,6 @@ export const validateAlias = (requestId: string, alias: string) => {
 }
 
 // accessors
-export type FnGetRegisteredUserEvent = (id: string) => Promise<RegisteredUserEvent | undefined>
-export type FnIsAliasAvailable = (alias: string) => Promise<boolean>
+export type FnFindOneById = (userId: string) => Promise<Aggregate | undefined>
+export type FnAliasExists = (alias: string) => Promise<boolean>
+export type FnRegister = (user: Aggregate, event: RegisteredUserEvent) => Promise<void>

@@ -1,8 +1,8 @@
 import { Logger, UA } from '@facebluk/domain'
 import { SupabaseClient } from '@supabase/supabase-js'
 
-export const getById =
-  (supabase: SupabaseClient, log: Logger.FnLog, requestId: string): UA.User.FnGetById =>
+export const findOneById =
+  (supabase: SupabaseClient, log: Logger.FnLog, requestId: string): UA.User.FnFindOneById =>
   async (id: string) => {
     const { data, error } = await supabase.auth.admin.getUserById(id)
     if (error !== null) {

@@ -1,104 +1,94 @@
 import { ES } from '@facebluk/domain'
 import { Pool } from 'pg'
-import { EventTable, eventTableKey, initAggregateDataFromEventTable } from '../common'
 
 export const tableName = 'user_relationship_event'
+export const userRelationshipTableName = 'user_relationship'
 
-export const getBetweenUsers =
-  (pool: Pool): ES.UserRelationship.FnGetBetweenUsers =>
+export const findOneBetweenUsers =
+  (pool: Pool): ES.UserRelationship.FnFindOneBetweenUsers =>
   async (userAId: string, userBId: string) => {
     const { rows } = await pool.query(
       `
-        select *
-        from ${tableName} ure 
-        where (
-            ure.${eventTableKey('payload')}->>'fromUserId' = $1 and
-            ure.${eventTableKey('payload')}->>'toUserId' = $2
-          ) or
-          (
-            ure.${eventTableKey('payload')}->>'toUserId' = $1 and
-            ure.${eventTableKey('payload')}->>'fromUserId' = $2
-          )
-        order by ure.${eventTableKey('created_at')} asc
+      SELECT *
+      FROM ${userRelationshipTableName} ur
+      WHERE (
+        ur.${userRelationshipTableKey('friend_from_user_id')} = $1
+        AND ur.${userRelationshipTableKey('friend_to_user_id')} = $2
+      ) OR (
+        ur.${userRelationshipTableKey('friend_to_user_id')} = $1
+        AND ur.${userRelationshipTableKey('friend_from_user_id')} = $2
+      ) OR (
+        ur.${userRelationshipTableKey('blocked_from_user_id')} = $1
+        AND ur.${userRelationshipTableKey('blocked_to_user_id')} = $2
+      ) OR (
+        ur.${userRelationshipTableKey('blocked_to_user_id')} = $1
+        AND ur.${userRelationshipTableKey('blocked_from_user_id')} = $2
+      )
       `,
       [userAId, userBId]
     )
-    const userRelationshipHelper: ES.UserRelationship.Aggregate[] = []
-    for (const row of rows) parseRowToAggregate(userRelationshipHelper, row as EventTable)
-    return userRelationshipHelper[0]
+    if (rows.length === 0) return undefined
+    return userRelationshipTableToAggregate(rows[0])
   }
 
-const parseRowToAggregate = (
-  userRelationshipHelper: ES.UserRelationship.Aggregate[],
-  event: EventTable
-) => {
-  if (event.payload.tag === 'user-relationship-friended') {
-    if (userRelationshipHelper.length === 0)
-      userRelationshipHelper.push({
-        aggregate: initAggregateDataFromEventTable(event),
-        friendStatus: {
-          tag: 'friended',
-          fromUserId: event.payload.fromUserId,
-          toUserId: event.payload.toUserId,
-          friendedAt: event.created_at,
-        },
-        blockedStatus: { tag: 'not-blocked' },
-      })
-    else
-      userRelationshipHelper[0] = {
-        ...userRelationshipHelper[0],
-        aggregate: { ...userRelationshipHelper[0].aggregate, version: event.aggregate_version },
-        friendStatus: {
-          tag: 'friended',
-          fromUserId: event.payload.fromUserId,
-          toUserId: event.payload.toUserId,
-          friendedAt: event.created_at,
-        },
+type UserRelationshipTable = {
+  readonly id: string
+  readonly version: bigint
+  readonly created_at: Date
+  readonly friend_from_user_id?: string
+  readonly friend_to_user_id?: string
+  readonly friend_status?: 'friended' | 'unfriended'
+  readonly friend_status_updated_at?: Date
+  readonly blocked_from_user_id?: string
+  readonly blocked_to_user_id?: string
+  readonly blocked_status?: 'blocked' | 'unblocked'
+  readonly blocked_status_updated_at?: Date
+}
+
+const userRelationshipTableKey = (k: keyof UserRelationshipTable) => k
+
+const userRelationshipTableToAggregate = (
+  row: UserRelationshipTable
+): ES.UserRelationship.Aggregate => {
+  let friendStatus: ES.UserRelationship.FriendStatus
+  if (row.friend_status !== undefined) {
+    if (row.friend_status === 'friended')
+      friendStatus = {
+        tag: 'friended',
+        fromUserId: row.friend_from_user_id!,
+        toUserId: row.friend_to_user_id!,
+        friendedAt: row.friend_status_updated_at!,
       }
-  } else if (event.payload.tag === 'user-relationship-blocked') {
-    if (userRelationshipHelper.length === 0)
-      userRelationshipHelper.push({
-        aggregate: initAggregateDataFromEventTable(event),
-        blockedStatus: {
-          tag: 'blocked',
-          fromUserId: event.payload.fromUserId,
-          toUserId: event.payload.toUserId,
-          blockedAt: event.created_at,
-        },
-        friendStatus: { tag: 'not-friended' },
-      })
     else
-      userRelationshipHelper[0] = {
-        ...userRelationshipHelper[0],
-        aggregate: { ...userRelationshipHelper[0].aggregate, version: event.aggregate_version },
-        blockedStatus: {
-          tag: 'blocked',
-          fromUserId: event.payload.fromUserId,
-          toUserId: event.payload.toUserId,
-          blockedAt: event.created_at,
-        },
-      }
-  } else if (event.payload.tag === 'user-relationship-unfriended')
-    userRelationshipHelper[0] = {
-      ...userRelationshipHelper[0],
-      aggregate: { ...userRelationshipHelper[0].aggregate, version: event.aggregate_version },
-      friendStatus: {
+      friendStatus = {
         tag: 'unfriended',
-        fromUserId: event.payload.fromUserId,
-        toUserId: event.payload.toUserId,
-        unfriendedAt: event.created_at,
-      },
-    }
-  else if (event.payload.tag === 'user-relationship-unblocked')
-    userRelationshipHelper[0] = {
-      ...userRelationshipHelper[0],
-      aggregate: { ...userRelationshipHelper[0].aggregate, version: event.aggregate_version },
-      blockedStatus: {
+        fromUserId: row.friend_from_user_id!,
+        toUserId: row.friend_to_user_id!,
+        unfriendedAt: row.friend_status_updated_at!,
+      }
+  } else friendStatus = { tag: 'not-friended' }
+
+  let blockedStatus: ES.UserRelationship.BlockStatus
+  if (row.blocked_status !== undefined) {
+    if (row.blocked_status === 'blocked')
+      blockedStatus = {
+        tag: 'blocked',
+        fromUserId: row.blocked_from_user_id!,
+        toUserId: row.blocked_to_user_id!,
+        blockedAt: row.blocked_status_updated_at!,
+      }
+    else
+      blockedStatus = {
         tag: 'unblocked',
-        fromUserId: event.payload.fromUserId,
-        toUserId: event.payload.toUserId,
-        unblockedAt: event.created_at,
-      },
-    }
-  else throw new Error('invalid event')
+        fromUserId: row.blocked_from_user_id!,
+        toUserId: row.blocked_to_user_id!,
+        unblockedAt: row.blocked_status_updated_at!,
+      }
+  } else blockedStatus = { tag: 'not-blocked' }
+
+  return {
+    aggregate: { id: row.id, version: row.version, createdAt: row.created_at },
+    friendStatus,
+    blockedStatus,
+  }
 }

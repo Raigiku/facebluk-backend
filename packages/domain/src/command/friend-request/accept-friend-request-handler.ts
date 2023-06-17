@@ -3,7 +3,7 @@ import { BusinessRuleError, ES, INT, Logger, Uuid } from '../../modules'
 export const handle = async (req: Request, deps: Dependencies) => {
   validateInputFields(req)
 
-  const friendRequest = await deps.getFriendRequest(req.friendRequestId)
+  const friendRequest = await deps.findFriendRequest(req.friendRequestId)
   if (friendRequest === undefined)
     throw new BusinessRuleError(req.id, 'the friend request does not exist')
 
@@ -13,7 +13,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
   if (friendRequest.toUserId !== req.userId)
     throw new BusinessRuleError(req.id, 'the user is not the receiver of the friend request')
 
-  const userRelationship = await deps.getUserRelationshipBetween(
+  const userRelationship = await deps.findUserRelationshipBetween(
     friendRequest.fromUserId,
     friendRequest.toUserId
   )
@@ -42,8 +42,8 @@ const validateInputFields = (req: Request) => {
 
 export type Dependencies = {
   log: Logger.FnLog
-  getFriendRequest: ES.FriendRequest.FnGet
-  getUserRelationshipBetween: ES.UserRelationship.FnGetBetweenUsers
+  findFriendRequest: ES.FriendRequest.FnFindOneById
+  findUserRelationshipBetween: ES.UserRelationship.FnFindOneBetweenUsers
   processEvents: INT.Event.FnProcessEvents
 }
 

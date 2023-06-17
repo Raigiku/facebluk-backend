@@ -3,6 +3,6 @@ import { FriendRequest, Post, User, UserRelationship } from './accessor'
 
 export const truncateTables = async (pool: Pool) => {
   await pool.query(`
-    TRUNCATE TABLE ${User.tableName}, ${Post.tableName}, ${FriendRequest.tableName}, ${UserRelationship.tableName}
+    TRUNCATE TABLE ${User.eventTableName}, ${Post.eventTableName}, ${FriendRequest.eventTableName}, ${UserRelationship.tableName}
   `)
 }

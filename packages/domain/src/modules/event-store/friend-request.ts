@@ -121,8 +121,9 @@ export type SentEvent = {
 }
 
 // accessors
-export type FnGet = (id: string) => Promise<Aggregate | undefined>
-export type FnGetLastBetweenUsers = (
+export type FnFindOneById = (id: string) => Promise<Aggregate | undefined>
+export type FnRegister = (friendRequest: Aggregate, event: SentEvent) => Promise<void>
+export type FnFindOneLastBetweenUsers = (
   userAId: string,
   userBId: string
 ) => Promise<Aggregate | undefined>

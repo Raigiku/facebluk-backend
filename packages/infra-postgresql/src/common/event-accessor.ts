@@ -5,13 +5,13 @@ import { eventTableKey } from './event-model'
 
 const determineTableName = (event: ES.Event.AnyEvent) =>
   event.payload.tag.includes('post')
-    ? Post.tableName
+    ? Post.eventTableName
     : event.payload.tag.includes('friend-request')
-    ? FriendRequest.tableName
+    ? FriendRequest.eventTableName
     : event.payload.tag.includes('user-relationship')
     ? UserRelationship.tableName
     : event.payload.tag.includes('user')
-    ? User.tableName
+    ? User.eventTableName
     : (() => {
         throw new Error('undefined table')
       })()
@@ -89,3 +89,25 @@ export const markEventAsSent =
       [event.data.aggregateId, event.data.aggregateVersion]
     )
   }
+
+export const registerEvent = async (pool: Pool, tableName: string, event: ES.Event.AnyEvent) => {
+  await pool.query(
+    `
+      INSERT INTO ${tableName} (
+        ${eventTableKey('aggregate_id')},
+        ${eventTableKey('aggregate_version')},
+        ${eventTableKey('created_at')},
+        ${eventTableKey('published')},
+        ${eventTableKey('payload')}
+      )
+      VALUES ($1, $2, $3, $4, $5)
+    `,
+    [
+      event.data.aggregateId,
+      event.data.aggregateVersion,
+      event.data.createdAt,
+      event.data.published,
+      event.payload,
+    ]
+  )
+}

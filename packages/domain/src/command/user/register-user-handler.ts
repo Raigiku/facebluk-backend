@@ -3,26 +3,33 @@ import { BusinessRuleError, ES, FS, INT, RequestImage, UA, Uuid } from '../../mo
 export const handle = async (req: Request, deps: Dependencies) => {
   validateInputFields(req)
 
-  const isAliasAvailable = await deps.isAliasAvailable(req.alias)
-  if (!isAliasAvailable) throw new BusinessRuleError(req.id, 'alias is already used')
+  const aliasExists = await deps.es_aliasExists(req.alias)
+  if (aliasExists) throw new BusinessRuleError(req.id, 'alias is already used')
 
   let profilePictureUrl: string | undefined = undefined
   if (req.profilePicture !== undefined) {
-    await deps.uploadProfilePicture(req.userId, req.profilePicture.bytes)
-    profilePictureUrl = deps.getUserProfilePictureUrl(req.userId)
+    await deps.fs_uploadProfilePicture(req.userId, req.profilePicture.bytes)
+    profilePictureUrl = deps.fs_findUserProfilePictureUrl(req.userId)
   }
 
-  let registeredUserEvent = await deps.getRegisteredUserEvent(req.userId)
-  if (registeredUserEvent === undefined) {
-    registeredUserEvent = ES.User.create(req.userId, req.name, req.alias, profilePictureUrl)[1]
-    await deps.processEvent(req.id, registeredUserEvent)
+  let esUser = await deps.es_findUserById(req.userId)
+  if (esUser === undefined) {
+    const [newUser, registeredUserEvent] = ES.User.create(
+      req.userId,
+      req.name,
+      req.alias,
+      profilePictureUrl
+    )
+    esUser = newUser
+    await deps.es_registerUser(newUser, registeredUserEvent)
+    await deps.int_processEvent(req.id, registeredUserEvent)
   }
 
-  const user = await deps.getUserById(req.userId)
-  if (user === undefined) throw new BusinessRuleError(req.id, 'user does not exist')
+  const uaUser = await deps.ua_findUserById(req.userId)
+  if (uaUser === undefined) throw new BusinessRuleError(req.id, 'user does not exist')
 
-  if (!UA.User.isRegistered(user))
-    await deps.markUserAsRegistered(req.userId, registeredUserEvent.data.createdAt)
+  if (!UA.User.isRegistered(uaUser))
+    await deps.ua_markUserAsRegistered(req.userId, esUser.aggregate.createdAt)
 }
 
 const validateInputFields = (req: Request) => {
@@ -33,13 +40,17 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  isAliasAvailable: ES.User.FnIsAliasAvailable
-  getRegisteredUserEvent: ES.User.FnGetRegisteredUserEvent
-  uploadProfilePicture: FS.User.FnUploadProfilePicture
-  getUserProfilePictureUrl: FS.User.FnGetProfilePictureUrl
-  getUserById: UA.User.FnGetById
-  processEvent: INT.Event.FnProcessEvent
-  markUserAsRegistered: UA.User.FnMarkUserAsRegistered
+  es_aliasExists: ES.User.FnAliasExists
+  es_findUserById: ES.User.FnFindOneById
+  es_registerUser: ES.User.FnRegister
+
+  fs_uploadProfilePicture: FS.User.FnUploadProfilePicture
+  fs_findUserProfilePictureUrl: FS.User.FnFindProfilePictureUrl
+
+  ua_findUserById: UA.User.FnFindOneById
+  ua_markUserAsRegistered: UA.User.FnMarkUserAsRegistered
+
+  int_processEvent: INT.Event.FnProcessEvent
 }
 
 export type Request = {

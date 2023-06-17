@@ -19,7 +19,7 @@ export const rejectFriendRequestRoute: FastifyPluginCallback = (fastify, options
           userId: jwt.sub,
         },
         {
-          getFriendRequestById: PostgreSQL.FriendRequest.get(fastify.postgreSqlConn),
+          findFriendRequestById: PostgreSQL.FriendRequest.findOneById(fastify.postgreSqlConn),
           processEvent: INT.Event.processEvent(
             PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
             RabbitMQ.publishEvent(request.rabbitmqChannel),

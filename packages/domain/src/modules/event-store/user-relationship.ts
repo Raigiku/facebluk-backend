@@ -208,4 +208,4 @@ export type UnblockedUserEvent = {
 }
 
 // accessors
-export type FnGetBetweenUsers = (userAId: string, userBId: string) => Promise<Aggregate | undefined>
+export type FnFindOneBetweenUsers = (userAId: string, userBId: string) => Promise<Aggregate | undefined>

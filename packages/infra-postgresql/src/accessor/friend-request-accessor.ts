@@ -1,86 +1,120 @@
 import { ES } from '@facebluk/domain'
 import { Pool } from 'pg'
-import { EventTable, eventTableKey, initAggregateDataFromEventTable } from '../common'
+import { registerEvent } from '../common'
 
-export const tableName = 'friend_request_event'
+export const eventTableName = 'friend_request_event'
+export const friendRequestTableName = 'friend_request'
 
-export const get =
-  (pool: Pool): ES.FriendRequest.FnGet =>
+export const findOneById =
+  (pool: Pool): ES.FriendRequest.FnFindOneById =>
   async (id: string) => {
     const { rows } = await pool.query(
       `
-        SELECT *
-        FROM ${tableName} e
-        WHERE e.${eventTableKey('aggregate_id')} = $1
-        ORDER BY e.${eventTableKey('aggregate_version')} ASC
+      SELECT *
+      FROM ${friendRequestTableName} fr
+      WHERE fr.${friendRequestTableKey('id')} = $1
       `,
       [id]
     )
-    const friendRequestHelper: ES.FriendRequest.Aggregate[] = []
-    for (const row of rows) parseRowToAggregate(friendRequestHelper, row as EventTable)
-    return friendRequestHelper[0]
+    if (rows.length === 0) return undefined
+    return friendRequestTableToAggregate(rows[0])
   }
 
-export const getLastFriendRequestBetweenUsers =
-  (pool: Pool): ES.FriendRequest.FnGetLastBetweenUsers =>
-  async (fromUserId: string, toUserId: string) => {
+export const findOneLastFriendRequestBetweenUsers =
+  (pool: Pool): ES.FriendRequest.FnFindOneLastBetweenUsers =>
+  async (userAId: string, userBId: string) => {
     const { rows } = await pool.query(
       `
-        select *
-        from (
-          select fre.${eventTableKey('aggregate_id')} 
-          from ${tableName} fre 
-          where fre.${eventTableKey('aggregate_version')} = 1 and 
-            (
-              fre.${eventTableKey('payload')}->>'toUserId' = $1 and 
-              fre.${eventTableKey('payload')}->>'fromUserId' = $2
-            ) or
-            (
-              fre.${eventTableKey('payload')}->>'toUserId' = $2 and
-              fre.${eventTableKey('payload')}->>'fromUserId' = $1
-            )
-          order by fre.${eventTableKey('created_at')} desc
-          limit 1
-        ) a
-        join ${tableName} fre2 
-          on fre2.${eventTableKey('aggregate_id')} = a.${eventTableKey('aggregate_id')}
-        order by fre2.${eventTableKey('created_at')} asc
+      SELECT *
+      FROM ${friendRequestTableName} fr
+      WHERE (
+          fr.${friendRequestTableKey('from_user_id')} = $1 
+          AND fr.${friendRequestTableKey('to_user_id')} = $2
+        ) OR (
+          fr.${friendRequestTableKey('to_user_id')} = $1
+          AND fr.${friendRequestTableKey('from_user_id')} = $2
+        )
+      ORDER BY fr.${friendRequestTableKey('created_at')} DESC
+      LIMIT 1
       `,
-      [toUserId, fromUserId]
+      [userAId, userBId]
     )
-    const friendRequestHelper: ES.FriendRequest.Aggregate[] = []
-    for (const row of rows) parseRowToAggregate(friendRequestHelper, row as EventTable)
-    return friendRequestHelper[0]
+    if (rows.length === 0) return undefined
+    return friendRequestTableToAggregate(rows[0])
   }
 
-const parseRowToAggregate = (
-  friendRequestHelper: ES.FriendRequest.Aggregate[],
-  event: EventTable
-) => {
-  if (event.payload.tag === 'friend-request-sent')
-    friendRequestHelper.push({
-      aggregate: initAggregateDataFromEventTable(event),
-      fromUserId: event.payload.fromUserId,
-      toUserId: event.payload.toUserId,
-      status: { tag: 'pending' },
-    })
-  else if (event.payload.tag === 'friend-request-accepted')
-    friendRequestHelper[0] = {
-      ...friendRequestHelper[0],
-      aggregate: { ...friendRequestHelper[0].aggregate, version: event.aggregate_version },
-      status: { tag: 'accepted', acceptedAt: event.created_at },
+export const register =
+  (pool: Pool): ES.FriendRequest.FnRegister =>
+  async (friendRequest: ES.FriendRequest.Aggregate, event: ES.FriendRequest.SentEvent) => {
+    const acceptedAt =
+      friendRequest.status.tag === 'accepted' ? friendRequest.status.acceptedAt : undefined
+    const cancelledAt =
+      friendRequest.status.tag === 'cancelled' ? friendRequest.status.cancelledAt : undefined
+    const rejectedAt =
+      friendRequest.status.tag === 'rejected' ? friendRequest.status.rejectedAt : undefined
+
+    try {
+      await pool.query('BEGIN')
+      await pool.query(
+        `
+          INSERT INTO ${friendRequestTableName} (
+            ${friendRequestTableKey('id')},
+            ${friendRequestTableKey('version')},
+            ${friendRequestTableKey('created_at')},
+            ${friendRequestTableKey('from_user_id')},
+            ${friendRequestTableKey('to_user_id')},
+            ${friendRequestTableKey('accepted_at')},
+            ${friendRequestTableKey('cancelled_at')},
+            ${friendRequestTableKey('rejected_at')}
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `,
+        [
+          friendRequest.aggregate.id,
+          friendRequest.aggregate.version,
+          friendRequest.aggregate.createdAt,
+          friendRequest.fromUserId,
+          friendRequest.toUserId,
+          acceptedAt,
+          cancelledAt,
+          rejectedAt,
+        ]
+      )
+      await registerEvent(pool, eventTableName, event)
+      await pool.query('COMMIT')
+    } catch (error) {
+      await pool.query('ROLLBACK')
+      throw error
     }
-  else if (event.payload.tag === 'friend-request-rejected')
-    friendRequestHelper[0] = {
-      ...friendRequestHelper[0],
-      aggregate: { ...friendRequestHelper[0].aggregate, version: event.aggregate_version },
-      status: { tag: 'rejected', rejectedAt: event.created_at },
-    }
-  else if (event.payload.tag === 'friend-request-cancelled')
-    friendRequestHelper[0] = {
-      ...friendRequestHelper[0],
-      aggregate: { ...friendRequestHelper[0].aggregate, version: event.aggregate_version },
-      status: { tag: 'cancelled', cancelledAt: event.created_at },
-    }
-  else throw new Error('invalid event')
+  }
+
+type FriendRequestTable = {
+  readonly id: string
+  readonly version: bigint
+  readonly created_at: Date
+  readonly from_user_id: string
+  readonly to_user_id: string
+  readonly accepted_at?: Date
+  readonly cancelled_at?: Date
+  readonly rejected_at?: Date
+}
+
+const friendRequestTableKey = (k: keyof FriendRequestTable) => k
+
+const friendRequestTableToAggregate = (row: FriendRequestTable): ES.FriendRequest.Aggregate => {
+  let friendRequestStatus: ES.FriendRequest.AggregateStatus
+  if (row.accepted_at !== undefined)
+    friendRequestStatus = { tag: 'accepted', acceptedAt: row.accepted_at }
+  else if (row.cancelled_at !== undefined)
+    friendRequestStatus = { tag: 'cancelled', cancelledAt: row.cancelled_at }
+  else if (row.rejected_at !== undefined)
+    friendRequestStatus = { tag: 'rejected', rejectedAt: row.rejected_at }
+  else friendRequestStatus = { tag: 'pending' }
+
+  return {
+    aggregate: { id: row.id, version: row.version, createdAt: row.created_at },
+    fromUserId: row.from_user_id,
+    toUserId: row.to_user_id,
+    status: friendRequestStatus,
+  }
 }

@@ -20,16 +20,18 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
           toUserId: request.body.toUserId,
         },
         {
-          getUserById: Supabase.UserAuth.User.getById(
+          ua_findUserById: Supabase.UserAuth.User.findOneById(
             fastify.supabaseConn,
             Common.Logger.log(request.log),
             request.id
           ),
-          getLastFriendRequestBetweenUsers:
-            PostgreSQL.FriendRequest.getLastFriendRequestBetweenUsers(fastify.postgreSqlConn),
-          getUserRelationship: PostgreSQL.UserRelationship.getBetweenUsers(fastify.postgreSqlConn),
-          processEvent: INT.Event.processEvent(
-            PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
+          es_findLastFriendRequestBetweenUsers:
+            PostgreSQL.FriendRequest.findOneLastFriendRequestBetweenUsers(fastify.postgreSqlConn),
+          es_findUserRelationship: PostgreSQL.UserRelationship.findOneBetweenUsers(
+            fastify.postgreSqlConn
+          ),
+          es_registerFriendRequest: PostgreSQL.FriendRequest.register(fastify.postgreSqlConn),
+          int_processEvent: INT.Event.processEvent(
             RabbitMQ.publishEvent(request.rabbitmqChannel),
             PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
           ),

@@ -14,8 +14,8 @@ export const uploadProfilePicture =
     if (error !== null) throw error
   }
 
-export const getProfilePictureUrl =
-  (supabase: SupabaseClient): FS.User.FnGetProfilePictureUrl =>
+export const findProfilePictureUrl =
+  (supabase: SupabaseClient): FS.User.FnFindProfilePictureUrl =>
   (userId: string) => {
     const { data } = supabase.storage
       .from(bucketNames.userProfilePicture)

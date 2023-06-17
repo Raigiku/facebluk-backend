@@ -21,10 +21,10 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
         },
         {
           log: Common.Logger.log(request.log),
-          getUserRelationshipBetween: PostgreSQL.UserRelationship.getBetweenUsers(
+          findUserRelationshipBetween: PostgreSQL.UserRelationship.findOneBetweenUsers(
             fastify.postgreSqlConn
           ),
-          getFriendRequest: PostgreSQL.FriendRequest.get(fastify.postgreSqlConn),
+          findFriendRequest: PostgreSQL.FriendRequest.findOneById(fastify.postgreSqlConn),
           processEvents: INT.Event.processEvents(
             Common.Logger.log(request.log),
             PostgreSQL.Common.persistEvents(fastify.postgreSqlConn),
