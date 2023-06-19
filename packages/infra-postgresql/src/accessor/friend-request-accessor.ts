@@ -46,10 +46,8 @@ export const findOneLastFriendRequestBetweenUsers =
 export const send =
   (pgClient: PoolClient): ES.FriendRequest.FnSend =>
   async (event: ES.FriendRequest.SentEvent) => {
-    try {
-      await pgClient.query('BEGIN')
-      await pgClient.query(
-        `
+    await pgClient.query(
+      `
           INSERT INTO ${friendRequestTableName} (
             ${friendRequestTableKey('id')},
             ${friendRequestTableKey('version')},
@@ -59,89 +57,63 @@ export const send =
           )
           VALUES ($1, $2, $3, $4, $5)
         `,
-        [
-          event.data.aggregateId,
-          event.data.aggregateVersion,
-          event.data.createdAt,
-          event.payload.fromUserId,
-          event.payload.toUserId,
-        ]
-      )
-      await registerEvent(pgClient, eventTableName, event)
-      await pgClient.query('COMMIT')
-    } catch (error) {
-      await pgClient.query('ROLLBACK')
-      throw error
-    }
+      [
+        event.data.aggregateId,
+        event.data.aggregateVersion,
+        event.data.createdAt,
+        event.payload.fromUserId,
+        event.payload.toUserId,
+      ]
+    )
+    await registerEvent(pgClient, eventTableName, event)
   }
 
 export const cancel =
   (pgClient: PoolClient): ES.FriendRequest.FnCancel =>
   async (event: ES.FriendRequest.CancelledEvent) => {
-    try {
-      await pgClient.query('BEGIN')
-      await pgClient.query(
-        `
+    await pgClient.query(
+      `
           UPDATE ${friendRequestTableName}
           SET 
             ${friendRequestTableKey('version')} = $1,
             ${friendRequestTableKey('cancelled_at')} = $2
           WHERE ${friendRequestTableKey('id')} = $3
         `,
-        [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
-      )
-      await registerEvent(pgClient, eventTableName, event)
-      await pgClient.query('COMMIT')
-    } catch (error) {
-      await pgClient.query('ROLLBACK')
-      throw error
-    }
+      [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
+    )
+    await registerEvent(pgClient, eventTableName, event)
   }
 
 export const reject =
   (pgClient: PoolClient): ES.FriendRequest.FnReject =>
   async (event: ES.FriendRequest.RejectedEvent) => {
-    try {
-      await pgClient.query('BEGIN')
-      await pgClient.query(
-        `
+    await pgClient.query(
+      `
           UPDATE ${friendRequestTableName}
           SET 
             ${friendRequestTableKey('version')} = $1,
             ${friendRequestTableKey('rejected_at')} = $2
           WHERE ${friendRequestTableKey('id')} = $3
         `,
-        [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
-      )
-      await registerEvent(pgClient, eventTableName, event)
-      await pgClient.query('COMMIT')
-    } catch (error) {
-      await pgClient.query('ROLLBACK')
-      throw error
-    }
+      [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
+    )
+    await registerEvent(pgClient, eventTableName, event)
   }
 
 export const accept =
   (pgClient: PoolClient): ES.FriendRequest.FnAccept =>
   async (event: ES.FriendRequest.AcceptedEvent) => {
-    try {
-      await pgClient.query('BEGIN')
-      await pgClient.query(
-        `
+    await pgClient.query(
+      `
           UPDATE ${friendRequestTableName}
           SET 
             ${friendRequestTableKey('version')} = $1,
             ${friendRequestTableKey('accepted_at')} = $2
           WHERE ${friendRequestTableKey('id')} = $3
         `,
-        [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
-      )
-      await registerEvent(pgClient, eventTableName, event)
-      await pgClient.query('COMMIT')
-    } catch (error) {
-      await pgClient.query('ROLLBACK')
-      throw error
-    }
+      [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
+    )
+    await registerEvent(pgClient, eventTableName, event)
   }
 
 type FriendRequestTable = {

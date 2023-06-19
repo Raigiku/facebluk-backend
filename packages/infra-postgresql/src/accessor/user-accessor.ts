@@ -3,7 +3,7 @@ import { Pool, PoolClient } from 'pg'
 import { registerEvent } from '../common'
 
 export const eventTableName = 'user_event'
-export const userTableName = 'user'
+export const userTableName = '"user"'
 
 export const aliasExists =
   (pool: Pool): ES.User.FnAliasExists =>
@@ -37,10 +37,8 @@ export const findOneById =
 export const register =
   (pgClient: PoolClient): ES.User.FnRegister =>
   async (event: ES.User.RegisteredEvent) => {
-    try {
-      await pgClient.query('BEGIN')
-      await pgClient.query(
-        `
+    await pgClient.query(
+      `
           INSERT INTO ${userTableName} (
             ${userTableKey('id')},
             ${userTableKey('version')},
@@ -51,21 +49,16 @@ export const register =
           )
           VALUES ($1, $2, $3, $4, $5, $6)
         `,
-        [
-          event.data.aggregateId,
-          event.data.aggregateVersion,
-          event.data.createdAt,
-          event.payload.alias,
-          event.payload.name,
-          event.payload.profilePictureUrl,
-        ]
-      )
-      await registerEvent(pgClient, eventTableName, event)
-      await pgClient.query('COMMIT')
-    } catch (error) {
-      await pgClient.query('ROLLBACK')
-      throw error
-    }
+      [
+        event.data.aggregateId,
+        event.data.aggregateVersion,
+        event.data.createdAt,
+        event.payload.alias,
+        event.payload.name,
+        event.payload.profilePictureUrl,
+      ]
+    )
+    await registerEvent(pgClient, eventTableName, event)
   }
 
 type UserTable = {

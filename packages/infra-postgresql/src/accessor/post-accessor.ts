@@ -8,10 +8,8 @@ export const postTableName = 'post'
 export const register =
   (pgClient: PoolClient): ES.Post.FnCreate =>
   async (event: ES.Post.CreatedEvent) => {
-    try {
-      await pgClient.query('BEGIN')
-      await pgClient.query(
-        `
+    await pgClient.query(
+      `
           INSERT INTO ${postTableName} (
             ${postTableKey('id')},
             ${postTableKey('version')},
@@ -21,20 +19,15 @@ export const register =
           )
           VALUES ($1, $2, $3, $4, $5)
         `,
-        [
-          event.data.aggregateId,
-          event.data.aggregateVersion,
-          event.data.createdAt,
-          event.payload.description,
-          event.payload.userId,
-        ]
-      )
-      await registerEvent(pgClient, eventTableName, event)
-      await pgClient.query('COMMIT')
-    } catch (error) {
-      await pgClient.query('ROLLBACK')
-      throw error
-    }
+      [
+        event.data.aggregateId,
+        event.data.aggregateVersion,
+        event.data.createdAt,
+        event.payload.description,
+        event.payload.userId,
+      ]
+    )
+    await registerEvent(pgClient, eventTableName, event)
   }
 
 type PostTable = {

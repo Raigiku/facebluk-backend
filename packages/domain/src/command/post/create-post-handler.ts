@@ -3,7 +3,7 @@ import { ES, INT, Uuid } from '../../modules'
 export const handle = async (req: Request, deps: Dependencies): Promise<Response> => {
   validateInputFields(req)
 
-  const [,createdPostEvent] = ES.Post.create(req.description, req.userId)
+  const [, createdPostEvent] = ES.Post.create(req.description, req.userId)
 
   await deps.es_createPost(createdPostEvent)
   await deps.int_processEvent(req.id, createdPostEvent)
