@@ -20,14 +20,15 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
           toUserId: request.body.toUserId,
         },
         {
-          findUserRelationshipBetween: PostgreSQL.UserRelationship.findOneBetweenUsers(
+          es_unfriend: PostgreSQL.UserRelationship.unfriend(request.postgreSqlPoolClient),
+          es_findUserRelationshipBetween: PostgreSQL.UserRelationship.findOneBetweenUsers(
             fastify.postgreSqlPool
           ),
-          processEvent: INT.Event.processEvent(
+          int_processEvent: INT.Event.processEvent(
             RabbitMQ.publishEvent(request.rabbitMqChannel),
             PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
           ),
-          findUserById: Supabase.UserAuth.User.findOneById(
+          ua_findUserById: Supabase.UserAuth.User.findOneById(
             fastify.supabaseClient,
             Common.Logger.log(request.log),
             request.id

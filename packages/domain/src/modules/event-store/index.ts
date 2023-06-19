@@ -1,8 +1,8 @@
 export * as Aggregate from './aggregate'
 export * as Event from './event'
 export * as FriendRequest from './friend-request'
-export * as Integration from './integration'
 export * as Post from './post'
 export * from './transaction'
 export * as User from './user'
 export * as UserRelationship from './user-relationship'
+

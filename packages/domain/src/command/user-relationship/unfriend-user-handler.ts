@@ -3,10 +3,10 @@ import { BusinessRuleError, ES, INT, UA, Uuid } from '../../modules'
 export const handle = async (req: Request, deps: Dependencies) => {
   validateInputFields(req)
 
-  const toUser = await deps.findUserById(req.toUserId)
+  const toUser = await deps.ua_findUserById(req.toUserId)
   if (toUser === undefined) throw new BusinessRuleError(req.id, 'the to user does not exist')
 
-  const userRelationship = await deps.findUserRelationshipBetween(req.userId, toUser.id)
+  const userRelationship = await deps.es_findUserRelationshipBetween(req.userId, toUser.id)
   if (userRelationship?.friendStatus.tag !== 'friended')
     throw new BusinessRuleError(req.id, 'the users are not friends')
 
@@ -16,7 +16,8 @@ export const handle = async (req: Request, deps: Dependencies) => {
     req.toUserId
   )
 
-  await deps.processEvent(req.id, unfriendedEvent)
+  await deps.es_unfriend(unfriendedEvent)
+  await deps.int_processEvent(req.id, unfriendedEvent)
 }
 
 const validateInputFields = (req: Request) => {
@@ -25,9 +26,12 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  findUserRelationshipBetween: ES.UserRelationship.FnFindOneBetweenUsers
-  findUserById: UA.User.FnFindOneById
-  processEvent: INT.Event.FnProcessEvent
+  es_findUserRelationshipBetween: ES.UserRelationship.FnFindOneBetweenUsers
+  es_unfriend: ES.UserRelationship.FnUnfriend
+
+  ua_findUserById: UA.User.FnFindOneById
+
+  int_processEvent: INT.Event.FnProcessEvent
 }
 
 export type Request = {

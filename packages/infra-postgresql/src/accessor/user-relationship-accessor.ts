@@ -66,10 +66,10 @@ export const friend =
           SET 
             ${userRelationshipTableKey('version')} = $1,
             ${userRelationshipTableKey('friend_from_user_id')} = $2,
-            ${userRelationshipTableKey('friend_to_user_id')} = $2,
-            ${userRelationshipTableKey('friend_status')} = $3,
-            ${userRelationshipTableKey('friend_status_updated_at')} = $4
-          WHERE ${userRelationshipTableKey('id')} = $5
+            ${userRelationshipTableKey('friend_to_user_id')} = $3,
+            ${userRelationshipTableKey('friend_status')} = $4,
+            ${userRelationshipTableKey('friend_status_updated_at')} = $5
+          WHERE ${userRelationshipTableKey('id')} = $6
         `,
         [
           event.data.aggregateVersion,
@@ -83,18 +83,44 @@ export const friend =
     await registerEvent(pgClient, eventTableName, event)
   }
 
+export const unfriend =
+  (pgClient: PoolClient): ES.UserRelationship.FnUnfriend =>
+  async (event: ES.UserRelationship.UnfriendedUserEvent) => {
+    await pgClient.query(
+      `
+          UPDATE ${userRelationshipTableName}
+          SET 
+            ${userRelationshipTableKey('version')} = $1,
+            ${userRelationshipTableKey('friend_from_user_id')} = $2,
+            ${userRelationshipTableKey('friend_to_user_id')} = $3,
+            ${userRelationshipTableKey('friend_status')} = $4,
+            ${userRelationshipTableKey('friend_status_updated_at')} = $5
+          WHERE ${userRelationshipTableKey('id')} = $6
+        `,
+      [
+        event.data.aggregateVersion,
+        event.payload.fromUserId,
+        event.payload.toUserId,
+        'unfriended',
+        event.data.createdAt,
+        event.data.aggregateId,
+      ]
+    )
+    await registerEvent(pgClient, eventTableName, event)
+  }
+
 type UserRelationshipTable = {
   readonly id: string
   readonly version: bigint
   readonly created_at: Date
-  readonly friend_from_user_id?: string
-  readonly friend_to_user_id?: string
-  readonly friend_status?: 'friended' | 'unfriended'
-  readonly friend_status_updated_at?: Date
-  readonly blocked_from_user_id?: string
-  readonly blocked_to_user_id?: string
-  readonly blocked_status?: 'blocked' | 'unblocked'
-  readonly blocked_status_updated_at?: Date
+  readonly friend_from_user_id: string | null
+  readonly friend_to_user_id: string | null
+  readonly friend_status: 'friended' | 'unfriended' | null
+  readonly friend_status_updated_at: Date | null
+  readonly blocked_from_user_id: string | null
+  readonly blocked_to_user_id: string | null
+  readonly blocked_status: 'blocked' | 'unblocked' | null
+  readonly blocked_status_updated_at: Date | null
 }
 
 const userRelationshipTableKey = (k: keyof UserRelationshipTable) => k

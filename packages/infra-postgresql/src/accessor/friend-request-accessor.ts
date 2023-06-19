@@ -122,20 +122,20 @@ type FriendRequestTable = {
   readonly created_at: Date
   readonly from_user_id: string
   readonly to_user_id: string
-  readonly accepted_at?: Date
-  readonly cancelled_at?: Date
-  readonly rejected_at?: Date
+  readonly accepted_at: Date | null
+  readonly cancelled_at: Date | null
+  readonly rejected_at: Date | null
 }
 
 const friendRequestTableKey = (k: keyof FriendRequestTable) => k
 
 const friendRequestTableToAggregate = (row: FriendRequestTable): ES.FriendRequest.Aggregate => {
   let friendRequestStatus: ES.FriendRequest.AggregateStatus
-  if (row.accepted_at !== undefined)
+  if (row.accepted_at !== null)
     friendRequestStatus = { tag: 'accepted', acceptedAt: row.accepted_at }
-  else if (row.cancelled_at !== undefined)
+  else if (row.cancelled_at !== null)
     friendRequestStatus = { tag: 'cancelled', cancelledAt: row.cancelled_at }
-  else if (row.rejected_at !== undefined)
+  else if (row.rejected_at !== null)
     friendRequestStatus = { tag: 'rejected', rejectedAt: row.rejected_at }
   else friendRequestStatus = { tag: 'pending' }
 

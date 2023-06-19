@@ -213,3 +213,4 @@ export type FnFindOneBetweenUsers = (
   userBId: string
 ) => Promise<Aggregate | undefined>
 export type FnFriend = (isNew: boolean, event: FriendedUserEvent) => Promise<void>
+export type FnUnfriend = (event: UnfriendedUserEvent) => Promise<void>
