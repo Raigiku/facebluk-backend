@@ -24,12 +24,12 @@ export const handle = async (req: Request, deps: Dependencies): Promise<Response
   )
   if (lastFriendRequest?.status.tag === 'pending') throw errors.alreadyPendingFriendRequest(req.id)
 
-  const [friendRequest, sentEvent] = ES.FriendRequest.create(req.userId, req.toUserId)
+  const [, sentEvent] = ES.FriendRequest.create(req.userId, req.toUserId)
 
-  await deps.es_registerFriendRequest(friendRequest, sentEvent)
+  await deps.es_sendFriendRequest(sentEvent)
   await deps.int_processEvent(req.id, sentEvent)
 
-  return { friendRequestId: friendRequest.aggregate.id }
+  return { friendRequestId: sentEvent.data.aggregateId }
 }
 
 const validateInputFields = (requestId: string, userId: string, toUserId: string) => {
@@ -41,7 +41,7 @@ const validateInputFields = (requestId: string, userId: string, toUserId: string
 export type Dependencies = {
   es_findUserRelationship: ES.UserRelationship.FnFindOneBetweenUsers
   es_findLastFriendRequestBetweenUsers: ES.FriendRequest.FnFindOneLastBetweenUsers
-  es_registerFriendRequest: ES.FriendRequest.FnRegister
+  es_sendFriendRequest: ES.FriendRequest.FnSend
 
   ua_findUserById: UA.User.FnFindOneById
 

@@ -9,6 +9,7 @@
   "dependencies": {
     "@facebluk/infra-supabase": "workspace:*",
     "@facebluk/infra-postgresql": "workspace:*",
+    "@facebluk/infra-rabbitmq": "workspace:*",
     "dotenv": "^16.0.3"
   }
 }

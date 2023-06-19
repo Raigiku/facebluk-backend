@@ -1,7 +1,8 @@
 import { ES } from '@facebluk/domain'
-import { Pool } from 'pg'
+import { Pool, PoolClient } from 'pg'
+import { registerEvent } from '../common'
 
-export const tableName = 'user_relationship_event'
+export const eventTableName = 'user_relationship_event'
 export const userRelationshipTableName = 'user_relationship'
 
 export const findOneBetweenUsers =
@@ -29,6 +30,57 @@ export const findOneBetweenUsers =
     )
     if (rows.length === 0) return undefined
     return userRelationshipTableToAggregate(rows[0])
+  }
+
+export const friend =
+  (pgClient: PoolClient): ES.UserRelationship.FnFriend =>
+  async (isNew: boolean, event: ES.UserRelationship.FriendedUserEvent) => {
+    if (isNew)
+      await pgClient.query(
+        `
+      INSERT INTO ${userRelationshipTableName} (
+        ${userRelationshipTableKey('id')},
+        ${userRelationshipTableKey('version')},
+        ${userRelationshipTableKey('created_at')},
+        ${userRelationshipTableKey('friend_from_user_id')},
+        ${userRelationshipTableKey('friend_to_user_id')},
+        ${userRelationshipTableKey('friend_status')},
+        ${userRelationshipTableKey('friend_status_updated_at')}
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `,
+        [
+          event.data.aggregateId,
+          event.data.aggregateVersion,
+          event.data.createdAt,
+          event.payload.fromUserId,
+          event.payload.toUserId,
+          'friended',
+          event.data.createdAt,
+        ]
+      )
+    else
+      await pgClient.query(
+        `
+          UPDATE ${userRelationshipTableName}
+          SET 
+            ${userRelationshipTableKey('version')} = $1,
+            ${userRelationshipTableKey('friend_from_user_id')} = $2,
+            ${userRelationshipTableKey('friend_to_user_id')} = $2,
+            ${userRelationshipTableKey('friend_status')} = $3,
+            ${userRelationshipTableKey('friend_status_updated_at')} = $4
+          WHERE ${userRelationshipTableKey('id')} = $5
+        `,
+        [
+          event.data.aggregateVersion,
+          event.payload.fromUserId,
+          event.payload.toUserId,
+          'friended',
+          event.data.createdAt,
+          event.data.aggregateId,
+        ]
+      )
+    await registerEvent(pgClient, eventTableName, event)
   }
 
 type UserRelationshipTable = {

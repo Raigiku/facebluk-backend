@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .:
@@ -34,6 +38,9 @@ importers:
       '@facebluk/infra-postgresql':
         specifier: workspace:*
         version: link:../../packages/infra-postgresql
+      '@facebluk/infra-rabbitmq':
+        specifier: workspace:*
+        version: link:../../packages/infra-rabbitmq
       '@facebluk/infra-supabase':
         specifier: workspace:*
         version: link:../../packages/infra-supabase

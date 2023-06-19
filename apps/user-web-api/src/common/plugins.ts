@@ -7,112 +7,163 @@ import fp from 'fastify-plugin'
 
 declare module 'fastify' {
   interface FastifyInstance {
-    rabbitmqConn: RabbitMQ.amqp.Connection
-    postgreSqlConn: PostgreSQL.pg.Pool
-    supabaseConn: Supabase.SupabaseClient
+    postgreSqlPool: PostgreSQL.pg.Pool
+    rabbitMqConnection: RabbitMQ.amqp.Connection
+    supabaseClient: Supabase.SupabaseClient
     commonConfig: Common.Config.Data
   }
 
   interface FastifyRequest {
-    rabbitmqChannel: RabbitMQ.amqp.Channel
+    rabbitMqChannel: RabbitMQ.amqp.Channel
+    postgreSqlPoolClient: PostgreSQL.pg.PoolClient
   }
 }
 
-const rabbitMqConnPlugin: FastifyPluginCallback = async (fastify, options, done) => {
-  const config = RabbitMQ.Config.create()
-  let rabbitConn: RabbitMQ.amqp.Connection
+const rabbitMqConnectionErrorCodes = [
+  '320',
+  '402',
+  '501',
+  '502',
+  '503',
+  '504',
+  '505',
+  '506',
+  '530',
+  '540',
+  '541',
+]
+const rabbitMqPlugin: FastifyPluginCallback<RabbitMQ.Config.Data> = async (
+  fastify,
+  options,
+  done
+) => {
+  if (fastify.rabbitMqConnection != null) {
+    done()
+    return
+  }
+
   try {
-    rabbitConn = await RabbitMQ.amqp.connect(config.connectionString)
+    const rabbitConn = await RabbitMQ.amqp.connect(options.connectionString)
+    fastify.decorate('rabbitMqConnection', rabbitConn)
   } catch (error) {
     throw new Error('RabbitMQ: could not connect', { cause: error })
   }
 
   fastify.addHook('onClose', async () => {
     try {
-      await rabbitConn.close()
+      await fastify.rabbitMqConnection.close()
     } catch (error) {
-      throw new Error('RabbitMQ: could not close', { cause: error })
+      throw new Error('RabbitMQ: could not close connection', { cause: error })
     }
   })
 
-  fastify.addHook('preHandler', async (request) => {
+  fastify.addHook('onRequest', async (request) => {
     try {
-      request.rabbitmqChannel = await rabbitConn.createChannel()
+      request.rabbitMqChannel = await fastify.rabbitMqConnection.createChannel()
+      return
     } catch (error) {
+      if (error instanceof Error) {
+        const errorMsg = error.message
+        const isConnectionError = rabbitMqConnectionErrorCodes.some((code) =>
+          errorMsg.includes(code)
+        )
+        if (isConnectionError) {
+          try {
+            fastify.rabbitMqConnection = await RabbitMQ.amqp.connect(options.connectionString)
+            request.rabbitMqChannel = await fastify.rabbitMqConnection.createChannel()
+            return
+          } catch (error) {}
+        }
+      }
       throw new Error('RabbitMQ: could not create channel', { cause: error })
     }
   })
 
-  fastify.addHook('onSend', async (request) => {
-    if (request.rabbitmqChannel === undefined) {
-      try {
-        request.rabbitmqChannel = await rabbitConn.createChannel()
-      } catch (error) {
-        throw new Error('RabbitMQ: could not create channel', { cause: error })
-      }
-    }
+  fastify.addHook('onResponse', async (request) => {
+    if (request.rabbitMqChannel == null) return
     try {
-      await request.rabbitmqChannel.close()
+      await request.rabbitMqChannel.close()
     } catch (error) {
-      throw new Error('RabbitMQ: could not close', { cause: error })
+      throw new Error('RabbitMQ: could not close channel', { cause: error })
     }
   })
   done()
 }
-export const fastifyRabbitMqConn = fp(rabbitMqConnPlugin, {
-  name: 'fastify-rabbitmq-conn',
+export const fastifyRabbitMq = fp(rabbitMqPlugin, {
+  name: 'fastify-rabbitmq-plugin',
 })
 
-const postgreSqlConnPlugin: FastifyPluginCallback = async (fastify, options, done) => {
-  if (!fastify.postgreSqlConn) {
-    const config = PostgreSQL.Config.create()
-    const pgPool = new PostgreSQL.pg.Pool({
-      host: config.host,
-      database: config.database,
-      user: config.username,
-      password: config.password,
-      port: config.port,
-    })
+const postgreSqlPlugin: FastifyPluginCallback<PostgreSQL.Config.Data> = (
+  fastify,
+  options,
+  done
+) => {
+  if (fastify.postgreSqlPool != null) {
+    done()
+    return
+  }
 
+  const pgPool = new PostgreSQL.pg.Pool({
+    host: options.host,
+    database: options.database,
+    user: options.username,
+    password: options.password,
+    port: options.port,
+  })
+  fastify.decorate('postgreSqlPool', pgPool)
+
+  fastify.addHook('onClose', async () => {
     try {
-      await pgPool.connect()
+      await fastify.postgreSqlPool.end()
+    } catch (error) {
+      throw new Error('PostgreSQL: could not close', { cause: error })
+    }
+  })
+
+  fastify.addHook('onRequest', async (request) => {
+    try {
+      request.postgreSqlPoolClient = await fastify.postgreSqlPool.connect()
     } catch (error) {
       throw new Error('PostgreSQL: could not connect', { cause: error })
     }
+  })
 
-    fastify.decorate('postgreSqlConn', pgPool)
-
-    fastify.addHook('onClose', async () => {
-      try {
-        await fastify.postgreSqlConn.end()
-      } catch (error) {
-        throw new Error('PostgreSQL: could not close', { cause: error })
-      }
-    })
-  }
+  fastify.addHook('onResponse', (request) => {
+    if (request.postgreSqlPoolClient == null) return
+    try {
+      request.postgreSqlPoolClient.release()
+    } catch (error) {
+      throw new Error('PostgreSQL: could not close', { cause: error })
+    }
+  })
   done()
 }
-export const fastifyPostgreSqlConn = fp(postgreSqlConnPlugin, {
-  name: 'fastify-postgresql-conn',
+export const fastifyPostgreSql = fp(postgreSqlPlugin, {
+  name: 'fastify-postgresql-plugin',
 })
 
-const supabaseConnPlugin: FastifyPluginCallback = (fastify, options, done) => {
-  if (!fastify.supabaseConn) {
-    const config = Supabase.Config.create()
-    fastify.decorate('supabaseConn', Supabase.createSupabaseClient(config))
+const supabasePlugin: FastifyPluginCallback<Supabase.Config.Data> = (fastify, options, done) => {
+  if (fastify.supabaseClient != null) {
+    done()
+    return
   }
+
+  fastify.decorate('supabaseClient', Supabase.createSupabaseClient(options))
   done()
 }
-export const fastifySupabaseConn = fp(supabaseConnPlugin, {
-  name: 'fastify-supabase-conn',
+export const fastifySupabase = fp(supabasePlugin, {
+  name: 'fastify-supabase-plugin',
 })
 
-const commonConfigPlugin: FastifyPluginCallback<Common.Config.Data> = (fastify, options, done) => {
-  if (!fastify.commonConfig) {
-    fastify.decorate('commonConfig', options)
+const commonPlugin: FastifyPluginCallback<Common.Config.Data> = (fastify, options, done) => {
+  if (fastify.commonConfig != null) {
+    done()
+    return
   }
+
+  fastify.decorate('commonConfig', options)
   done()
 }
-export const fastifyCommonConfig = fp(commonConfigPlugin, {
-  name: 'fastify-common-config',
+export const fastifyCommonPlugin = fp(commonPlugin, {
+  name: 'fastify-common-plugin',
 })

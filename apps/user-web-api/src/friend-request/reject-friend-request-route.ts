@@ -1,6 +1,6 @@
 import { CMD, INT } from '@facebluk/domain'
-import { PostgreSQL } from "@facebluk/infra-postgresql"
-import { RabbitMQ } from "@facebluk/infra-rabbitmq"
+import { PostgreSQL } from '@facebluk/infra-postgresql'
+import { RabbitMQ } from '@facebluk/infra-rabbitmq'
 import { Supabase } from '@facebluk/infra-supabase'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
@@ -19,11 +19,11 @@ export const rejectFriendRequestRoute: FastifyPluginCallback = (fastify, options
           userId: jwt.sub,
         },
         {
-          findFriendRequestById: PostgreSQL.FriendRequest.findOneById(fastify.postgreSqlConn),
-          processEvent: INT.Event.processEvent(
-            PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
-            RabbitMQ.publishEvent(request.rabbitmqChannel),
-            PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
+          es_rejectFriendRequest: PostgreSQL.FriendRequest.reject(request.postgreSqlPoolClient),
+          es_findFriendRequestById: PostgreSQL.FriendRequest.findOneById(fastify.postgreSqlPool),
+          int_processEvent: INT.Event.processEvent(
+            RabbitMQ.publishEvent(request.rabbitMqChannel),
+            PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
           ),
         }
       )

@@ -3,7 +3,7 @@ import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
 export const handle = async (req: Request, deps: Dependencies) => {
   validateInputFields(req)
 
-  const friendRequest = await deps.findFriendRequestById(req.friendRequestId)
+  const friendRequest = await deps.es_findFriendRequestById(req.friendRequestId)
   if (friendRequest === undefined)
     throw new BusinessRuleError(req.id, 'the friend request does not exist')
 
@@ -15,7 +15,8 @@ export const handle = async (req: Request, deps: Dependencies) => {
 
   const [, rejectedFriendRequestEvent] = ES.FriendRequest.reject(friendRequest)
 
-  await deps.processEvent(req.id, rejectedFriendRequestEvent)
+  await deps.es_rejectFriendRequest(rejectedFriendRequestEvent)
+  await deps.int_processEvent(req.id, rejectedFriendRequestEvent)
 }
 
 const validateInputFields = (req: Request) => {
@@ -24,8 +25,10 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  findFriendRequestById: ES.FriendRequest.FnFindOneById
-  processEvent: INT.Event.FnProcessEvent
+  es_findFriendRequestById: ES.FriendRequest.FnFindOneById
+  es_rejectFriendRequest: ES.FriendRequest.FnReject
+
+  int_processEvent: INT.Event.FnProcessEvent
 }
 
 export type Request = {

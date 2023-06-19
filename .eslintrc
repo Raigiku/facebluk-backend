@@ -12,6 +12,7 @@
   },
   "rules": {
     "no-undef": "off",
+    "no-empty": "off",
     "no-console": "warn",
     "no-return-await": "error",
     "require-await": "error",

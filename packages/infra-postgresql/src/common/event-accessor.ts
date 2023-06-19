@@ -1,5 +1,5 @@
 import { ES } from '@facebluk/domain'
-import { Pool } from 'pg'
+import { PoolClient } from 'pg'
 import { FriendRequest, Post, User, UserRelationship } from '../postgresql'
 import { eventTableKey } from './event-model'
 
@@ -9,77 +9,18 @@ const determineTableName = (event: ES.Event.AnyEvent) =>
     : event.payload.tag.includes('friend-request')
     ? FriendRequest.eventTableName
     : event.payload.tag.includes('user-relationship')
-    ? UserRelationship.tableName
+    ? UserRelationship.eventTableName
     : event.payload.tag.includes('user')
     ? User.eventTableName
     : (() => {
         throw new Error('undefined table')
       })()
 
-export const persistEvent =
-  (pool: Pool): ES.Event.FnPersistEvent =>
-  async (event: ES.Event.AnyEvent) => {
-    const tableName = determineTableName(event)
-    await pool.query(
-      `
-      INSERT INTO ${tableName} (
-        ${eventTableKey('aggregate_id')},
-        ${eventTableKey('aggregate_version')},
-        ${eventTableKey('created_at')},
-        ${eventTableKey('published')},
-        ${eventTableKey('payload')}
-      )
-      VALUES ($1, $2, $3, $4, $5)
-    `,
-      [
-        event.data.aggregateId,
-        event.data.aggregateVersion,
-        event.data.createdAt,
-        event.data.published,
-        event.payload,
-      ]
-    )
-  }
-
-export const persistEvents =
-  (pool: Pool): ES.Event.FnPersistEvents =>
-  async (events: ES.Event.AnyEvent[]) => {
-    try {
-      await pool.query('BEGIN')
-      for (const event of events) {
-        const tableName = determineTableName(event)
-        await pool.query(
-          `
-          INSERT INTO ${tableName} (
-            ${eventTableKey('aggregate_id')},
-            ${eventTableKey('aggregate_version')},
-            ${eventTableKey('created_at')},
-            ${eventTableKey('published')},
-            ${eventTableKey('payload')}
-          )
-          VALUES ($1, $2, $3, $4, $5)
-        `,
-          [
-            event.data.aggregateId,
-            event.data.aggregateVersion,
-            event.data.createdAt,
-            event.data.published,
-            event.payload,
-          ]
-        )
-      }
-      await pool.query('COMMIT')
-    } catch (error) {
-      await pool.query('ROLLBACK')
-      throw error
-    }
-  }
-
 export const markEventAsSent =
-  (pool: Pool): ES.Event.FnMarkEventAsSent =>
+  (pgClient: PoolClient): ES.Event.FnMarkEventAsSent =>
   async (event: ES.Event.AnyEvent) => {
     const tableName = determineTableName(event)
-    await pool.query(
+    await pgClient.query(
       `
       UPDATE ${tableName}
       SET ${eventTableKey('published')} = true
@@ -90,8 +31,8 @@ export const markEventAsSent =
     )
   }
 
-export const registerEvent = async (pool: Pool, tableName: string, event: ES.Event.AnyEvent) => {
-  await pool.query(
+export const registerEvent = async (pgClient: PoolClient, tableName: string, event: ES.Event.AnyEvent) => {
+  await pgClient.query(
     `
       INSERT INTO ${tableName} (
         ${eventTableKey('aggregate_id')},

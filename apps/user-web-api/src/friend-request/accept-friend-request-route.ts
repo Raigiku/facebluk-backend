@@ -20,16 +20,17 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
           friendRequestId: request.body.friendRequestId,
         },
         {
-          log: Common.Logger.log(request.log),
-          findUserRelationshipBetween: PostgreSQL.UserRelationship.findOneBetweenUsers(
-            fastify.postgreSqlConn
+          es_transaction: PostgreSQL.Common.transaction(request.postgreSqlPoolClient),
+          es_acceptFriendRequest: PostgreSQL.FriendRequest.accept(request.postgreSqlPoolClient),
+          es_friendUser: PostgreSQL.UserRelationship.friend(request.postgreSqlPoolClient),
+          es_findUserRelationshipBetween: PostgreSQL.UserRelationship.findOneBetweenUsers(
+            fastify.postgreSqlPool
           ),
-          findFriendRequest: PostgreSQL.FriendRequest.findOneById(fastify.postgreSqlConn),
-          processEvents: INT.Event.processEvents(
+          es_findFriendRequest: PostgreSQL.FriendRequest.findOneById(fastify.postgreSqlPool),
+          int_processEvents: INT.Event.processEvents(
             Common.Logger.log(request.log),
-            PostgreSQL.Common.persistEvents(fastify.postgreSqlConn),
-            RabbitMQ.publishEvent(request.rabbitmqChannel),
-            PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
+            RabbitMQ.publishEvent(request.rabbitMqChannel),
+            PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
           ),
         }
       )

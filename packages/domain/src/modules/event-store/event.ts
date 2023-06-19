@@ -24,6 +24,4 @@ export type AnyEvent =
   | ES.FriendRequest.Event
   | ES.UserRelationship.Event
   | ES.User.Event
-export type FnPersistEvent = (event: AnyEvent) => Promise<void>
-export type FnPersistEvents = (events: AnyEvent[]) => Promise<void>
 export type FnMarkEventAsSent = (event: AnyEvent) => Promise<void>

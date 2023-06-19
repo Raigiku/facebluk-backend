@@ -122,7 +122,10 @@ export type SentEvent = {
 
 // accessors
 export type FnFindOneById = (id: string) => Promise<Aggregate | undefined>
-export type FnRegister = (friendRequest: Aggregate, event: SentEvent) => Promise<void>
+export type FnSend = (event: SentEvent) => Promise<void>
+export type FnCancel = (event: CancelledEvent) => Promise<void>
+export type FnReject = (event: RejectedEvent) => Promise<void>
+export type FnAccept = (event: AcceptedEvent) => Promise<void>
 export type FnFindOneLastBetweenUsers = (
   userAId: string,
   userBId: string

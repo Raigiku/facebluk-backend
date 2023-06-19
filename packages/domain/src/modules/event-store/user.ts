@@ -12,7 +12,7 @@ export const create = (
   name: string,
   alias: string,
   profilePictureUrl?: string
-): [Aggregate, RegisteredUserEvent] => {
+): [Aggregate, RegisteredEvent] => {
   const aggregateData = ES.Aggregate.createWithId(userId)
   return [
     {
@@ -37,7 +37,7 @@ export const updateInfo = (
   user: Aggregate,
   name?: string,
   profilePictureUrl?: string
-): [Aggregate, UpdatedUserInfoEvent] => {
+): [Aggregate, InfoUpdatedEvent] => {
   const aggregateData = ES.Aggregate.increaseVersion(user.aggregate)
   return [
     {
@@ -58,27 +58,27 @@ export const updateInfo = (
 }
 
 // events
-export type Event = RegisteredUserEvent
+export type Event = RegisteredEvent
 
-export const registeredUserEventTag = 'user-registered'
-export type RegisteredUserEventPayload = TaggedType<typeof registeredUserEventTag> & {
+export const registeredEventTag = 'user-registered'
+export type RegisteredEventPayload = TaggedType<typeof registeredEventTag> & {
   readonly name: string
   readonly profilePictureUrl?: string
   readonly alias: string
 }
-export type RegisteredUserEvent = {
+export type RegisteredEvent = {
   readonly data: ES.Event.Data
-  readonly payload: RegisteredUserEventPayload
+  readonly payload: RegisteredEventPayload
 }
 
-export const updatedUserInfoEventTag = 'user-info-updated'
-export type UpdatedUserInfoEventPayload = TaggedType<typeof updatedUserInfoEventTag> & {
+export const updatedInfoEventTag = 'user-info-updated'
+export type InfoUpdatedEventPayload = TaggedType<typeof updatedInfoEventTag> & {
   readonly name?: string
   readonly profilePictureUrl?: string
 }
-export type UpdatedUserInfoEvent = {
+export type InfoUpdatedEvent = {
   readonly data: ES.Event.Data
-  readonly payload: UpdatedUserInfoEventPayload
+  readonly payload: InfoUpdatedEventPayload
 }
 
 // validation
@@ -102,4 +102,4 @@ export const validateAlias = (requestId: string, alias: string) => {
 // accessors
 export type FnFindOneById = (userId: string) => Promise<Aggregate | undefined>
 export type FnAliasExists = (alias: string) => Promise<boolean>
-export type FnRegister = (user: Aggregate, event: RegisteredUserEvent) => Promise<void>
+export type FnRegister = (event: RegisteredEvent) => Promise<void>

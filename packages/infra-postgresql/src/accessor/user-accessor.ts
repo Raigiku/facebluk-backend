@@ -1,5 +1,5 @@
 import { ES } from '@facebluk/domain'
-import { Pool } from 'pg'
+import { Pool, PoolClient } from 'pg'
 import { registerEvent } from '../common'
 
 export const eventTableName = 'user_event'
@@ -35,11 +35,11 @@ export const findOneById =
   }
 
 export const register =
-  (pool: Pool): ES.User.FnRegister =>
-  async (user: ES.User.Aggregate, event: ES.User.RegisteredUserEvent) => {
+  (pgClient: PoolClient): ES.User.FnRegister =>
+  async (event: ES.User.RegisteredEvent) => {
     try {
-      await pool.query('BEGIN')
-      await pool.query(
+      await pgClient.query('BEGIN')
+      await pgClient.query(
         `
           INSERT INTO ${userTableName} (
             ${userTableKey('id')},
@@ -52,18 +52,18 @@ export const register =
           VALUES ($1, $2, $3, $4, $5, $6)
         `,
         [
-          user.aggregate.id,
-          user.aggregate.version,
-          user.aggregate.createdAt,
-          user.alias,
-          user.name,
-          user.profilePictureUrl,
+          event.data.aggregateId,
+          event.data.aggregateVersion,
+          event.data.createdAt,
+          event.payload.alias,
+          event.payload.name,
+          event.payload.profilePictureUrl,
         ]
       )
-      await registerEvent(pool, eventTableName, event)
-      await pool.query('COMMIT')
+      await registerEvent(pgClient, eventTableName, event)
+      await pgClient.query('COMMIT')
     } catch (error) {
-      await pool.query('ROLLBACK')
+      await pgClient.query('ROLLBACK')
       throw error
     }
   }

@@ -40,28 +40,28 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
               ),
       },
       {
-        es_aliasExists: PostgreSQL.User.aliasExists(fastify.postgreSqlConn),
-        es_findUserById: PostgreSQL.User.findOneById(fastify.postgreSqlConn),
-        es_registerUser: PostgreSQL.User.register(fastify.postgreSqlConn),
+        es_aliasExists: PostgreSQL.User.aliasExists(fastify.postgreSqlPool),
+        es_findUserById: PostgreSQL.User.findOneById(fastify.postgreSqlPool),
+        es_registerUser: PostgreSQL.User.register(request.postgreSqlPoolClient),
         ua_findUserById: Supabase.UserAuth.User.findOneById(
-          fastify.supabaseConn,
+          fastify.supabaseClient,
           Common.Logger.log(fastify.log),
           request.id
         ),
         fs_findUserProfilePictureUrl: Supabase.FileStorage.User.findProfilePictureUrl(
-          fastify.supabaseConn
+          fastify.supabaseClient
         ),
         fs_uploadProfilePicture: Supabase.FileStorage.User.uploadProfilePicture(
-          fastify.supabaseConn
+          fastify.supabaseClient
         ),
         ua_markUserAsRegistered: Supabase.UserAuth.User.markAsRegistered(
-          fastify.supabaseConn,
+          fastify.supabaseClient,
           Common.Logger.log(fastify.log),
           request.id
         ),
         int_processEvent: INT.Event.processEvent(
-          RabbitMQ.publishEvent(request.rabbitmqChannel),
-          PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
+          RabbitMQ.publishEvent(request.rabbitMqChannel),
+          PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
         ),
       }
     )

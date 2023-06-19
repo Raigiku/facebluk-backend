@@ -1,4 +1,6 @@
 import { Common } from '@facebluk/infra-common'
+import { PostgreSQL } from '@facebluk/infra-postgresql'
+import { RabbitMQ } from '@facebluk/infra-rabbitmq'
 import { Supabase } from '@facebluk/infra-supabase'
 import fastifyCors from '@fastify/cors'
 import fastifyJwt from '@fastify/jwt'
@@ -7,12 +9,7 @@ import fastifyResponseValidation from '@fastify/response-validation'
 import { fastifySwagger } from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import { FastifyInstance } from 'fastify'
-import {
-  fastifyCommonConfig,
-  fastifyPostgreSqlConn,
-  fastifyRabbitMqConn,
-  fastifySupabaseConn,
-} from '.'
+import { fastifyCommonPlugin, fastifyPostgreSql, fastifyRabbitMq, fastifySupabase } from '.'
 import * as Config from '../config'
 
 export const setupPlugins = async (
@@ -22,6 +19,8 @@ export const setupPlugins = async (
 ) => {
   // init env configs
   const userAuthConfig = Supabase.Config.create()
+  const postgreSqlConfig = PostgreSQL.Config.create()
+  const rabbitMqConfig = RabbitMQ.Config.create()
   // setup fastify plugins
   await server.register(fastifyMultipart, {
     addToBody: true,
@@ -47,8 +46,8 @@ export const setupPlugins = async (
     routePrefix: '/swagger',
   })
   // setup our plugins
-  await server.register(fastifyCommonConfig, commonConfig)
-  await server.register(fastifySupabaseConn)
-  await server.register(fastifyRabbitMqConn)
-  await server.register(fastifyPostgreSqlConn)
+  await server.register(fastifyCommonPlugin, commonConfig)
+  await server.register(fastifySupabase, userAuthConfig)
+  await server.register(fastifyRabbitMq, rabbitMqConfig)
+  await server.register(fastifyPostgreSql, postgreSqlConfig)
 }

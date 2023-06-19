@@ -21,7 +21,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
       profilePictureUrl
     )
     esUser = newUser
-    await deps.es_registerUser(newUser, registeredUserEvent)
+    await deps.es_registerUser(registeredUserEvent)
     await deps.int_processEvent(req.id, registeredUserEvent)
   }
 

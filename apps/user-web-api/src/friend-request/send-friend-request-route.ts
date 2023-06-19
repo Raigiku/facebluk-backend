@@ -13,6 +13,7 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
     routeOptions,
     async (request, reply) => {
       const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
+      const pgClient = await fastify.postgreSqlPool.connect()
       const response = await CMD.SendFriendRequest.handle(
         {
           id: request.id,
@@ -21,19 +22,19 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
         },
         {
           ua_findUserById: Supabase.UserAuth.User.findOneById(
-            fastify.supabaseConn,
+            fastify.supabaseClient,
             Common.Logger.log(request.log),
             request.id
           ),
           es_findLastFriendRequestBetweenUsers:
-            PostgreSQL.FriendRequest.findOneLastFriendRequestBetweenUsers(fastify.postgreSqlConn),
+            PostgreSQL.FriendRequest.findOneLastFriendRequestBetweenUsers(fastify.postgreSqlPool),
           es_findUserRelationship: PostgreSQL.UserRelationship.findOneBetweenUsers(
-            fastify.postgreSqlConn
+            fastify.postgreSqlPool
           ),
-          es_registerFriendRequest: PostgreSQL.FriendRequest.register(fastify.postgreSqlConn),
+          es_sendFriendRequest: PostgreSQL.FriendRequest.send(pgClient),
           int_processEvent: INT.Event.processEvent(
-            RabbitMQ.publishEvent(request.rabbitmqChannel),
-            PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
+            RabbitMQ.publishEvent(request.rabbitMqChannel),
+            PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
           ),
         }
       )

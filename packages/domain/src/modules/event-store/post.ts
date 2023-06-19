@@ -53,4 +53,4 @@ export const errors = {
 export const descriptionMaxLength = 500
 
 // accessors
-export type FnRegister = (post: Aggregate, event: CreatedEvent) => Promise<void>
+export type FnCreate = (event: CreatedEvent) => Promise<void>

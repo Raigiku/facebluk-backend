@@ -17,7 +17,9 @@ const apiRoutes: FastifyPluginCallback = async (fastify, options, done) => {
 
 const healthCheckRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.get('/health-check', async (request, reply) => {
+    // const q = await fastify.postgreSqlPool.connect()
     await reply.status(200).send({ response: 'success' })
+    // q.release()
   })
   done()
 }

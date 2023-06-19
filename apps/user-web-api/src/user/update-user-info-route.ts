@@ -34,18 +34,17 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
       },
       {
         findUserById: Supabase.UserAuth.User.findOneById(
-          fastify.supabaseConn,
+          fastify.supabaseClient,
           Common.Logger.log(fastify.log),
           request.id
         ),
         findUserProfilePictureUrl: Supabase.FileStorage.User.findProfilePictureUrl(
-          fastify.supabaseConn
+          fastify.supabaseClient
         ),
-        uploadProfilePicture: Supabase.FileStorage.User.uploadProfilePicture(fastify.supabaseConn),
+        uploadProfilePicture: Supabase.FileStorage.User.uploadProfilePicture(fastify.supabaseClient),
         processEvent: INT.Event.processEvent(
-          PostgreSQL.Common.persistEvent(fastify.postgreSqlConn),
-          RabbitMQ.publishEvent(request.rabbitmqChannel),
-          PostgreSQL.Common.markEventAsSent(fastify.postgreSqlConn)
+          RabbitMQ.publishEvent(request.rabbitMqChannel),
+          PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
         ),
       }
     )
