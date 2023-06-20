@@ -42,9 +42,10 @@ export const setupPlugins = async (
       path: './apps/user-web-api/documentation/openapi-docs.yaml',
     },
   })
-  await server.register(fastifySwaggerUi, {
-    routePrefix: '/swagger',
-  })
+  if (commonConfig.environment !== 'production')
+    await server.register(fastifySwaggerUi, {
+      routePrefix: '/swagger',
+    })
   // setup our plugins
   await server.register(fastifyCommonPlugin, commonConfig)
   await server.register(fastifySupabase, userAuthConfig)
