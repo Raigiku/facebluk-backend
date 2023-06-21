@@ -58,7 +58,7 @@ export const updateInfo = (
 }
 
 // events
-export type Event = RegisteredEvent
+export type Event = RegisteredEvent | InfoUpdatedEvent
 
 export const registeredEventTag = 'user-registered'
 export type RegisteredEventPayload = TaggedType<typeof registeredEventTag> & {
@@ -103,3 +103,4 @@ export const validateAlias = (requestId: string, alias: string) => {
 export type FnFindOneById = (userId: string) => Promise<Aggregate | undefined>
 export type FnAliasExists = (alias: string) => Promise<boolean>
 export type FnRegister = (event: RegisteredEvent) => Promise<void>
+export type FnUpdateInfo = (event: InfoUpdatedEvent) => Promise<void>

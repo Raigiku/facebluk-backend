@@ -1,5 +1,4 @@
 import { CMD, INT } from '@facebluk/domain'
-import { Common } from '@facebluk/infra-common'
 import { PostgreSQL } from '@facebluk/infra-postgresql'
 import { RabbitMQ } from '@facebluk/infra-rabbitmq'
 import { Supabase } from '@facebluk/infra-supabase'
@@ -28,11 +27,7 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
             RabbitMQ.publishEvent(request.rabbitMqChannel),
             PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
           ),
-          ua_findUserById: Supabase.UserAuth.User.findOneById(
-            fastify.supabaseClient,
-            Common.Logger.log(request.log),
-            request.id
-          ),
+          es_findUserById: PostgreSQL.User.findOneById(fastify.postgreSqlPool),
         }
       )
       await reply.status(200).send()

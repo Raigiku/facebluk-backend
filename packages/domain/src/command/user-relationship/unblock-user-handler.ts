@@ -1,4 +1,4 @@
-import { BusinessRuleError, ES, INT, UA, Uuid } from '../../modules'
+import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   validateInputFields(req)
@@ -6,7 +6,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
   const toUser = await deps.findUserById(req.toUserId)
   if (toUser === undefined) throw new BusinessRuleError(req.id, 'the to user does not exist')
 
-  const userRelationship = await deps.findUserRelationshipBetween(req.userId, toUser.id)
+  const userRelationship = await deps.findUserRelationshipBetween(req.userId, toUser.aggregate.id)
   if (userRelationship?.blockedStatus.tag !== 'blocked')
     throw new BusinessRuleError(req.id, 'the users are not blocked')
 
@@ -27,7 +27,7 @@ const validateInputFields = (req: Request) => {
 }
 
 export type Dependencies = {
-  findUserById: UA.User.FnFindOneById
+  findUserById: ES.User.FnFindOneById
   findUserRelationshipBetween: ES.UserRelationship.FnFindOneBetweenUsers
   processEvent: INT.Event.FnProcessEvent
 }

@@ -1,9 +1,9 @@
-import { BusinessRuleError, ES, INT, UA, Uuid } from '../../modules'
+import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies): Promise<Response> => {
   validateInputFields(req.id, req.userId, req.toUserId)
 
-  const toUser = await deps.ua_findUserById(req.toUserId)
+  const toUser = await deps.es_findUserById(req.toUserId)
   if (toUser === undefined) throw errors.toUserDoesNotExist(req.id)
 
   const userRelationship = await deps.es_findUserRelationship(req.userId, req.toUserId)
@@ -42,8 +42,7 @@ export type Dependencies = {
   es_findUserRelationship: ES.UserRelationship.FnFindOneBetweenUsers
   es_findLastFriendRequestBetweenUsers: ES.FriendRequest.FnFindOneLastBetweenUsers
   es_sendFriendRequest: ES.FriendRequest.FnSend
-
-  ua_findUserById: UA.User.FnFindOneById
+  es_findUserById: ES.User.FnFindOneById
 
   int_processEvent: INT.Event.FnProcessEvent
 }

@@ -1,5 +1,4 @@
 import { CMD, INT } from '@facebluk/domain'
-import { Common } from '@facebluk/infra-common'
 import { PostgreSQL } from '@facebluk/infra-postgresql'
 import { RabbitMQ } from '@facebluk/infra-rabbitmq'
 import { Supabase } from '@facebluk/infra-supabase'
@@ -21,11 +20,7 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
           toUserId: request.body.toUserId,
         },
         {
-          ua_findUserById: Supabase.UserAuth.User.findOneById(
-            fastify.supabaseClient,
-            Common.Logger.log(request.log),
-            request.id
-          ),
+          es_findUserById: PostgreSQL.User.findOneById(fastify.postgreSqlPool),
           es_findLastFriendRequestBetweenUsers:
             PostgreSQL.FriendRequest.findOneLastFriendRequestBetweenUsers(fastify.postgreSqlPool),
           es_findUserRelationship: PostgreSQL.UserRelationship.findOneBetweenUsers(

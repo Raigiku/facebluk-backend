@@ -1,5 +1,4 @@
 import { BusinessRuleError, CMD, INT, RequestImage } from '@facebluk/domain'
-import { Common } from '@facebluk/infra-common'
 import { PostgreSQL } from '@facebluk/infra-postgresql'
 import { RabbitMQ } from '@facebluk/infra-rabbitmq'
 import { Supabase } from '@facebluk/infra-supabase'
@@ -33,16 +32,15 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
               ),
       },
       {
-        findUserById: Supabase.UserAuth.User.findOneById(
-          fastify.supabaseClient,
-          Common.Logger.log(fastify.log),
-          request.id
-        ),
-        findUserProfilePictureUrl: Supabase.FileStorage.User.findProfilePictureUrl(
+        es_updateInfo: PostgreSQL.User.updateInfo(request.postgreSqlPoolClient),
+        es_findUserById: PostgreSQL.User.findOneById(fastify.postgreSqlPool),
+        fs_findUserProfilePictureUrl: Supabase.FileStorage.User.findProfilePictureUrl(
           fastify.supabaseClient
         ),
-        uploadProfilePicture: Supabase.FileStorage.User.uploadProfilePicture(fastify.supabaseClient),
-        processEvent: INT.Event.processEvent(
+        fs_uploadProfilePicture: Supabase.FileStorage.User.uploadProfilePicture(
+          fastify.supabaseClient
+        ),
+        int_processEvent: INT.Event.processEvent(
           RabbitMQ.publishEvent(request.rabbitMqChannel),
           PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
         ),

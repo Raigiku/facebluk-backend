@@ -61,6 +61,22 @@ export const register =
     await registerEvent(pgClient, eventTableName, event)
   }
 
+export const updateInfo =
+  (pgClient: PoolClient): ES.User.FnUpdateInfo =>
+  async (event: ES.User.InfoUpdatedEvent) => {
+    await pgClient.query(
+      `
+        UPDATE ${userTableName}
+        SET
+          ${userTableKey('name')} = $1,
+          ${userTableKey('profile_picture_url')} = $2
+        WHERE ${userTableKey('id')} = $3
+      `,
+      [event.payload.name, event.payload.profilePictureUrl, event.data.aggregateId]
+    )
+    await registerEvent(pgClient, eventTableName, event)
+  }
+
 type UserTable = {
   readonly id: string
   readonly version: bigint
