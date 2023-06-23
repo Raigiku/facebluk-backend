@@ -1,34 +1,52 @@
 import { ES } from '@facebluk/domain'
-import { PoolClient } from 'pg'
-import { registerEvent } from '../common'
+import { Pool, PoolClient } from 'pg'
+import { eventTableKey, registerEvent } from '../common'
 
 export const eventTableName = 'post_event'
 export const postTableName = 'post'
 
-export const register =
+export const create =
   (pgClient: PoolClient): ES.Post.FnCreate =>
   async (event: ES.Post.CreatedEvent) => {
-    await pgClient.query(
-      `
-          INSERT INTO ${postTableName} (
-            ${postTableKey('id')},
-            ${postTableKey('version')},
-            ${postTableKey('created_at')},
-            ${postTableKey('description')},
-            ${postTableKey('user_id')}
-          )
-          VALUES ($1, $2, $3, $4, $5)
-        `,
-      [
-        event.data.aggregateId,
-        event.data.aggregateVersion,
-        event.data.createdAt,
-        event.payload.description,
-        event.payload.userId,
-      ]
-    )
+    await createInternalAggregate(pgClient, event)
     await registerEvent(pgClient, eventTableName, event)
   }
+
+export const createInternalAggregate = async (
+  pgClient: PoolClient,
+  event: ES.Post.CreatedEvent
+) => {
+  await pgClient.query(
+    `
+      INSERT INTO ${postTableName} (
+        ${postTableKey('id')},
+        ${postTableKey('version')},
+        ${postTableKey('created_at')},
+        ${postTableKey('description')},
+        ${postTableKey('user_id')}
+      )
+      VALUES ($1, $2, $3, $4, $5)
+    `,
+    [
+      event.data.aggregateId,
+      event.data.aggregateVersion,
+      event.data.createdAt,
+      event.payload.description,
+      event.payload.userId,
+    ]
+  )
+}
+
+export const findManyEventsInOrder = async (pool: Pool) => {
+  const { rows } = await pool.query<ES.Post.Event>(
+    `
+      SELECT *
+      FROM ${eventTableName} e
+      ORDER BY e.${eventTableKey('created_at')} ASC
+    `
+  )
+  return rows
+}
 
 type PostTable = {
   readonly id: string

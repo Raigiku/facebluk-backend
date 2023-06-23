@@ -1,6 +1,6 @@
 import { ES } from '@facebluk/domain'
 import { Pool, PoolClient } from 'pg'
-import { registerEvent } from '../common'
+import { eventTableKey, registerEvent } from '../common'
 
 export const eventTableName = 'user_relationship_event'
 export const userRelationshipTableName = 'user_relationship'
@@ -32,82 +32,108 @@ export const findOneBetweenUsers =
     return userRelationshipTableToAggregate(rows[0])
   }
 
+export const findManyEventsInOrder = async (pool: Pool) => {
+  const { rows } = await pool.query<ES.UserRelationship.Event>(
+    `
+      SELECT *
+      FROM ${eventTableName} e
+      ORDER BY e.${eventTableKey('created_at')} ASC
+    `
+  )
+  return rows
+}
+
 export const friend =
   (pgClient: PoolClient): ES.UserRelationship.FnFriend =>
   async (isNew: boolean, event: ES.UserRelationship.FriendedUserEvent) => {
-    if (isNew)
-      await pgClient.query(
-        `
-      INSERT INTO ${userRelationshipTableName} (
-        ${userRelationshipTableKey('id')},
-        ${userRelationshipTableKey('version')},
-        ${userRelationshipTableKey('created_at')},
-        ${userRelationshipTableKey('friend_from_user_id')},
-        ${userRelationshipTableKey('friend_to_user_id')},
-        ${userRelationshipTableKey('friend_status')},
-        ${userRelationshipTableKey('friend_status_updated_at')}
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      `,
-        [
-          event.data.aggregateId,
-          event.data.aggregateVersion,
-          event.data.createdAt,
-          event.payload.fromUserId,
-          event.payload.toUserId,
-          'friended',
-          event.data.createdAt,
-        ]
-      )
-    else
-      await pgClient.query(
-        `
-          UPDATE ${userRelationshipTableName}
-          SET 
-            ${userRelationshipTableKey('version')} = $1,
-            ${userRelationshipTableKey('friend_from_user_id')} = $2,
-            ${userRelationshipTableKey('friend_to_user_id')} = $3,
-            ${userRelationshipTableKey('friend_status')} = $4,
-            ${userRelationshipTableKey('friend_status_updated_at')} = $5
-          WHERE ${userRelationshipTableKey('id')} = $6
-        `,
-        [
-          event.data.aggregateVersion,
-          event.payload.fromUserId,
-          event.payload.toUserId,
-          'friended',
-          event.data.createdAt,
-          event.data.aggregateId,
-        ]
-      )
+    await friendInternalAggregate(pgClient, isNew, event)
     await registerEvent(pgClient, eventTableName, event)
   }
 
-export const unfriend =
-  (pgClient: PoolClient): ES.UserRelationship.FnUnfriend =>
-  async (event: ES.UserRelationship.UnfriendedUserEvent) => {
+export const friendInternalAggregate = async (
+  pgClient: PoolClient,
+  isNew: boolean,
+  event: ES.UserRelationship.FriendedUserEvent
+) => {
+  if (isNew)
     await pgClient.query(
       `
-          UPDATE ${userRelationshipTableName}
-          SET 
-            ${userRelationshipTableKey('version')} = $1,
-            ${userRelationshipTableKey('friend_from_user_id')} = $2,
-            ${userRelationshipTableKey('friend_to_user_id')} = $3,
-            ${userRelationshipTableKey('friend_status')} = $4,
-            ${userRelationshipTableKey('friend_status_updated_at')} = $5
-          WHERE ${userRelationshipTableKey('id')} = $6
-        `,
+        INSERT INTO ${userRelationshipTableName} (
+          ${userRelationshipTableKey('id')},
+          ${userRelationshipTableKey('version')},
+          ${userRelationshipTableKey('created_at')},
+          ${userRelationshipTableKey('friend_from_user_id')},
+          ${userRelationshipTableKey('friend_to_user_id')},
+          ${userRelationshipTableKey('friend_status')},
+          ${userRelationshipTableKey('friend_status_updated_at')}
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `,
+      [
+        event.data.aggregateId,
+        event.data.aggregateVersion,
+        event.data.createdAt,
+        event.payload.fromUserId,
+        event.payload.toUserId,
+        'friended',
+        event.data.createdAt,
+      ]
+    )
+  else
+    await pgClient.query(
+      `
+        UPDATE ${userRelationshipTableName}
+        SET 
+          ${userRelationshipTableKey('version')} = $1,
+          ${userRelationshipTableKey('friend_from_user_id')} = $2,
+          ${userRelationshipTableKey('friend_to_user_id')} = $3,
+          ${userRelationshipTableKey('friend_status')} = $4,
+          ${userRelationshipTableKey('friend_status_updated_at')} = $5
+        WHERE ${userRelationshipTableKey('id')} = $6
+      `,
       [
         event.data.aggregateVersion,
         event.payload.fromUserId,
         event.payload.toUserId,
-        'unfriended',
+        'friended',
         event.data.createdAt,
         event.data.aggregateId,
       ]
     )
+}
+
+export const unfriend =
+  (pgClient: PoolClient): ES.UserRelationship.FnUnfriend =>
+  async (event: ES.UserRelationship.UnfriendedUserEvent) => {
+    await unfriendInternalAggregate(pgClient, event)
     await registerEvent(pgClient, eventTableName, event)
   }
+
+export const unfriendInternalAggregate = async (
+  pgClient: PoolClient,
+  event: ES.UserRelationship.UnfriendedUserEvent
+) => {
+  await pgClient.query(
+    `
+      UPDATE ${userRelationshipTableName}
+      SET 
+        ${userRelationshipTableKey('version')} = $1,
+        ${userRelationshipTableKey('friend_from_user_id')} = $2,
+        ${userRelationshipTableKey('friend_to_user_id')} = $3,
+        ${userRelationshipTableKey('friend_status')} = $4,
+        ${userRelationshipTableKey('friend_status_updated_at')} = $5
+      WHERE ${userRelationshipTableKey('id')} = $6
+    `,
+    [
+      event.data.aggregateVersion,
+      event.payload.fromUserId,
+      event.payload.toUserId,
+      'unfriended',
+      event.data.createdAt,
+      event.data.aggregateId,
+    ]
+  )
+}
 
 type UserRelationshipTable = {
   readonly id: string

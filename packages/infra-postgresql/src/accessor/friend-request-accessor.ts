@@ -1,6 +1,6 @@
 import { ES } from '@facebluk/domain'
 import { Pool, PoolClient } from 'pg'
-import { registerEvent } from '../common'
+import { eventTableKey, registerEvent } from '../common'
 
 export const eventTableName = 'friend_request_event'
 export const friendRequestTableName = 'friend_request'
@@ -43,78 +43,117 @@ export const findOneLastFriendRequestBetweenUsers =
     return friendRequestTableToAggregate(rows[0])
   }
 
+export const findManyEventsInOrder = async (pool: Pool) => {
+  const { rows } = await pool.query<ES.FriendRequest.Event>(
+    `
+      SELECT *
+      FROM ${eventTableName} e
+      ORDER BY e.${eventTableKey('created_at')} ASC
+    `
+  )
+  return rows
+}
+
 export const send =
   (pgClient: PoolClient): ES.FriendRequest.FnSend =>
   async (event: ES.FriendRequest.SentEvent) => {
-    await pgClient.query(
-      `
-          INSERT INTO ${friendRequestTableName} (
-            ${friendRequestTableKey('id')},
-            ${friendRequestTableKey('version')},
-            ${friendRequestTableKey('created_at')},
-            ${friendRequestTableKey('from_user_id')},
-            ${friendRequestTableKey('to_user_id')}
-          )
-          VALUES ($1, $2, $3, $4, $5)
-        `,
-      [
-        event.data.aggregateId,
-        event.data.aggregateVersion,
-        event.data.createdAt,
-        event.payload.fromUserId,
-        event.payload.toUserId,
-      ]
-    )
+    await sendInternalAggregate(pgClient, event)
     await registerEvent(pgClient, eventTableName, event)
   }
+
+export const sendInternalAggregate = async (
+  pgClient: PoolClient,
+  event: ES.FriendRequest.SentEvent
+) => {
+  await pgClient.query(
+    `
+      INSERT INTO ${friendRequestTableName} (
+        ${friendRequestTableKey('id')},
+        ${friendRequestTableKey('version')},
+        ${friendRequestTableKey('created_at')},
+        ${friendRequestTableKey('from_user_id')},
+        ${friendRequestTableKey('to_user_id')}
+      )
+      VALUES ($1, $2, $3, $4, $5)
+    `,
+    [
+      event.data.aggregateId,
+      event.data.aggregateVersion,
+      event.data.createdAt,
+      event.payload.fromUserId,
+      event.payload.toUserId,
+    ]
+  )
+}
 
 export const cancel =
   (pgClient: PoolClient): ES.FriendRequest.FnCancel =>
   async (event: ES.FriendRequest.CancelledEvent) => {
-    await pgClient.query(
-      `
-          UPDATE ${friendRequestTableName}
-          SET 
-            ${friendRequestTableKey('version')} = $1,
-            ${friendRequestTableKey('cancelled_at')} = $2
-          WHERE ${friendRequestTableKey('id')} = $3
-        `,
-      [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
-    )
+    await cancelInternalAggregate(pgClient, event)
     await registerEvent(pgClient, eventTableName, event)
   }
+
+export const cancelInternalAggregate = async (
+  pgClient: PoolClient,
+  event: ES.FriendRequest.CancelledEvent
+) => {
+  await pgClient.query(
+    `
+      UPDATE ${friendRequestTableName}
+      SET 
+        ${friendRequestTableKey('version')} = $1,
+        ${friendRequestTableKey('cancelled_at')} = $2
+      WHERE ${friendRequestTableKey('id')} = $3
+    `,
+    [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
+  )
+}
 
 export const reject =
   (pgClient: PoolClient): ES.FriendRequest.FnReject =>
   async (event: ES.FriendRequest.RejectedEvent) => {
-    await pgClient.query(
-      `
-          UPDATE ${friendRequestTableName}
-          SET 
-            ${friendRequestTableKey('version')} = $1,
-            ${friendRequestTableKey('rejected_at')} = $2
-          WHERE ${friendRequestTableKey('id')} = $3
-        `,
-      [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
-    )
+    await rejectInternalAggregate(pgClient, event)
     await registerEvent(pgClient, eventTableName, event)
   }
+
+export const rejectInternalAggregate = async (
+  pgClient: PoolClient,
+  event: ES.FriendRequest.RejectedEvent
+) => {
+  await pgClient.query(
+    `
+      UPDATE ${friendRequestTableName}
+      SET 
+        ${friendRequestTableKey('version')} = $1,
+        ${friendRequestTableKey('rejected_at')} = $2
+      WHERE ${friendRequestTableKey('id')} = $3
+    `,
+    [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
+  )
+}
 
 export const accept =
   (pgClient: PoolClient): ES.FriendRequest.FnAccept =>
   async (event: ES.FriendRequest.AcceptedEvent) => {
-    await pgClient.query(
-      `
-          UPDATE ${friendRequestTableName}
-          SET 
-            ${friendRequestTableKey('version')} = $1,
-            ${friendRequestTableKey('accepted_at')} = $2
-          WHERE ${friendRequestTableKey('id')} = $3
-        `,
-      [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
-    )
+    await acceptInternalAggregate(pgClient, event)
     await registerEvent(pgClient, eventTableName, event)
   }
+
+export const acceptInternalAggregate = async (
+  pgClient: PoolClient,
+  event: ES.FriendRequest.AcceptedEvent
+) => {
+  await pgClient.query(
+    `
+      UPDATE ${friendRequestTableName}
+      SET 
+        ${friendRequestTableKey('version')} = $1,
+        ${friendRequestTableKey('accepted_at')} = $2
+      WHERE ${friendRequestTableKey('id')} = $3
+    `,
+    [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
+  )
+}
 
 type FriendRequestTable = {
   readonly id: string

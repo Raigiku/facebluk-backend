@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "command-adhoc",
+      "script": "pnpm",
+      "args": "start:adhoc:prod"
+    }
+  ]
+}

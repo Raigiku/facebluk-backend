@@ -1,6 +1,6 @@
 import { ES } from '@facebluk/domain'
 import { Pool, PoolClient } from 'pg'
-import { registerEvent } from '../common'
+import { eventTableKey, registerEvent } from '../common'
 
 export const eventTableName = 'user_event'
 export const userTableName = '"user"'
@@ -37,29 +37,36 @@ export const findOneById =
 export const register =
   (pgClient: PoolClient): ES.User.FnRegister =>
   async (event: ES.User.RegisteredEvent) => {
-    await pgClient.query(
-      `
-          INSERT INTO ${userTableName} (
-            ${userTableKey('id')},
-            ${userTableKey('version')},
-            ${userTableKey('created_at')},
-            ${userTableKey('alias')},
-            ${userTableKey('name')},
-            ${userTableKey('profile_picture_url')}
-          )
-          VALUES ($1, $2, $3, $4, $5, $6)
-        `,
-      [
-        event.data.aggregateId,
-        event.data.aggregateVersion,
-        event.data.createdAt,
-        event.payload.alias,
-        event.payload.name,
-        event.payload.profilePictureUrl,
-      ]
-    )
+    await registerInternalAggregate(pgClient, event)
     await registerEvent(pgClient, eventTableName, event)
   }
+
+export const registerInternalAggregate = async (
+  pgClient: PoolClient,
+  event: ES.User.RegisteredEvent
+) => {
+  await pgClient.query(
+    `
+      INSERT INTO ${userTableName} (
+        ${userTableKey('id')},
+        ${userTableKey('version')},
+        ${userTableKey('created_at')},
+        ${userTableKey('alias')},
+        ${userTableKey('name')},
+        ${userTableKey('profile_picture_url')}
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `,
+    [
+      event.data.aggregateId,
+      event.data.aggregateVersion,
+      event.data.createdAt,
+      event.payload.alias,
+      event.payload.name,
+      event.payload.profilePictureUrl,
+    ]
+  )
+}
 
 export const updateInfo =
   (pgClient: PoolClient): ES.User.FnUpdateInfo =>
@@ -76,6 +83,17 @@ export const updateInfo =
     )
     await registerEvent(pgClient, eventTableName, event)
   }
+
+export const findManyEventsInOrder = async (pool: Pool) => {
+  const { rows } = await pool.query<ES.User.Event>(
+    `
+      SELECT *
+      FROM ${eventTableName} e
+      ORDER BY e.${eventTableKey('created_at')} ASC
+    `
+  )
+  return rows
+}
 
 type UserTable = {
   readonly id: string

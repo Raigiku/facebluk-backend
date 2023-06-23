@@ -19,7 +19,7 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
           userId: jwt.sub,
         },
         {
-          es_createPost: PostgreSQL.Post.register(request.postgreSqlPoolClient),
+          es_createPost: PostgreSQL.Post.create(request.postgreSqlPoolClient),
           int_processEvent: INT.Event.processEvent(
             RabbitMQ.publishEvent(request.rabbitMqChannel),
             PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)

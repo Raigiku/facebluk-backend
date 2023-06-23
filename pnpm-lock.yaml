@@ -35,6 +35,9 @@ importers:
 
   apps/adhoc:
     dependencies:
+      '@facebluk/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@facebluk/infra-postgresql':
         specifier: workspace:*
         version: link:../../packages/infra-postgresql

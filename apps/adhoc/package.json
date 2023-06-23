@@ -10,6 +10,7 @@
     "@facebluk/infra-supabase": "workspace:*",
     "@facebluk/infra-postgresql": "workspace:*",
     "@facebluk/infra-rabbitmq": "workspace:*",
+    "@facebluk/domain": "workspace:*",
     "dotenv": "^16.0.3"
   }
 }
