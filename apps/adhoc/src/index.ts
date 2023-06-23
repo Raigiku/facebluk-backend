@@ -14,7 +14,7 @@ const main = async () => {
   })
 
   // await createFileStorageBuckets()
-  await processEventsIntoConsistencyAggregates(pgPool)
+  // await processEventsIntoConsistencyAggregates(pgPool)
 
   await pgPool.end()
 }
