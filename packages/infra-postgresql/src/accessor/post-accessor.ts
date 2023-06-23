@@ -1,6 +1,6 @@
 import { ES } from '@facebluk/domain'
 import { Pool, PoolClient } from 'pg'
-import { eventTableKey, registerEvent } from '../common'
+import { EventTable, eventTableKey, registerEvent } from '../common'
 
 export const eventTableName = 'post_event'
 export const postTableName = 'post'
@@ -38,7 +38,7 @@ export const createInternalAggregate = async (
 }
 
 export const findManyEventsInOrder = async (pool: Pool) => {
-  const { rows } = await pool.query<ES.Post.Event>(
+  const { rows } = await pool.query<EventTable>(
     `
       SELECT *
       FROM ${eventTableName} e

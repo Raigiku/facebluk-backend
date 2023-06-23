@@ -1,4 +1,3 @@
-import { ES } from '@facebluk/domain'
 import { PostgreSQL } from '@facebluk/infra-postgresql'
 import { Supabase } from '@facebluk/infra-supabase'
 import dotenv from 'dotenv'
@@ -44,55 +43,100 @@ const processEventsIntoConsistencyAggregates = async (pool: PostgreSQL.pg.Pool) 
   const pgClient = await pool.connect()
 
   const userEvents = await PostgreSQL.User.findManyEventsInOrder(pool)
-  for (const event of userEvents) {
-    if (event.payload.tag === 'user-registered')
-      await PostgreSQL.User.registerInternalAggregate(pgClient, event as ES.User.RegisteredEvent)
+  for (const rawEvent of userEvents) {
+    if (rawEvent.payload.tag === 'user-registered')
+      await PostgreSQL.User.registerInternalAggregate(pgClient, {
+        data: {
+          aggregateId: rawEvent.aggregate_id,
+          aggregateVersion: rawEvent.aggregate_version,
+          createdAt: rawEvent.created_at,
+          published: rawEvent.published,
+        },
+        payload: rawEvent.payload,
+      })
   }
 
   const postEvents = await PostgreSQL.Post.findManyEventsInOrder(pool)
-  for (const event of postEvents) {
-    if (event.payload.tag === 'post-created')
-      await PostgreSQL.Post.createInternalAggregate(pgClient, event)
+  for (const rawEvent of postEvents) {
+    if (rawEvent.payload.tag === 'post-created')
+      await PostgreSQL.Post.createInternalAggregate(pgClient, {
+        data: {
+          aggregateId: rawEvent.aggregate_id,
+          aggregateVersion: rawEvent.aggregate_version,
+          createdAt: rawEvent.created_at,
+          published: rawEvent.published,
+        },
+        payload: rawEvent.payload,
+      })
   }
 
   const friendRequestEvents = await PostgreSQL.FriendRequest.findManyEventsInOrder(pool)
-  for (const event of friendRequestEvents) {
-    if (event.payload.tag === 'friend-request-accepted')
-      await PostgreSQL.FriendRequest.acceptInternalAggregate(
-        pgClient,
-        event as ES.FriendRequest.AcceptedEvent
-      )
-    else if (event.payload.tag === 'friend-request-sent')
-      await PostgreSQL.FriendRequest.sendInternalAggregate(
-        pgClient,
-        event as ES.FriendRequest.SentEvent
-      )
-    else if (event.payload.tag === 'friend-request-cancelled')
-      await PostgreSQL.FriendRequest.cancelInternalAggregate(
-        pgClient,
-        event as ES.FriendRequest.CancelledEvent
-      )
-    else if (event.payload.tag === 'friend-request-rejected')
-      await PostgreSQL.FriendRequest.rejectInternalAggregate(
-        pgClient,
-        event as ES.FriendRequest.RejectedEvent
-      )
+  for (const rawEvent of friendRequestEvents) {
+    if (rawEvent.payload.tag === 'friend-request-accepted')
+      await PostgreSQL.FriendRequest.acceptInternalAggregate(pgClient, {
+        data: {
+          aggregateId: rawEvent.aggregate_id,
+          aggregateVersion: rawEvent.aggregate_version,
+          createdAt: rawEvent.created_at,
+          published: rawEvent.published,
+        },
+        payload: rawEvent.payload,
+      })
+    else if (rawEvent.payload.tag === 'friend-request-sent')
+      await PostgreSQL.FriendRequest.sendInternalAggregate(pgClient, {
+        data: {
+          aggregateId: rawEvent.aggregate_id,
+          aggregateVersion: rawEvent.aggregate_version,
+          createdAt: rawEvent.created_at,
+          published: rawEvent.published,
+        },
+        payload: rawEvent.payload,
+      })
+    else if (rawEvent.payload.tag === 'friend-request-cancelled')
+      await PostgreSQL.FriendRequest.cancelInternalAggregate(pgClient, {
+        data: {
+          aggregateId: rawEvent.aggregate_id,
+          aggregateVersion: rawEvent.aggregate_version,
+          createdAt: rawEvent.created_at,
+          published: rawEvent.published,
+        },
+        payload: rawEvent.payload,
+      })
+    else if (rawEvent.payload.tag === 'friend-request-rejected')
+      await PostgreSQL.FriendRequest.rejectInternalAggregate(pgClient, {
+        data: {
+          aggregateId: rawEvent.aggregate_id,
+          aggregateVersion: rawEvent.aggregate_version,
+          createdAt: rawEvent.created_at,
+          published: rawEvent.published,
+        },
+        payload: rawEvent.payload,
+      })
   }
 
   const userRelationshipEvents = await PostgreSQL.UserRelationship.findManyEventsInOrder(pool)
   let firstProcessed = false
-  for (const event of userRelationshipEvents) {
-    if (event.payload.tag === 'user-relationship-friended')
-      await PostgreSQL.UserRelationship.friendInternalAggregate(
-        pgClient,
-        !firstProcessed,
-        event as ES.UserRelationship.FriendedUserEvent
-      )
-    else if (event.payload.tag === 'user-relationship-unfriended')
-      await PostgreSQL.UserRelationship.unfriendInternalAggregate(
-        pgClient,
-        event as ES.UserRelationship.UnfriendedUserEvent
-      )
+  for (const rawEvent of userRelationshipEvents) {
+    if (rawEvent.payload.tag === 'user-relationship-friended')
+      await PostgreSQL.UserRelationship.friendInternalAggregate(pgClient, !firstProcessed, {
+        data: {
+          aggregateId: rawEvent.aggregate_id,
+          aggregateVersion: rawEvent.aggregate_version,
+          createdAt: rawEvent.created_at,
+          published: rawEvent.published,
+        },
+        payload: rawEvent.payload,
+      })
+    else if (rawEvent.payload.tag === 'user-relationship-unfriended')
+      await PostgreSQL.UserRelationship.unfriendInternalAggregate(pgClient, {
+        data: {
+          aggregateId: rawEvent.aggregate_id,
+          aggregateVersion: rawEvent.aggregate_version,
+          createdAt: rawEvent.created_at,
+          published: rawEvent.published,
+        },
+        payload: rawEvent.payload,
+      })
     firstProcessed = true
   }
 

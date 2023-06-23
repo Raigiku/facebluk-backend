@@ -1,6 +1,6 @@
 import { ES } from '@facebluk/domain'
 import { Pool, PoolClient } from 'pg'
-import { eventTableKey, registerEvent } from '../common'
+import { EventTable, eventTableKey, registerEvent } from '../common'
 
 export const eventTableName = 'friend_request_event'
 export const friendRequestTableName = 'friend_request'
@@ -44,7 +44,7 @@ export const findOneLastFriendRequestBetweenUsers =
   }
 
 export const findManyEventsInOrder = async (pool: Pool) => {
-  const { rows } = await pool.query<ES.FriendRequest.Event>(
+  const { rows } = await pool.query<EventTable>(
     `
       SELECT *
       FROM ${eventTableName} e
