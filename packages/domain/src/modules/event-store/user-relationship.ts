@@ -1,38 +1,69 @@
 import { ES, TaggedType } from '..'
 
-export type Aggregate = {
+export type Aggregate<T1 extends BlockStatus, T2 extends FriendStatus> = {
   readonly aggregate: ES.Aggregate.Data
-  readonly blockedStatus: BlockStatus
-  readonly friendStatus: FriendStatus
+  readonly blockedStatus: T1
+  readonly friendStatus: T2
 }
 
 export type BlockStatus = NotBlockedStatus | BlockedStatus | UnBlockedStatus
+
 export type NotBlockedStatus = TaggedType<'not-blocked'>
+export const isNotBlocked = (
+  aggregate: Aggregate<BlockStatus, FriendStatus>
+): aggregate is Aggregate<NotBlockedStatus, FriendStatus> =>
+  aggregate.blockedStatus.tag === 'not-blocked'
+
 export type BlockedStatus = TaggedType<'blocked'> & {
   readonly blockedAt: Date
   readonly fromUserId: string
   readonly toUserId: string
 }
+export const isBlocked = (
+  aggregate: Aggregate<BlockStatus, FriendStatus>
+): aggregate is Aggregate<BlockedStatus, FriendStatus> => aggregate.blockedStatus.tag === 'blocked'
+
 export type UnBlockedStatus = TaggedType<'unblocked'> & {
   readonly unblockedAt: Date
   readonly fromUserId: string
   readonly toUserId: string
 }
+export const isUnBlocked = (
+  aggregate: Aggregate<BlockStatus, FriendStatus>
+): aggregate is Aggregate<UnBlockedStatus, FriendStatus> =>
+  aggregate.blockedStatus.tag === 'unblocked'
 
 export type FriendStatus = NotFriendedStatus | FriendedStatus | UnFriendedStatus
+
 export type NotFriendedStatus = TaggedType<'not-friended'>
+export const isNotFriend = (
+  aggregate: Aggregate<BlockStatus, FriendStatus>
+): aggregate is Aggregate<BlockStatus, NotFriendedStatus> =>
+  aggregate.friendStatus.tag === 'not-friended'
+
 export type FriendedStatus = TaggedType<'friended'> & {
   readonly friendedAt: Date
   readonly fromUserId: string
   readonly toUserId: string
 }
+export const isFriend = (
+  aggregate: Aggregate<BlockStatus, FriendStatus>
+): aggregate is Aggregate<BlockStatus, FriendedStatus> => aggregate.friendStatus.tag === 'friended'
+
 export type UnFriendedStatus = TaggedType<'unfriended'> & {
   readonly unfriendedAt: Date
   readonly fromUserId: string
   readonly toUserId: string
 }
+export const isUnFriended = (
+  aggregate: Aggregate<BlockStatus, FriendStatus>
+): aggregate is Aggregate<BlockStatus, UnFriendedStatus> =>
+  aggregate.friendStatus.tag === 'unfriended'
 
-export const newFriend = (fromUserId: string, toUserId: string): [Aggregate, FriendedUserEvent] => {
+export const newFriend = (
+  fromUserId: string,
+  toUserId: string
+): [Aggregate<NotBlockedStatus, FriendedStatus>, FriendedUserEvent] => {
   const aggregateData = ES.Aggregate.create()
   const friendedAt = new Date()
   return [
@@ -53,10 +84,10 @@ export const newFriend = (fromUserId: string, toUserId: string): [Aggregate, Fri
 }
 
 export const friend = (
-  userRelationship: Aggregate,
+  userRelationship: Aggregate<BlockStatus, FriendStatus>,
   fromUserId: string,
   toUserId: string
-): [Aggregate, FriendedUserEvent] => {
+): [Aggregate<BlockStatus, FriendedStatus>, FriendedUserEvent] => {
   const aggregateData = ES.Aggregate.increaseVersion(userRelationship.aggregate)
   const friendedAt = new Date()
   return [
@@ -77,10 +108,10 @@ export const friend = (
 }
 
 export const unfriend = (
-  userRelationship: Aggregate,
+  userRelationship: Aggregate<BlockStatus, FriendStatus>,
   fromUserId: string,
   toUserId: string
-): [Aggregate, UnfriendedUserEvent] => {
+): [Aggregate<BlockStatus, UnFriendedStatus>, UnfriendedUserEvent] => {
   const aggregateData = ES.Aggregate.increaseVersion(userRelationship.aggregate)
   const unfriendedAt = new Date()
   return [
@@ -100,7 +131,10 @@ export const unfriend = (
   ]
 }
 
-export const newBlock = (fromUserId: string, toUserId: string): [Aggregate, BlockedUserEvent] => {
+export const newBlock = (
+  fromUserId: string,
+  toUserId: string
+): [Aggregate<BlockedStatus, NotFriendedStatus>, BlockedUserEvent] => {
   const aggregateData = ES.Aggregate.create()
   const blockedAt = new Date()
   return [
@@ -121,10 +155,10 @@ export const newBlock = (fromUserId: string, toUserId: string): [Aggregate, Bloc
 }
 
 export const block = (
-  userRelationship: Aggregate,
+  userRelationship: Aggregate<BlockStatus, FriendStatus>,
   fromUserId: string,
   toUserId: string
-): [Aggregate, BlockedUserEvent] => {
+): [Aggregate<BlockedStatus, FriendStatus>, BlockedUserEvent] => {
   const aggregateData = ES.Aggregate.increaseVersion(userRelationship.aggregate)
   const blockedAt = new Date()
   return [
@@ -145,10 +179,10 @@ export const block = (
 }
 
 export const unblock = (
-  userRelationship: Aggregate,
+  userRelationship: Aggregate<BlockStatus, FriendStatus>,
   fromUserId: string,
   toUserId: string
-): [Aggregate, UnblockedUserEvent] => {
+): [Aggregate<UnBlockedStatus, FriendStatus>, UnblockedUserEvent] => {
   const aggregateData = ES.Aggregate.increaseVersion(userRelationship.aggregate)
   const unblockedAt = new Date()
   return [
@@ -211,6 +245,6 @@ export type UnblockedUserEvent = {
 export type FnFindOneBetweenUsers = (
   userAId: string,
   userBId: string
-) => Promise<Aggregate | undefined>
+) => Promise<Aggregate<BlockStatus, FriendStatus> | undefined>
 export type FnFriend = (isNew: boolean, event: FriendedUserEvent) => Promise<void>
 export type FnUnfriend = (event: UnfriendedUserEvent) => Promise<void>

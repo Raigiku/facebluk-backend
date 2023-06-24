@@ -7,8 +7,11 @@ export const handle = async (req: Request, deps: Dependencies) => {
   const toUser = await deps.es_findUserById(req.toUserId)
   if (toUser === undefined) throw new BusinessRuleError(req.id, 'the to user does not exist')
 
-  const userRelationship = await deps.es_findUserRelationshipBetween(req.userId, toUser.aggregate.id)
-  if (userRelationship?.friendStatus.tag !== 'friended')
+  const userRelationship = await deps.es_findUserRelationshipBetween(
+    req.userId,
+    toUser.aggregate.id
+  )
+  if (userRelationship === undefined || !ES.UserRelationship.isFriend(userRelationship))
     throw new BusinessRuleError(req.id, 'the users are not friends')
 
   const [, unfriendedEvent] = ES.UserRelationship.unfriend(

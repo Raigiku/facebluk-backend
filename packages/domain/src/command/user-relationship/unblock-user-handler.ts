@@ -7,11 +7,14 @@ export const handle = async (req: Request, deps: Dependencies) => {
   if (toUser === undefined) throw new BusinessRuleError(req.id, 'the to user does not exist')
 
   const userRelationship = await deps.findUserRelationshipBetween(req.userId, toUser.aggregate.id)
-  if (userRelationship?.blockedStatus.tag !== 'blocked')
+  if (userRelationship === undefined)
+    throw new BusinessRuleError(req.id, 'the users dont have a relationship')
+
+  if (!ES.UserRelationship.isBlocked(userRelationship))
     throw new BusinessRuleError(req.id, 'the users are not blocked')
 
   if (
-    userRelationship.blockedStatus.tag === 'blocked' &&
+    ES.UserRelationship.isBlocked(userRelationship) &&
     userRelationship.blockedStatus.fromUserId !== req.userId
   )
     throw new BusinessRuleError(req.id, 'the other user is the only that can unblock you')

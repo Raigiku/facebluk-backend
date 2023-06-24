@@ -8,7 +8,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
 
   const userRelationship = await deps.findUserRelationshipBetween(req.userId, toUser.aggregate.id)
 
-  if (userRelationship?.blockedStatus.tag === 'blocked')
+  if (userRelationship !== undefined && ES.UserRelationship.isBlocked(userRelationship))
     throw new BusinessRuleError(req.id, 'users are already blocked')
 
   const [, blockedEvent] =

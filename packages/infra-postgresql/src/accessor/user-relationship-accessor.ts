@@ -153,7 +153,10 @@ const userRelationshipTableKey = (k: keyof UserRelationshipTable) => k
 
 const userRelationshipTableToAggregate = (
   row: UserRelationshipTable
-): ES.UserRelationship.Aggregate => {
+): ES.UserRelationship.Aggregate<
+  ES.UserRelationship.BlockStatus,
+  ES.UserRelationship.FriendStatus
+> => {
   let friendStatus: ES.UserRelationship.FriendStatus
   if (row.friend_status !== undefined) {
     if (row.friend_status === 'friended')

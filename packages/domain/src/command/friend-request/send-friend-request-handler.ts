@@ -7,22 +7,25 @@ export const handle = async (req: Request, deps: Dependencies): Promise<Response
   if (toUser === undefined) throw errors.toUserDoesNotExist(req.id)
 
   const userRelationship = await deps.es_findUserRelationship(req.userId, req.toUserId)
-  if (userRelationship?.blockedStatus.tag === 'blocked') {
-    if (userRelationship.blockedStatus.fromUserId === req.userId)
-      throw new BusinessRuleError(req.id, 'you have blocked this user')
+  if (userRelationship !== undefined) {
+    if (ES.UserRelationship.isBlocked(userRelationship)) {
+      if (userRelationship.blockedStatus.fromUserId === req.userId)
+        throw new BusinessRuleError(req.id, 'you have blocked this user')
 
-    if (userRelationship.blockedStatus.fromUserId === req.toUserId)
-      throw new BusinessRuleError(req.id, 'the other user has blocked you')
+      if (userRelationship.blockedStatus.fromUserId === req.toUserId)
+        throw new BusinessRuleError(req.id, 'the other user has blocked you')
+    }
+
+    if (ES.UserRelationship.isFriend(userRelationship))
+      throw errors.theUsersAreAlreadyFriends(req.id)
   }
-
-  if (userRelationship?.friendStatus.tag === 'friended')
-    throw errors.theUsersAreAlreadyFriends(req.id)
 
   const lastFriendRequest = await deps.es_findLastFriendRequestBetweenUsers(
     req.userId,
     req.toUserId
   )
-  if (lastFriendRequest?.status.tag === 'pending') throw errors.alreadyPendingFriendRequest(req.id)
+  if (lastFriendRequest !== undefined && ES.FriendRequest.isPending(lastFriendRequest))
+    throw errors.alreadyPendingFriendRequest(req.id)
 
   const [, sentEvent] = ES.FriendRequest.create(req.userId, req.toUserId)
 
