@@ -168,7 +168,9 @@ type FriendRequestTable = {
 
 const friendRequestTableKey = (k: keyof FriendRequestTable) => k
 
-const friendRequestTableToAggregate = (row: FriendRequestTable): ES.FriendRequest.Aggregate => {
+const friendRequestTableToAggregate = (
+  row: FriendRequestTable
+): ES.FriendRequest.Aggregate<ES.FriendRequest.AggregateStatus> => {
   let friendRequestStatus: ES.FriendRequest.AggregateStatus
   if (row.accepted_at !== null)
     friendRequestStatus = { tag: 'accepted', acceptedAt: row.accepted_at }

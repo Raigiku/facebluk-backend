@@ -7,7 +7,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
   if (friendRequest === undefined)
     throw new BusinessRuleError(req.id, 'the friend request does not exist')
 
-  if (friendRequest.status.tag !== 'pending')
+  if (!ES.FriendRequest.isPending(friendRequest))
     throw new BusinessRuleError(req.id, 'the friend request is not pending')
 
   if (friendRequest.toUserId !== req.userId)
