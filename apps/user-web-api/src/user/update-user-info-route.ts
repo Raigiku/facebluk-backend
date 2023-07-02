@@ -27,7 +27,7 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
           formData.profilePicture === undefined
             ? undefined
             : RequestImage.create(
-                formData.profilePicture[0].data.buffer,
+                formData.profilePicture[0].data,
                 formData.profilePicture[0].mimetype
               ),
       },

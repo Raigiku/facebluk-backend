@@ -1,7 +1,8 @@
+import Joi from 'joi'
 import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  validateInputFields(req)
+  validator.validate(req)
 
   const friendRequest = await deps.es_findFriendRequestById(req.friendRequestId)
   if (friendRequest === undefined)
@@ -19,11 +20,6 @@ export const handle = async (req: Request, deps: Dependencies) => {
   await deps.int_processEvent(req.id, rejectedFriendRequestEvent)
 }
 
-const validateInputFields = (req: Request) => {
-  Uuid.validate(req.id, req.friendRequestId, 'friendRequestId')
-  Uuid.validate(req.id, req.userId, 'userId')
-}
-
 export type Dependencies = {
   es_findFriendRequestById: ES.FriendRequest.FnFindOneById
   es_rejectFriendRequest: ES.FriendRequest.FnReject
@@ -36,3 +32,9 @@ export type Request = {
   readonly userId: string
   readonly friendRequestId: string
 }
+
+export const validator = Joi.object<Request, true>({
+  id: Uuid.validator.required(),
+  userId: Uuid.validator.required(),
+  friendRequestId: Uuid.validator.required(),
+})

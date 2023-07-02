@@ -1,3 +1,4 @@
+import { CMD } from '@facebluk/domain'
 import { FastifyInstance, FastifyPluginCallback } from 'fastify'
 import { friendRequestsRoutes } from '../friend-request'
 import { postsRoutes } from '../post'
@@ -8,6 +9,7 @@ export const setupRoutes = async (server: FastifyInstance) => {
 }
 
 const apiRoutes: FastifyPluginCallback = async (fastify, options, done) => {
+  await fastify.register(testRoute)
   await fastify.register(healthCheckRoute)
   await fastify.register(postsRoutes, { prefix: 'posts' })
   await fastify.register(friendRequestsRoutes, { prefix: 'friend-requests' })
@@ -17,6 +19,14 @@ const apiRoutes: FastifyPluginCallback = async (fastify, options, done) => {
 
 const healthCheckRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.get('/health-check', async (request, reply) => {
+    await reply.status(200).send({ response: 'success' })
+  })
+  done()
+}
+
+const testRoute: FastifyPluginCallback = (fastify, options, done) => {
+  fastify.post('/test', async (request, reply) => {
+    await CMD.RegisterUser.validator.validateAsync(request.body)
     await reply.status(200).send({ response: 'success' })
   })
   done()

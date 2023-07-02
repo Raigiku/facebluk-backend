@@ -17,6 +17,7 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
           id: request.id,
           description: request.body.description,
           userId: jwt.sub,
+          taggedUserIds: request.body.taggedUserIds,
         },
         {
           es_createPost: PostgreSQL.Post.create(request.postgreSqlPoolClient),
@@ -34,6 +35,10 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
 
 const bodySchema = Type.Object({
   description: Type.String({ minLength: 1, maxLength: ES.Post.descriptionMaxLength }),
+  taggedUserIds: Type.Array(Type.String({ minLength: 1 }), {
+    uniqueItems: true,
+    maxItems: 20,
+  }),
 })
 
 const responseSchema = {

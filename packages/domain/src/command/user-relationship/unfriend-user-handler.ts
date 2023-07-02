@@ -1,7 +1,8 @@
+import Joi from 'joi'
 import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  validateInputFields(req)
+  validator.validate(req)
 
   deps.es_findUserRelationshipBetween
   const toUser = await deps.es_findUserById(req.toUserId)
@@ -24,11 +25,6 @@ export const handle = async (req: Request, deps: Dependencies) => {
   await deps.int_processEvent(req.id, unfriendedEvent)
 }
 
-const validateInputFields = (req: Request) => {
-  Uuid.validate(req.id, req.userId, 'userId')
-  Uuid.validate(req.id, req.toUserId, 'toUserId')
-}
-
 export type Dependencies = {
   es_findUserRelationshipBetween: ES.UserRelationship.FnFindOneBetweenUsers
   es_unfriend: ES.UserRelationship.FnUnfriend
@@ -42,3 +38,9 @@ export type Request = {
   readonly userId: string
   readonly toUserId: string
 }
+
+export const validator = Joi.object<Request, true>({
+  id: Uuid.validator.required(),
+  userId: Uuid.validator.required(),
+  toUserId: Uuid.validator.required(),
+})

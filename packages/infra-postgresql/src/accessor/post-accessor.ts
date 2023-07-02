@@ -23,9 +23,10 @@ export const createInternalAggregate = async (
         ${postTableKey('version')},
         ${postTableKey('created_at')},
         ${postTableKey('description')},
-        ${postTableKey('user_id')}
+        ${postTableKey('user_id')},
+        ${postTableKey('tagged_user_ids')}
       )
-      VALUES ($1, $2, $3, $4, $5)
+      VALUES ($1, $2, $3, $4, $5, $6)
     `,
     [
       event.data.aggregateId,
@@ -33,6 +34,7 @@ export const createInternalAggregate = async (
       event.data.createdAt,
       event.payload.description,
       event.payload.userId,
+      event.payload.taggedUserIds,
     ]
   )
 }
@@ -54,6 +56,7 @@ type PostTable = {
   readonly created_at: Date
   readonly description: string
   readonly user_id: string
+  readonly tagged_user_ids: string[]
 }
 
 const postTableKey = (k: keyof PostTable) => k
@@ -62,4 +65,5 @@ const postTableToAggregate = (row: PostTable): ES.Post.Aggregate => ({
   aggregate: { id: row.id, version: row.version, createdAt: row.created_at },
   description: row.description,
   userId: row.user_id,
+  taggedUserIds: row.tagged_user_ids,
 })

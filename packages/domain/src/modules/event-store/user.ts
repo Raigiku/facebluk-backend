@@ -1,4 +1,5 @@
-import { BusinessRuleError, ES, TaggedType } from '..'
+import Joi from 'joi'
+import { ES, TaggedType } from '..'
 
 export type Aggregate = {
   readonly aggregate: ES.Aggregate.Data
@@ -14,6 +15,7 @@ export const create = (
   profilePictureUrl?: string
 ): [Aggregate, RegisteredEvent] => {
   const aggregateData = ES.Aggregate.createWithId(userId)
+  alias = alias.toLowerCase()
   return [
     {
       aggregate: aggregateData,
@@ -83,21 +85,10 @@ export type InfoUpdatedEvent = {
 
 // validation
 export const nameMaxLength = 100
-export const validateName = (requestId: string, name: string) => {
-  if (name.length > nameMaxLength)
-    new BusinessRuleError(requestId, `name cannot be longer than ${nameMaxLength} characters`)
-  if (name.length === 0) throw new BusinessRuleError(requestId, 'name cannot be empty')
-}
+export const nameValidator = Joi.string().max(nameMaxLength)
 
 export const aliasMaxLength = 20
-export const validateAlias = (requestId: string, alias: string) => {
-  if (alias.length > aliasMaxLength)
-    new BusinessRuleError(requestId, `alias cannot be longer than ${aliasMaxLength} characters`)
-  if (alias.length === 0) throw new BusinessRuleError(requestId, 'alias cannot be empty')
-  const alphanumericRegex = /^[a-z0-9]+$/i
-  if (!alphanumericRegex.test(alias))
-    throw new BusinessRuleError(requestId, 'alias can only be alphanumeric')
-}
+export const aliasValidator = Joi.string().max(aliasMaxLength).alphanum()
 
 // accessors
 export type FnFindOneById = (userId: string) => Promise<Aggregate | undefined>

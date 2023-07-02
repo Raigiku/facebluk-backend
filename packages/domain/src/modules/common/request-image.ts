@@ -1,20 +1,23 @@
-import { BusinessRuleError } from './business-rule-error'
+import Joi from 'joi'
 
 export type Data = {
-  readonly bytes: ArrayBuffer
+  readonly bytes: Buffer
   readonly fileType: string
 }
 
-export const create = (bytes: ArrayBuffer, fileType: string): Data => ({
+export const create = (bytes: Buffer, fileType: string): Data => ({
   bytes,
   fileType,
 })
 
-const oneMegaByteInBytes = 1_048_576
-export const validate = (requestId: string, image: Data) => {
-  const allowedExtensions = ['image/png', 'image/jpg', 'image/jpeg']
-  if (!allowedExtensions.includes(image.fileType))
-    throw new BusinessRuleError(requestId, `only allowed ${allowedExtensions.join(' ')} images`)
-  const sizeInMB = image.bytes.byteLength / oneMegaByteInBytes
-  if (sizeInMB > 10) throw new BusinessRuleError(requestId, 'max image size is 10 MB')
-}
+const tenMegaByteInBytes = 10 * 1024 * 1024 // 10 MB
+const allowedExtensions = ['image/png', 'image/jpg', 'image/jpeg']
+export const validator = Joi.object({
+  bytes: Joi.binary()
+    .max(tenMegaByteInBytes)
+    .required()
+    .messages({ 'binary.max': '"bytes" must be less than or equal to 10 MB' }),
+  fileType: Joi.string()
+    .valid(...allowedExtensions)
+    .required(),
+})

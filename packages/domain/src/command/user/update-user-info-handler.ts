@@ -1,7 +1,11 @@
+import Joi from 'joi'
 import { BusinessRuleError, ES, FS, INT, RequestImage, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  validateInputFields(req)
+  validator.validate(req)
+
+  if (req.name === undefined && req.profilePicture === undefined)
+    throw new BusinessRuleError(req.id, '"name" and "profilePicture" are both undefined')
 
   const user = await deps.es_findUserById(req.userId)
   if (user === undefined) throw new BusinessRuleError(req.id, 'user does not exist')
@@ -16,12 +20,6 @@ export const handle = async (req: Request, deps: Dependencies) => {
 
   await deps.es_updateInfo(infoUpdatedEvent)
   await deps.int_processEvent(req.id, infoUpdatedEvent)
-}
-
-const validateInputFields = (req: Request) => {
-  Uuid.validate(req.id, req.userId, 'userId')
-  if (req.name !== undefined) ES.User.validateName(req.id, req.name)
-  if (req.profilePicture !== undefined) RequestImage.validate(req.id, req.profilePicture)
 }
 
 export type Dependencies = {
@@ -40,3 +38,10 @@ export type Request = {
   readonly name?: string
   readonly profilePicture?: RequestImage.Data
 }
+
+export const validator = Joi.object<Request, true>({
+  id: Uuid.validator.required(),
+  userId: Uuid.validator.required(),
+  name: ES.User.nameValidator,
+  profilePicture: RequestImage.validator,
+})

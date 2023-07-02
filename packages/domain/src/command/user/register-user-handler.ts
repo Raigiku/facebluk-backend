@@ -1,7 +1,8 @@
+import Joi from 'joi'
 import { BusinessRuleError, ES, FS, INT, RequestImage, UA, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  validateInputFields(req)
+  validator.validate(req)
 
   const aliasExists = await deps.es_aliasExists(req.alias)
   if (aliasExists) throw new BusinessRuleError(req.id, 'alias is already used')
@@ -32,13 +33,6 @@ export const handle = async (req: Request, deps: Dependencies) => {
     await deps.ua_markUserAsRegistered(req.userId, esUser.aggregate.createdAt)
 }
 
-const validateInputFields = (req: Request) => {
-  Uuid.validate(req.id, req.userId, 'userId')
-  ES.User.validateName(req.id, req.name)
-  ES.User.validateAlias(req.id, req.alias)
-  if (req.profilePicture !== undefined) RequestImage.validate(req.id, req.profilePicture)
-}
-
 export type Dependencies = {
   es_aliasExists: ES.User.FnAliasExists
   es_findUserById: ES.User.FnFindOneById
@@ -60,3 +54,11 @@ export type Request = {
   readonly alias: string
   readonly profilePicture?: RequestImage.Data
 }
+
+export const validator = Joi.object<Request, true>({
+  id: Uuid.validator.required(),
+  userId: Uuid.validator.required(),
+  name: ES.User.nameValidator.required(),
+  alias: ES.User.aliasValidator.required(),
+  profilePicture: RequestImage.validator.required(),
+})

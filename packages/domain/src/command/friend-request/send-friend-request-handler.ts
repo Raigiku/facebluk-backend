@@ -1,7 +1,8 @@
+import Joi from 'joi'
 import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies): Promise<Response> => {
-  validateInputFields(req.id, req.userId, req.toUserId)
+  validator.validate(req)
 
   const toUser = await deps.es_findUserById(req.toUserId)
   if (toUser === undefined) throw errors.toUserDoesNotExist(req.id)
@@ -35,12 +36,6 @@ export const handle = async (req: Request, deps: Dependencies): Promise<Response
   return { friendRequestId: sentEvent.data.aggregateId }
 }
 
-const validateInputFields = (requestId: string, userId: string, toUserId: string) => {
-  Uuid.validate(requestId, userId, 'userId')
-  Uuid.validate(requestId, toUserId, 'toUserId')
-  if (userId === toUserId) throw errors.fromUserCannotBeToUser(requestId)
-}
-
 export type Dependencies = {
   es_findUserRelationship: ES.UserRelationship.FnFindOneBetweenUsers
   es_findLastFriendRequestBetweenUsers: ES.FriendRequest.FnFindOneLastBetweenUsers
@@ -55,6 +50,14 @@ export type Request = {
   readonly userId: string
   readonly toUserId: string
 }
+
+export const validator = Joi.object<Request, true>({
+  id: Uuid.validator.required(),
+  userId: Uuid.validator.required(),
+  toUserId: Uuid.validator.disallow(Joi.ref('userId')).required().messages({
+    'any.invalid': '"toUserId" cannot be equal to "userId"',
+  }),
+})
 
 export type Response = {
   readonly friendRequestId: string
