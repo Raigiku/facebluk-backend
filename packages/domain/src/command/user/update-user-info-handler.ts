@@ -2,7 +2,7 @@ import Joi from 'joi'
 import { BusinessRuleError, ES, FS, INT, RequestImage, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  validator.validate(req)
+  await validator.validateAsync(req)
 
   if (req.name === undefined && req.profilePicture === undefined)
     throw new BusinessRuleError(req.id, '"name" and "profilePicture" are both undefined')

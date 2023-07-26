@@ -2,7 +2,7 @@ import Joi from 'joi'
 import { ES, INT, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies): Promise<Response> => {
-  validator.validate(req)
+  await validator.validateAsync(req)
 
   const [, createdPostEvent] = ES.Post.create(req.description, req.userId, req.taggedUserIds)
 

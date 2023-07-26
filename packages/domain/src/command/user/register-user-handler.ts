@@ -2,7 +2,7 @@ import Joi from 'joi'
 import { BusinessRuleError, ES, FS, INT, RequestImage, UA, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  validator.validate(req)
+  await validator.validateAsync(req)
 
   const aliasExists = await deps.es_aliasExists(req.alias)
   if (aliasExists) throw new BusinessRuleError(req.id, 'alias is already used')

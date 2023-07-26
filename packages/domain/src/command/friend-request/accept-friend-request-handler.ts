@@ -2,7 +2,7 @@ import Joi from 'joi'
 import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  validator.validate(req)
+  await validator.validateAsync(req)
 
   const friendRequest = await deps.es_findFriendRequest(req.friendRequestId)
   if (friendRequest === undefined)

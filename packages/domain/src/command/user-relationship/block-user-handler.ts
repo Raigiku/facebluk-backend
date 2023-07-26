@@ -2,7 +2,7 @@ import Joi from 'joi'
 import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  validator.validate(req)
+  await validator.validateAsync(req)
 
   const toUser = await deps.findUserById(req.toUserId)
   if (toUser === undefined) throw new BusinessRuleError(req.id, 'the to user does not exist')
