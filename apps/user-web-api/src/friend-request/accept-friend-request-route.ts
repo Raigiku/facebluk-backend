@@ -1,18 +1,16 @@
-import { CMD, INT } from '@facebluk/domain'
+import { CMD } from '@facebluk/domain'
 import { Common } from '@facebluk/infra-common'
-import { PostgreSQL } from '@facebluk/infra-postgresql'
-import { RabbitMQ } from '@facebluk/infra-rabbitmq'
-import { Supabase } from '@facebluk/infra-supabase'
+import { Infra } from '@facebluk/infrastructure'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '../common'
 
 export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>(
-    '/accept',
+    '/accept/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
+      const jwt: Infra.User.JwtModel = await request.jwtVerify()
       await CMD.AcceptFriendRequest.handle(
         {
           id: request.id,
@@ -20,18 +18,17 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
           friendRequestId: request.body.friendRequestId,
         },
         {
-          es_transaction: PostgreSQL.Common.transaction(request.postgreSqlPoolClient),
-          es_acceptFriendRequest: PostgreSQL.FriendRequest.accept(request.postgreSqlPoolClient),
-          es_friendUser: PostgreSQL.UserRelationship.friend(request.postgreSqlPoolClient),
-          es_findUserRelationshipBetween: PostgreSQL.UserRelationship.findOneBetweenUsers(
+          findFriendRequest: Infra.FriendRequest.findOneById(fastify.postgreSqlPool),
+          acceptFriendRequest: Infra.FriendRequest.accept(request.postgreSqlPoolClient),
+          findUserRelationshipBetween: Infra.UserRelationship.findOneBetweenUsers(
             fastify.postgreSqlPool
           ),
-          es_findFriendRequest: PostgreSQL.FriendRequest.findOneById(fastify.postgreSqlPool),
-          int_processEvents: INT.Event.processEvents(
-            Common.Logger.log(request.log),
-            RabbitMQ.publishEvent(request.rabbitMqChannel),
-            PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
+          publishEvents: Infra.Event.publishEvents(
+            request.rabbitMqChannel,
+            request.postgreSqlPoolClient,
+            Common.Logger.log(request.log)
           ),
+          friendUser: Infra.UserRelationship.friend(request.postgreSqlPoolClient),
         }
       )
       await reply.status(200).send()

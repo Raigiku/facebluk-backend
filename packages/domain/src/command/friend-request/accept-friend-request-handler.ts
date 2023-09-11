@@ -1,35 +1,33 @@
 import Joi from 'joi'
-import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
+import { BusinessRuleError, EventData, FriendRequest, UserRelationship, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   await validator.validateAsync(req)
 
-  const friendRequest = await deps.es_findFriendRequest(req.friendRequestId)
+  const friendRequest = await deps.findFriendRequest(req.friendRequestId)
   if (friendRequest === undefined)
     throw new BusinessRuleError(req.id, 'the friend request does not exist')
 
-  if (!ES.FriendRequest.isPending(friendRequest))
+  if (!FriendRequest.isPending(friendRequest))
     throw new BusinessRuleError(req.id, 'the friend request is not pending')
 
   if (friendRequest.toUserId !== req.userId)
     throw new BusinessRuleError(req.id, 'the user is not the receiver of the friend request')
 
-  const userRelationship = await deps.es_findUserRelationshipBetween(
+  const userRelationship = await deps.findUserRelationshipBetween(
     friendRequest.fromUserId,
     friendRequest.toUserId
   )
 
   const isNewFriendRelationship = userRelationship === undefined
-  const [, acceptedFriendRequestEvent] = ES.FriendRequest.accept(friendRequest)
+  const [, acceptedFriendRequestEvent] = FriendRequest.accept(friendRequest)
   const [, friendedRelationshipEvent] = isNewFriendRelationship
-    ? ES.UserRelationship.newFriend(friendRequest.fromUserId, friendRequest.toUserId)
-    : ES.UserRelationship.friend(userRelationship, friendRequest.fromUserId, friendRequest.toUserId)
+    ? UserRelationship.newFriend(friendRequest.fromUserId, friendRequest.toUserId)
+    : UserRelationship.friend(userRelationship, friendRequest.fromUserId, friendRequest.toUserId)
 
-  await deps.es_transaction(async () => {
-    await deps.es_acceptFriendRequest(acceptedFriendRequestEvent)
-    await deps.es_friendUser(isNewFriendRelationship, friendedRelationshipEvent)
-  })
-  await deps.int_processEvents(
+  await deps.acceptFriendRequest(acceptedFriendRequestEvent)
+  await deps.friendUser(isNewFriendRelationship, friendedRelationshipEvent)
+  await deps.publishEvents(
     req.id,
     [acceptedFriendRequestEvent, friendedRelationshipEvent],
     req.userId
@@ -37,13 +35,12 @@ export const handle = async (req: Request, deps: Dependencies) => {
 }
 
 export type Dependencies = {
-  es_findFriendRequest: ES.FriendRequest.FnFindOneById
-  es_findUserRelationshipBetween: ES.UserRelationship.FnFindOneBetweenUsers
-  es_acceptFriendRequest: ES.FriendRequest.FnAccept
-  es_friendUser: ES.UserRelationship.FnFriend
-  es_transaction: ES.FnTransaction
-
-  int_processEvents: INT.Event.FnProcessEvents
+  findFriendRequest: FriendRequest.FnFindOneById
+  acceptFriendRequest: FriendRequest.FnAccept
+  findUserRelationshipBetween: UserRelationship.FnFindOneBetweenUsers
+  friendUser: UserRelationship.FnFriend
+  publishEvents: EventData.FnPublishEvents
+  // es_transaction: ES.FnTransaction
 }
 
 export type Request = {

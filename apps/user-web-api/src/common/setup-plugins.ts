@@ -1,7 +1,5 @@
 import { Common } from '@facebluk/infra-common'
-import { PostgreSQL } from '@facebluk/infra-postgresql'
-import { RabbitMQ } from '@facebluk/infra-rabbitmq'
-import { Supabase } from '@facebluk/infra-supabase'
+import { Infra } from '@facebluk/infrastructure'
 import fastifyCors from '@fastify/cors'
 import fastifyJwt from '@fastify/jwt'
 import fastifyMultipart from '@fastify/multipart'
@@ -18,9 +16,9 @@ export const setupPlugins = async (
   commonConfig: Common.Config.Data
 ) => {
   // init env configs
-  const userAuthConfig = Supabase.Config.create()
-  const postgreSqlConfig = PostgreSQL.Config.create()
-  const rabbitMqConfig = RabbitMQ.Config.create()
+  const userAuthConfig = Infra.Supabase.createConfig()
+  const postgreSqlConfig = Infra.PostgreSQL.createConfig()
+  const rabbitMqConfig = Infra.RabbitMQ.createConfig()
   // setup fastify plugins
   await server.register(fastifyMultipart, {
     addToBody: true,

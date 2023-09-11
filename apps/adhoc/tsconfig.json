@@ -4,10 +4,5 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "references": [
-    { "path": "../../packages/domain" },
-    { "path": "../../packages/infra-postgresql" },
-    { "path": "../../packages/infra-supabase" },
-    { "path": "../../packages/infra-rabbitmq" },
-  ]
+  "references": [{ "path": "../../packages/domain" }]
 }

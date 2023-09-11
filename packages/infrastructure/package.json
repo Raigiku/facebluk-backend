@@ -1,0 +1,20 @@
+{
+  "name": "@facebluk/infrastructure",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@facebluk/domain": "workspace:*",
+    "@facebluk/infra-common": "workspace:*",
+    "@supabase/supabase-js": "^2.7.1",
+    "amqplib": "^0.10.3",
+    "pg": "^8.9.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.1",
+    "@types/pg": "^8.6.6"
+  }
+}

@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
+import { BusinessRuleError, EventData, User, UserRelationship, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   await validator.validateAsync(req)
@@ -9,21 +9,21 @@ export const handle = async (req: Request, deps: Dependencies) => {
 
   const userRelationship = await deps.findUserRelationshipBetween(req.userId, toUser.aggregate.id)
 
-  if (userRelationship !== undefined && ES.UserRelationship.isBlocked(userRelationship))
+  if (userRelationship !== undefined && UserRelationship.isBlocked(userRelationship))
     throw new BusinessRuleError(req.id, 'users are already blocked')
 
   const [, blockedEvent] =
     userRelationship === undefined
-      ? ES.UserRelationship.newBlock(req.userId, toUser.aggregate.id)
-      : ES.UserRelationship.block(userRelationship, req.userId, toUser.aggregate.id)
+      ? UserRelationship.newBlock(req.userId, toUser.aggregate.id)
+      : UserRelationship.block(userRelationship, req.userId, toUser.aggregate.id)
 
-  await deps.processEvent(req.id, blockedEvent)
+  await deps.publishEvent(req.id, blockedEvent)
 }
 
 export type Dependencies = {
-  findUserById: ES.User.FnFindOneById
-  findUserRelationshipBetween: ES.UserRelationship.FnFindOneBetweenUsers
-  processEvent: INT.Event.FnProcessEvent
+  findUserById: User.FnFindOneById
+  findUserRelationshipBetween: UserRelationship.FnFindOneBetweenUsers
+  publishEvent: EventData.FnPublishEvent
 }
 
 export type Request = {

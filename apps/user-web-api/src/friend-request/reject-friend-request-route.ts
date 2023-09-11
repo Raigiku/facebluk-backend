@@ -1,17 +1,15 @@
-import { CMD, INT } from '@facebluk/domain'
-import { PostgreSQL } from '@facebluk/infra-postgresql'
-import { RabbitMQ } from '@facebluk/infra-rabbitmq'
-import { Supabase } from '@facebluk/infra-supabase'
+import { CMD } from '@facebluk/domain'
+import { Infra } from '@facebluk/infrastructure'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '../common'
 
 export const rejectFriendRequestRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>(
-    '/reject',
+    '/reject/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
+      const jwt: Infra.User.JwtModel = await request.jwtVerify()
       await CMD.RejectFriendRequest.handle(
         {
           id: request.id,
@@ -19,12 +17,12 @@ export const rejectFriendRequestRoute: FastifyPluginCallback = (fastify, options
           userId: jwt.sub,
         },
         {
-          es_rejectFriendRequest: PostgreSQL.FriendRequest.reject(request.postgreSqlPoolClient),
-          es_findFriendRequestById: PostgreSQL.FriendRequest.findOneById(fastify.postgreSqlPool),
-          int_processEvent: INT.Event.processEvent(
-            RabbitMQ.publishEvent(request.rabbitMqChannel),
-            PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
+          findFriendRequestById: Infra.FriendRequest.findOneById(fastify.postgreSqlPool),
+          publishEvent: Infra.Event.publishEvent(
+            request.rabbitMqChannel,
+            request.postgreSqlPoolClient
           ),
+          rejectFriendRequest: Infra.FriendRequest.reject(request.postgreSqlPoolClient),
         }
       )
       await reply.status(200).send()

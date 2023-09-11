@@ -1,18 +1,15 @@
-import { CMD, INT } from '@facebluk/domain'
-import { PostgreSQL } from '@facebluk/infra-postgresql'
-import { RabbitMQ } from '@facebluk/infra-rabbitmq'
-import { Supabase } from '@facebluk/infra-supabase'
+import { CMD } from '@facebluk/domain'
+import { Infra } from '@facebluk/infrastructure'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '../common'
 
 export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>(
-    '/send',
+    '/send/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
-      const pgClient = await fastify.postgreSqlPool.connect()
+      const jwt: Infra.User.JwtModel = await request.jwtVerify()
       const response = await CMD.SendFriendRequest.handle(
         {
           id: request.id,
@@ -20,17 +17,15 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
           toUserId: request.body.toUserId,
         },
         {
-          es_findUserById: PostgreSQL.User.findOneById(fastify.postgreSqlPool),
-          es_findLastFriendRequestBetweenUsers:
-            PostgreSQL.FriendRequest.findOneLastFriendRequestBetweenUsers(fastify.postgreSqlPool),
-          es_findUserRelationship: PostgreSQL.UserRelationship.findOneBetweenUsers(
-            fastify.postgreSqlPool
+          findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
+          publishEvent: Infra.Event.publishEvent(
+            request.rabbitMqChannel,
+            request.postgreSqlPoolClient
           ),
-          es_sendFriendRequest: PostgreSQL.FriendRequest.send(pgClient),
-          int_processEvent: INT.Event.processEvent(
-            RabbitMQ.publishEvent(request.rabbitMqChannel),
-            PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
-          ),
+          sendFriendRequest: Infra.FriendRequest.send(request.postgreSqlPoolClient),
+          findUserRelationship: Infra.UserRelationship.findOneBetweenUsers(fastify.postgreSqlPool),
+          findLastFriendRequestBetweenUsers:
+            Infra.FriendRequest.findOneLastFriendRequestBetweenUsers(fastify.postgreSqlPool),
         }
       )
       await reply.status(200).send(response)

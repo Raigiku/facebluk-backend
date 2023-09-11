@@ -1,50 +1,47 @@
 import Joi from 'joi'
-import { BusinessRuleError, ES, FS, INT, RequestImage, UA, Uuid } from '../../modules'
+import { BusinessRuleError, EventData, RequestImage, User, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   await validator.validateAsync(req)
 
-  const aliasExists = await deps.es_aliasExists(req.alias)
+  const aliasExists = await deps.aliasExists(req.alias)
   if (aliasExists) throw new BusinessRuleError(req.id, 'alias is already used')
 
   let profilePictureUrl: string | undefined = undefined
   if (req.profilePicture !== undefined) {
-    await deps.fs_uploadProfilePicture(req.userId, req.profilePicture.bytes)
-    profilePictureUrl = deps.fs_findUserProfilePictureUrl(req.userId)
+    await deps.uploadProfilePicture(req.userId, req.profilePicture.bytes)
+    profilePictureUrl = deps.findProfilePictureUrl(req.userId)
   }
 
-  let esUser = await deps.es_findUserById(req.userId)
-  if (esUser === undefined) {
-    const [newUser, registeredUserEvent] = ES.User.create(
+  let user = await deps.findUserById(req.userId)
+  if (user === undefined) {
+    const [newUser, registeredUserEvent] = User.register(
       req.userId,
       req.name,
       req.alias,
       profilePictureUrl
     )
-    esUser = newUser
-    await deps.es_registerUser(registeredUserEvent)
-    await deps.int_processEvent(req.id, registeredUserEvent)
+    user = newUser
+    await deps.registerUser(registeredUserEvent)
+    await deps.publishEvent(req.id, registeredUserEvent)
   }
 
-  const uaUser = await deps.ua_findUserById(req.userId)
-  if (uaUser === undefined) throw new BusinessRuleError(req.id, 'user does not exist')
+  const authMetadata = await deps.findUserAuthMetadata(req.userId)
+  if (authMetadata === undefined) throw new BusinessRuleError(req.id, 'user does not exist')
 
-  if (!UA.User.isRegistered(uaUser))
-    await deps.ua_markUserAsRegistered(req.userId, esUser.aggregate.createdAt)
+  if (!User.isRegistered(authMetadata))
+    await deps.markUserAsRegistered(req.userId, user.aggregate.createdAt)
 }
 
 export type Dependencies = {
-  es_aliasExists: ES.User.FnAliasExists
-  es_findUserById: ES.User.FnFindOneById
-  es_registerUser: ES.User.FnRegister
-
-  fs_uploadProfilePicture: FS.User.FnUploadProfilePicture
-  fs_findUserProfilePictureUrl: FS.User.FnFindProfilePictureUrl
-
-  ua_findUserById: UA.User.FnFindOneById
-  ua_markUserAsRegistered: UA.User.FnMarkUserAsRegistered
-
-  int_processEvent: INT.Event.FnProcessEvent
+  aliasExists: User.FnAliasExists
+  findUserById: User.FnFindOneById
+  registerUser: User.FnRegister
+  uploadProfilePicture: User.FnUploadProfilePicture
+  findProfilePictureUrl: User.FnFindProfilePictureUrl
+  findUserAuthMetadata: User.FnFindAuthMetadata
+  markUserAsRegistered: User.FnMarkAsRegistered
+  publishEvent: EventData.FnPublishEvent
 }
 
 export type Request = {
@@ -58,7 +55,7 @@ export type Request = {
 export const validator = Joi.object<Request, true>({
   id: Uuid.validator.required(),
   userId: Uuid.validator.required(),
-  name: ES.User.nameValidator.required(),
-  alias: ES.User.aliasValidator.required(),
+  name: User.nameValidator.required(),
+  alias: User.aliasValidator.required(),
   profilePicture: RequestImage.validator.required(),
 })

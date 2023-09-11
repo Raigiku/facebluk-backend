@@ -1,21 +1,19 @@
 import { Common } from '@facebluk/infra-common'
-import { PostgreSQL } from '@facebluk/infra-postgresql'
-import { RabbitMQ } from '@facebluk/infra-rabbitmq'
-import { Supabase } from '@facebluk/infra-supabase'
+import { Infra } from '@facebluk/infrastructure'
 import { FastifyPluginCallback } from 'fastify'
 import fp from 'fastify-plugin'
 
 declare module 'fastify' {
   interface FastifyInstance {
-    postgreSqlPool: PostgreSQL.pg.Pool
-    rabbitMqConnection: RabbitMQ.amqp.Connection
-    supabaseClient: Supabase.SupabaseClient
+    postgreSqlPool: Infra.PostgreSQL.Pool
+    rabbitMqConnection: Infra.RabbitMQ.Connection
+    supabaseClient: Infra.Supabase.SupabaseClient
     commonConfig: Common.Config.Data
   }
 
   interface FastifyRequest {
-    rabbitMqChannel: RabbitMQ.amqp.Channel
-    postgreSqlPoolClient: PostgreSQL.pg.PoolClient
+    rabbitMqChannel: Infra.RabbitMQ.Channel
+    postgreSqlPoolClient: Infra.PostgreSQL.PoolClient
   }
 }
 
@@ -32,7 +30,7 @@ const rabbitMqConnectionErrorCodes = [
   '540',
   '541',
 ]
-const rabbitMqPlugin: FastifyPluginCallback<RabbitMQ.Config.Data> = async (
+const rabbitMqPlugin: FastifyPluginCallback<Infra.RabbitMQ.Config> = async (
   fastify,
   options,
   done
@@ -43,7 +41,7 @@ const rabbitMqPlugin: FastifyPluginCallback<RabbitMQ.Config.Data> = async (
   }
 
   try {
-    const rabbitConn = await RabbitMQ.amqp.connect(options.connectionString)
+    const rabbitConn = await Infra.RabbitMQ.connect(options)
     fastify.decorate('rabbitMqConnection', rabbitConn)
   } catch (error) {
     throw new Error('RabbitMQ: could not connect', { cause: error })
@@ -69,7 +67,7 @@ const rabbitMqPlugin: FastifyPluginCallback<RabbitMQ.Config.Data> = async (
         )
         if (isConnectionError) {
           try {
-            fastify.rabbitMqConnection = await RabbitMQ.amqp.connect(options.connectionString)
+            fastify.rabbitMqConnection = await Infra.RabbitMQ.connect(options)
             request.rabbitMqChannel = await fastify.rabbitMqConnection.createChannel()
             return
           } catch (error) {}
@@ -93,7 +91,7 @@ export const fastifyRabbitMq = fp(rabbitMqPlugin, {
   name: 'fastify-rabbitmq-plugin',
 })
 
-const postgreSqlPlugin: FastifyPluginCallback<PostgreSQL.Config.Data> = (
+const postgreSqlPlugin: FastifyPluginCallback<Infra.PostgreSQL.Config> = (
   fastify,
   options,
   done
@@ -103,7 +101,7 @@ const postgreSqlPlugin: FastifyPluginCallback<PostgreSQL.Config.Data> = (
     return
   }
 
-  const pgPool = new PostgreSQL.pg.Pool({
+  const pgPool = new Infra.PostgreSQL.Pool({
     host: options.host,
     database: options.database,
     user: options.username,
@@ -142,13 +140,13 @@ export const fastifyPostgreSql = fp(postgreSqlPlugin, {
   name: 'fastify-postgresql-plugin',
 })
 
-const supabasePlugin: FastifyPluginCallback<Supabase.Config.Data> = (fastify, options, done) => {
+const supabasePlugin: FastifyPluginCallback<Infra.Supabase.Config> = (fastify, options, done) => {
   if (fastify.supabaseClient != null) {
     done()
     return
   }
 
-  fastify.decorate('supabaseClient', Supabase.createSupabaseClient(options))
+  fastify.decorate('supabaseClient', Infra.Supabase.createClient(options))
   done()
 }
 export const fastifySupabase = fp(supabasePlugin, {

@@ -1,17 +1,15 @@
-import { CMD, ES, INT } from '@facebluk/domain'
-import { PostgreSQL } from '@facebluk/infra-postgresql'
-import { RabbitMQ } from '@facebluk/infra-rabbitmq'
-import { Supabase } from '@facebluk/infra-supabase'
+import { CMD, Post } from '@facebluk/domain'
+import { Infra } from '@facebluk/infrastructure'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '../common'
 
 export const createPostRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>(
-    '/create',
+    '/create/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
+      const jwt: Infra.User.JwtModel = await request.jwtVerify()
       const response = await CMD.CreatePost.handle(
         {
           id: request.id,
@@ -20,10 +18,10 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
           taggedUserIds: request.body.taggedUserIds,
         },
         {
-          es_createPost: PostgreSQL.Post.create(request.postgreSqlPoolClient),
-          int_processEvent: INT.Event.processEvent(
-            RabbitMQ.publishEvent(request.rabbitMqChannel),
-            PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
+          createPost: Infra.Post.create(request.postgreSqlPoolClient),
+          publishEvent: Infra.Event.publishEvent(
+            request.rabbitMqChannel,
+            request.postgreSqlPoolClient
           ),
         }
       )
@@ -34,7 +32,7 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
 }
 
 const bodySchema = Type.Object({
-  description: Type.String({ minLength: 1, maxLength: ES.Post.descriptionMaxLength }),
+  description: Type.String({ minLength: 1, maxLength: Post.descriptionMaxLength }),
   taggedUserIds: Type.Array(Type.String({ minLength: 1 }), {
     uniqueItems: true,
     maxItems: 20,

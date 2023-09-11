@@ -1,30 +1,29 @@
 import Joi from 'joi'
-import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
+import { BusinessRuleError, EventData, FriendRequest, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   await validator.validateAsync(req)
 
-  const friendRequest = await deps.es_findFriendRequestById(req.friendRequestId)
+  const friendRequest = await deps.findFriendRequestById(req.friendRequestId)
   if (friendRequest === undefined)
     throw new BusinessRuleError(req.id, 'the friend request does not exist')
 
-  if (!ES.FriendRequest.isPending(friendRequest))
+  if (!FriendRequest.isPending(friendRequest))
     throw new BusinessRuleError(req.id, 'the friend request is not pending')
 
   if (friendRequest.fromUserId !== req.userId)
     throw new BusinessRuleError(req.id, 'the user is not the sender of the friend request')
 
-  const [, cancelledFriendRequestEvent] = ES.FriendRequest.cancel(friendRequest)
+  const [, cancelledFriendRequestEvent] = FriendRequest.cancel(friendRequest)
 
-  await deps.es_cancelFriendRequest(cancelledFriendRequestEvent)
-  await deps.int_processEvent(req.id, cancelledFriendRequestEvent)
+  await deps.cancelFriendRequest(cancelledFriendRequestEvent)
+  await deps.publishEvent(req.id, cancelledFriendRequestEvent)
 }
 
 export type Dependencies = {
-  es_findFriendRequestById: ES.FriendRequest.FnFindOneById
-  es_cancelFriendRequest: ES.FriendRequest.FnCancel
-
-  int_processEvent: INT.Event.FnProcessEvent
+  findFriendRequestById: FriendRequest.FnFindOneById
+  cancelFriendRequest: FriendRequest.FnCancel
+  publishEvent: EventData.FnPublishEvent
 }
 
 export type Request = {

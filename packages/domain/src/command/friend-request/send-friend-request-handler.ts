@@ -1,15 +1,22 @@
 import Joi from 'joi'
-import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
+import {
+  BusinessRuleError,
+  EventData,
+  FriendRequest,
+  User,
+  UserRelationship,
+  Uuid,
+} from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies): Promise<Response> => {
   await validator.validateAsync(req)
 
-  const toUser = await deps.es_findUserById(req.toUserId)
+  const toUser = await deps.findUserById(req.toUserId)
   if (toUser === undefined) throw errors.toUserDoesNotExist(req.id)
 
-  const userRelationship = await deps.es_findUserRelationship(req.userId, req.toUserId)
+  const userRelationship = await deps.findUserRelationship(req.userId, req.toUserId)
   if (userRelationship !== undefined) {
-    if (ES.UserRelationship.isBlocked(userRelationship)) {
+    if (UserRelationship.isBlocked(userRelationship)) {
       if (userRelationship.blockedStatus.fromUserId === req.userId)
         throw new BusinessRuleError(req.id, 'you have blocked this user')
 
@@ -17,32 +24,27 @@ export const handle = async (req: Request, deps: Dependencies): Promise<Response
         throw new BusinessRuleError(req.id, 'the other user has blocked you')
     }
 
-    if (ES.UserRelationship.isFriend(userRelationship))
-      throw errors.theUsersAreAlreadyFriends(req.id)
+    if (UserRelationship.isFriend(userRelationship)) throw errors.theUsersAreAlreadyFriends(req.id)
   }
 
-  const lastFriendRequest = await deps.es_findLastFriendRequestBetweenUsers(
-    req.userId,
-    req.toUserId
-  )
-  if (lastFriendRequest !== undefined && ES.FriendRequest.isPending(lastFriendRequest))
+  const lastFriendRequest = await deps.findLastFriendRequestBetweenUsers(req.userId, req.toUserId)
+  if (lastFriendRequest !== undefined && FriendRequest.isPending(lastFriendRequest))
     throw errors.alreadyPendingFriendRequest(req.id)
 
-  const [, sentEvent] = ES.FriendRequest.create(req.userId, req.toUserId)
+  const [, sentEvent] = FriendRequest.create(req.userId, req.toUserId)
 
-  await deps.es_sendFriendRequest(sentEvent)
-  await deps.int_processEvent(req.id, sentEvent)
+  await deps.sendFriendRequest(sentEvent)
+  await deps.publishEvent(req.id, sentEvent)
 
   return { friendRequestId: sentEvent.data.aggregateId }
 }
 
 export type Dependencies = {
-  es_findUserRelationship: ES.UserRelationship.FnFindOneBetweenUsers
-  es_findLastFriendRequestBetweenUsers: ES.FriendRequest.FnFindOneLastBetweenUsers
-  es_sendFriendRequest: ES.FriendRequest.FnSend
-  es_findUserById: ES.User.FnFindOneById
-
-  int_processEvent: INT.Event.FnProcessEvent
+  findUserRelationship: UserRelationship.FnFindOneBetweenUsers
+  findLastFriendRequestBetweenUsers: FriendRequest.FnFindOneLastBetweenUsers
+  sendFriendRequest: FriendRequest.FnSend
+  findUserById: User.FnFindOneById
+  publishEvent: EventData.FnPublishEvent
 }
 
 export type Request = {

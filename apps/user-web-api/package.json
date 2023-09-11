@@ -9,9 +9,7 @@
   "dependencies": {
     "@facebluk/domain": "workspace:*",
     "@facebluk/infra-common": "workspace:*",
-    "@facebluk/infra-postgresql": "workspace:*",
-    "@facebluk/infra-rabbitmq": "workspace:*",
-    "@facebluk/infra-supabase": "workspace:*",
+    "@facebluk/infrastructure": "workspace:*",
     "@fastify/cors": "^8.2.0",
     "@fastify/jwt": "^6.7.1",
     "@fastify/multipart": "^7.5.0",

@@ -1,13 +1,11 @@
-import { BusinessRuleError, CMD, INT, RequestImage } from '@facebluk/domain'
-import { PostgreSQL } from '@facebluk/infra-postgresql'
-import { RabbitMQ } from '@facebluk/infra-rabbitmq'
-import { Supabase } from '@facebluk/infra-supabase'
+import { BusinessRuleError, CMD, RequestImage } from '@facebluk/domain'
+import { Infra } from '@facebluk/infrastructure'
 import { FastifyPluginCallback } from 'fastify'
 import { FormFile } from '../common'
 
 export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, done) => {
-  fastify.post('/update-info', async (request, reply) => {
-    const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
+  fastify.post('/update-info/v1', async (request, reply) => {
+    const jwt: Infra.User.JwtModel = await request.jwtVerify()
 
     const formData = request.body as FormData
 
@@ -32,17 +30,13 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
               ),
       },
       {
-        es_updateInfo: PostgreSQL.User.updateInfo(request.postgreSqlPoolClient),
-        es_findUserById: PostgreSQL.User.findOneById(fastify.postgreSqlPool),
-        fs_findUserProfilePictureUrl: Supabase.FileStorage.User.findProfilePictureUrl(
-          fastify.supabaseClient
-        ),
-        fs_uploadProfilePicture: Supabase.FileStorage.User.uploadProfilePicture(
-          fastify.supabaseClient
-        ),
-        int_processEvent: INT.Event.processEvent(
-          RabbitMQ.publishEvent(request.rabbitMqChannel),
-          PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
+        updateUserInfo: Infra.User.updateInfo(request.postgreSqlPoolClient),
+        findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
+        findProfilePictureUrl: Infra.User.findProfilePictureUrl(fastify.supabaseClient),
+        uploadProfilePicture: Infra.User.uploadProfilePicture(fastify.supabaseClient),
+        publishEvent: Infra.Event.publishEvent(
+          request.rabbitMqChannel,
+          request.postgreSqlPoolClient
         ),
       }
     )

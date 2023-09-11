@@ -6,8 +6,6 @@
   },
   "references": [
     { "path": "../../packages/domain" },
-    { "path": "../../packages/infra-postgresql" },
-    { "path": "../../packages/infra-rabbitmq" },
-    { "path": "../../packages/infra-supabase" },
+    { "path": "../../packages/infrastructure" },
   ]
 }

@@ -1,7 +1,7 @@
 export * from './common'
-export * as ES from './event-store'
-export * as FS from './file-storage'
-export * as INT from './integration'
-export * as MB from './msg-broker'
-export * as UA from './user-auth'
+export * as EventData from './event'
+export * as FriendRequest from './friend-request'
+export * as Post from './post'
+export * as User from './user'
+export * as UserRelationship from './user-relationship'
 

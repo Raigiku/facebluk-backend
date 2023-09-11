@@ -1,30 +1,29 @@
 import Joi from 'joi'
-import { BusinessRuleError, ES, INT, Uuid } from '../../modules'
+import { BusinessRuleError, EventData, FriendRequest, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   await validator.validateAsync(req)
 
-  const friendRequest = await deps.es_findFriendRequestById(req.friendRequestId)
+  const friendRequest = await deps.findFriendRequestById(req.friendRequestId)
   if (friendRequest === undefined)
     throw new BusinessRuleError(req.id, 'the friend request does not exist')
 
-  if (!ES.FriendRequest.isPending(friendRequest))
+  if (!FriendRequest.isPending(friendRequest))
     throw new BusinessRuleError(req.id, 'the friend request is not pending')
 
   if (friendRequest.toUserId !== req.userId)
     throw new BusinessRuleError(req.id, 'the user is not the receiver of the friend request')
 
-  const [, rejectedFriendRequestEvent] = ES.FriendRequest.reject(friendRequest)
+  const [, rejectedFriendRequestEvent] = FriendRequest.reject(friendRequest)
 
-  await deps.es_rejectFriendRequest(rejectedFriendRequestEvent)
-  await deps.int_processEvent(req.id, rejectedFriendRequestEvent)
+  await deps.rejectFriendRequest(rejectedFriendRequestEvent)
+  await deps.publishEvent(req.id, rejectedFriendRequestEvent)
 }
 
 export type Dependencies = {
-  es_findFriendRequestById: ES.FriendRequest.FnFindOneById
-  es_rejectFriendRequest: ES.FriendRequest.FnReject
-
-  int_processEvent: INT.Event.FnProcessEvent
+  findFriendRequestById: FriendRequest.FnFindOneById
+  rejectFriendRequest: FriendRequest.FnReject
+  publishEvent: EventData.FnPublishEvent
 }
 
 export type Request = {

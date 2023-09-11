@@ -1,17 +1,15 @@
-import { CMD, INT } from '@facebluk/domain'
-import { PostgreSQL } from '@facebluk/infra-postgresql'
-import { RabbitMQ } from '@facebluk/infra-rabbitmq'
-import { Supabase } from '@facebluk/infra-supabase'
+import { CMD } from '@facebluk/domain'
+import { Infra } from '@facebluk/infrastructure'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '../common'
 
 export const unblockUserRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>(
-    '/unblock',
+    '/unblock/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
+      const jwt: Infra.User.JwtModel = await request.jwtVerify()
       await CMD.UnblockUser.handle(
         {
           id: request.id,
@@ -19,14 +17,14 @@ export const unblockUserRoute: FastifyPluginCallback = (fastify, options, done) 
           toUserId: request.body.toUserId,
         },
         {
-          findUserRelationshipBetween: PostgreSQL.UserRelationship.findOneBetweenUsers(
+          findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
+          findUserRelationshipBetween: Infra.UserRelationship.findOneBetweenUsers(
             fastify.postgreSqlPool
           ),
-          processEvent: INT.Event.processEvent(
-            RabbitMQ.publishEvent(request.rabbitMqChannel),
-            PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
+          publishEvent: Infra.Event.publishEvent(
+            request.rabbitMqChannel,
+            request.postgreSqlPoolClient
           ),
-          findUserById: PostgreSQL.User.findOneById(fastify.postgreSqlPool),
         }
       )
       await reply.status(200).send()

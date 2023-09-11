@@ -1,17 +1,15 @@
-import { CMD, INT } from '@facebluk/domain'
-import { PostgreSQL } from '@facebluk/infra-postgresql'
-import { RabbitMQ } from '@facebluk/infra-rabbitmq'
-import { Supabase } from '@facebluk/infra-supabase'
+import { CMD } from '@facebluk/domain'
+import { Infra } from '@facebluk/infrastructure'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
 import { businessRuleErrorResponseSchema } from '../common'
 
 export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>(
-    '/unfriend',
+    '/unfriend/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Supabase.UserAuth.JwtModel = await request.jwtVerify()
+      const jwt: Infra.User.JwtModel = await request.jwtVerify()
       await CMD.UnfriendUser.handle(
         {
           id: request.id,
@@ -19,15 +17,15 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
           toUserId: request.body.toUserId,
         },
         {
-          es_unfriend: PostgreSQL.UserRelationship.unfriend(request.postgreSqlPoolClient),
-          es_findUserRelationshipBetween: PostgreSQL.UserRelationship.findOneBetweenUsers(
+          findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
+          findUserRelationshipBetween: Infra.UserRelationship.findOneBetweenUsers(
             fastify.postgreSqlPool
           ),
-          int_processEvent: INT.Event.processEvent(
-            RabbitMQ.publishEvent(request.rabbitMqChannel),
-            PostgreSQL.Common.markEventAsSent(request.postgreSqlPoolClient)
+          unfriend: Infra.UserRelationship.unfriend(request.postgreSqlPoolClient),
+          publishEvent: Infra.Event.publishEvent(
+            request.rabbitMqChannel,
+            request.postgreSqlPoolClient
           ),
-          es_findUserById: PostgreSQL.User.findOneById(fastify.postgreSqlPool),
         }
       )
       await reply.status(200).send()

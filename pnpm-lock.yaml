@@ -42,15 +42,6 @@ importers:
       '@facebluk/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@facebluk/infra-postgresql':
-        specifier: workspace:*
-        version: link:../../packages/infra-postgresql
-      '@facebluk/infra-rabbitmq':
-        specifier: workspace:*
-        version: link:../../packages/infra-rabbitmq
-      '@facebluk/infra-supabase':
-        specifier: workspace:*
-        version: link:../../packages/infra-supabase
       dotenv:
         specifier: ^16.0.3
         version: 16.0.3
@@ -63,15 +54,9 @@ importers:
       '@facebluk/infra-common':
         specifier: workspace:*
         version: link:../../packages/infra-common
-      '@facebluk/infra-postgresql':
+      '@facebluk/infrastructure':
         specifier: workspace:*
-        version: link:../../packages/infra-postgresql
-      '@facebluk/infra-rabbitmq':
-        specifier: workspace:*
-        version: link:../../packages/infra-rabbitmq
-      '@facebluk/infra-supabase':
-        specifier: workspace:*
-        version: link:../../packages/infra-supabase
+        version: link:../../packages/infrastructure
       '@fastify/cors':
         specifier: ^8.2.0
         version: 8.2.1
@@ -135,29 +120,7 @@ importers:
         specifier: ^4.12.0
         version: 4.14.1
 
-  packages/infra-postgresql:
-    dependencies:
-      '@facebluk/domain':
-        specifier: workspace:*
-        version: link:../domain
-      pg:
-        specifier: ^8.9.0
-        version: 8.10.0
-    devDependencies:
-      '@types/jest':
-        specifier: ^29.4.0
-        version: 29.5.0
-      '@types/pg':
-        specifier: ^8.6.6
-        version: 8.6.6
-      jest:
-        specifier: ^29.4.3
-        version: 29.5.0(@types/node@18.15.3)(ts-node@10.9.1)
-      ts-jest:
-        specifier: ^29.0.5
-        version: 29.0.5(@babel/core@7.21.3)(jest@29.5.0)(typescript@4.9.5)
-
-  packages/infra-rabbitmq:
+  packages/infrastructure:
     dependencies:
       '@facebluk/domain':
         specifier: workspace:*
@@ -165,22 +128,22 @@ importers:
       '@facebluk/infra-common':
         specifier: workspace:*
         version: link:../infra-common
+      '@supabase/supabase-js':
+        specifier: ^2.7.1
+        version: 2.11.0
       amqplib:
         specifier: ^0.10.3
         version: 0.10.3
+      pg:
+        specifier: ^8.9.0
+        version: 8.10.0
     devDependencies:
       '@types/amqplib':
         specifier: ^0.10.1
         version: 0.10.1
-
-  packages/infra-supabase:
-    dependencies:
-      '@facebluk/domain':
-        specifier: workspace:*
-        version: link:../domain
-      '@supabase/supabase-js':
-        specifier: ^2.7.1
-        version: 2.11.0
+      '@types/pg':
+        specifier: ^8.6.6
+        version: 8.6.6
 
 packages:
 
