@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { BusinessRuleError, EventData, RequestImage, User, Uuid } from '../../modules'
+import { BusinessRuleError, EventData, File, RequestImage, User, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   await validator.validateAsync(req)
@@ -9,8 +9,10 @@ export const handle = async (req: Request, deps: Dependencies) => {
 
   let profilePictureUrl: string | undefined = undefined
   if (req.profilePicture !== undefined) {
-    await deps.uploadProfilePicture(req.userId, req.profilePicture.bytes)
-    profilePictureUrl = deps.findProfilePictureUrl(req.userId)
+    const bucket = 'images'
+    const filePath = `users/${req.userId}/${req.profilePicture.id}`
+    await deps.uploadFile(bucket, filePath, req.profilePicture.bytes)
+    profilePictureUrl = deps.findFileUrl(bucket, filePath)
   }
 
   let user = await deps.findUserById(req.userId)
@@ -37,8 +39,8 @@ export type Dependencies = {
   aliasExists: User.FnAliasExists
   findUserById: User.FnFindOneById
   registerUser: User.FnRegister
-  uploadProfilePicture: User.FnUploadProfilePicture
-  findProfilePictureUrl: User.FnFindProfilePictureUrl
+  uploadFile: File.FnUpload
+  findFileUrl: File.FnFindFileUrl
   findUserAuthMetadata: User.FnFindAuthMetadata
   markUserAsRegistered: User.FnMarkAsRegistered
   publishEvent: EventData.FnPublishEvent

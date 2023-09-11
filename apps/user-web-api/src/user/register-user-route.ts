@@ -46,8 +46,8 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
           Common.Logger.log(fastify.log),
           request.id
         ),
-        findProfilePictureUrl: Infra.User.findProfilePictureUrl(fastify.supabaseClient),
-        uploadProfilePicture: Infra.User.uploadProfilePicture(fastify.supabaseClient),
+        findFileUrl: Infra.File.findFileUrl(fastify.supabaseClient),
+        uploadFile: Infra.File.uploadFile(fastify.supabaseClient),
         markUserAsRegistered: Infra.User.markAsRegistered(
           fastify.supabaseClient,
           Common.Logger.log(fastify.log),

@@ -1,11 +1,14 @@
 import Joi from 'joi'
+import { Uuid } from '.'
 
 export type Data = {
+  readonly id: string
   readonly bytes: Buffer
   readonly fileType: string
 }
 
 export const create = (bytes: Buffer, fileType: string): Data => ({
+  id: Uuid.create(),
   bytes,
   fileType,
 })

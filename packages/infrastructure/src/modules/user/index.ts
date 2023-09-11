@@ -1,11 +1,9 @@
 export * from './alias-exists'
 export * from './find-auth-metadata'
 export * from './find-one-by-id'
-export * from './find-profile-picture-url'
 export * from './mark-as-registered'
 export * from './register'
 export * from './update-info'
-export * from './upload-profile-picture'
 
 import { User } from '@facebluk/domain'
 

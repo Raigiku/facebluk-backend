@@ -32,8 +32,8 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
       {
         updateUserInfo: Infra.User.updateInfo(request.postgreSqlPoolClient),
         findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
-        findProfilePictureUrl: Infra.User.findProfilePictureUrl(fastify.supabaseClient),
-        uploadProfilePicture: Infra.User.uploadProfilePicture(fastify.supabaseClient),
+        findFileUrl: Infra.File.findFileUrl(fastify.supabaseClient),
+        uploadFile: Infra.File.uploadFile(fastify.supabaseClient),
         publishEvent: Infra.Event.publishEvent(
           request.rabbitMqChannel,
           request.postgreSqlPoolClient
