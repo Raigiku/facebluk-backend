@@ -1,13 +1,13 @@
 import Joi from 'joi'
 import { Uuid } from '.'
 
-export type Data = {
+export type RequestImage = {
   readonly id: string
   readonly bytes: Buffer
   readonly fileType: string
 }
 
-export const create = (bytes: Buffer, fileType: string): Data => ({
+const create = (bytes: Buffer, fileType: string): RequestImage => ({
   id: Uuid.create(),
   bytes,
   fileType,
@@ -15,7 +15,8 @@ export const create = (bytes: Buffer, fileType: string): Data => ({
 
 const tenMegaByteInBytes = 10 * 1024 * 1024 // 10 MB
 const allowedExtensions = ['image/png', 'image/jpg', 'image/jpeg']
-export const validator = Joi.object({
+const validator = Joi.object({
+  id: Joi.string().uuid().required(),
   bytes: Joi.binary()
     .max(tenMegaByteInBytes)
     .required()
@@ -24,3 +25,8 @@ export const validator = Joi.object({
     .valid(...allowedExtensions)
     .required(),
 })
+
+export const RequestImage = {
+  create,
+  validator,
+}

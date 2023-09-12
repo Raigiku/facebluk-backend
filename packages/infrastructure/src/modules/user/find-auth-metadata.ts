@@ -11,6 +11,7 @@ export const findAuthMetadata =
     }
     if (data.user === null) return undefined
     return {
+      id,
       registeredAt: data.user.user_metadata.registeredAt,
     }
   }

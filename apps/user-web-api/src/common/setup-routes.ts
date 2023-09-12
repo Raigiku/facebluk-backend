@@ -1,4 +1,3 @@
-import { CMD } from '@facebluk/domain'
 import { FastifyInstance, FastifyPluginCallback } from 'fastify'
 import { friendRequestsRoutes } from '../friend-request'
 import { postsRoutes } from '../post'
@@ -26,7 +25,6 @@ const healthCheckRoute: FastifyPluginCallback = (fastify, options, done) => {
 
 const testRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post('/test', async (request, reply) => {
-    await CMD.RegisterUser.validator.validateAsync(request.body)
     await reply.status(200).send({ response: 'success' })
   })
   done()

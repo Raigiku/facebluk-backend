@@ -8,13 +8,15 @@ import { businessRuleErrorResponseSchema } from '../common'
 export const createPostRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: BodyType }>('/create/v1', routeOptions, async (request, reply) => {
     await syntaxValidator.validateAsync(request.body)
+
     const postId = Uuid.create()
-    void CMD.CreatePost.handle(
+
+    await CMD.CreatePost.handle(
       {
         requestId: request.id,
         postId,
         description: request.body.description,
-        userId: request.userId!,
+        userId: request.userAuthMetadata!.id,
         taggedUserIds: request.body.taggedUserIds,
       },
       {
@@ -24,9 +26,7 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
           request.postgreSqlPoolClient
         ),
       }
-    ).catch((e) => {
-      fastify.cLog('error', request.id, 'fail', request.userId, e)
-    })
+    )
 
     await reply.status(200).send({ postId })
   })

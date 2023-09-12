@@ -62,6 +62,7 @@ export const updateInfo = (
 }
 
 export type AuthMetadata = {
+  readonly id: string
   readonly registeredAt?: Date
 }
 

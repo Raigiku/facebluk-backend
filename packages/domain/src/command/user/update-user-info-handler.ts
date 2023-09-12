@@ -36,7 +36,7 @@ export type Request = {
   readonly id: string
   readonly userId: string
   readonly name?: string
-  readonly profilePicture?: RequestImage.Data
+  readonly profilePicture?: RequestImage
 }
 
 export const validator = Joi.object<Request, true>({

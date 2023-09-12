@@ -1,4 +1,4 @@
-import { Logger, Uuid } from '@facebluk/domain'
+import { Logger, User, Uuid } from '@facebluk/domain'
 import { Common } from '@facebluk/infra-common'
 import { Infra } from '@facebluk/infrastructure'
 import { FastifyPluginCallback } from 'fastify'
@@ -16,7 +16,7 @@ declare module 'fastify' {
   interface FastifyRequest {
     rabbitMqChannel: Infra.RabbitMQ.Channel
     postgreSqlPoolClient: Infra.PostgreSQL.PoolClient
-    userId?: string
+    userAuthMetadata?: User.AuthMetadata
   }
 }
 
@@ -202,8 +202,7 @@ const userAuthPlugin: FastifyPluginCallback<Common.Config.Data> = (fastify, opti
       request.id
     )(userId)
     if (userAuthMetadata === undefined) throw new Error('authenticated user does not exist')
-
-    request.userId = userId
+    request.userAuthMetadata = userAuthMetadata
   })
 
   done()

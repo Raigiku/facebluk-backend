@@ -1,63 +1,44 @@
-import Joi from 'joi'
-import { BusinessRuleError, EventData, File, RequestImage, User, Uuid } from '../../modules'
+import { EventData, File, RequestImage, User } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  await validator.validateAsync(req)
-
-  const aliasExists = await deps.aliasExists(req.alias)
-  if (aliasExists) throw new BusinessRuleError(req.id, 'alias is already used')
-
   let profilePictureUrl: string | undefined = undefined
   if (req.profilePicture !== undefined) {
     const bucket = 'images'
-    const filePath = `users/${req.userId}/${req.profilePicture.id}`
+    const filePath = `users/${req.userAuthMetadata.id}/${req.profilePicture.id}`
     await deps.uploadFile(bucket, filePath, req.profilePicture.bytes)
     profilePictureUrl = deps.findFileUrl(bucket, filePath)
   }
 
-  let user = await deps.findUserById(req.userId)
+  let user = await deps.findUserById(req.userAuthMetadata.id)
   if (user === undefined) {
     const [newUser, registeredUserEvent] = User.register(
-      req.userId,
+      req.userAuthMetadata.id,
       req.name,
       req.alias,
       profilePictureUrl
     )
     user = newUser
     await deps.registerUser(registeredUserEvent)
-    await deps.publishEvent(req.id, registeredUserEvent)
+    await deps.publishEvent(req.requestId, registeredUserEvent)
   }
 
-  const authMetadata = await deps.findUserAuthMetadata(req.userId)
-  if (authMetadata === undefined) throw new BusinessRuleError(req.id, 'user does not exist')
-
-  if (!User.isRegistered(authMetadata))
-    await deps.markUserAsRegistered(req.userId, user.aggregate.createdAt)
+  if (!User.isRegistered(req.userAuthMetadata))
+    await deps.markUserAsRegistered(req.userAuthMetadata.id, user.aggregate.createdAt)
 }
 
 export type Dependencies = {
-  aliasExists: User.FnAliasExists
   findUserById: User.FnFindOneById
   registerUser: User.FnRegister
   uploadFile: File.FnUpload
   findFileUrl: File.FnFindFileUrl
-  findUserAuthMetadata: User.FnFindAuthMetadata
   markUserAsRegistered: User.FnMarkAsRegistered
   publishEvent: EventData.FnPublishEvent
 }
 
 export type Request = {
-  readonly id: string
-  readonly userId: string
+  readonly requestId: string
+  readonly userAuthMetadata: User.AuthMetadata
   readonly name: string
   readonly alias: string
-  readonly profilePicture?: RequestImage.Data
+  readonly profilePicture?: RequestImage
 }
-
-export const validator = Joi.object<Request, true>({
-  id: Uuid.validator.required(),
-  userId: Uuid.validator.required(),
-  name: User.nameValidator.required(),
-  alias: User.aliasValidator.required(),
-  profilePicture: RequestImage.validator.required(),
-})

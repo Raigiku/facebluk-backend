@@ -7,11 +7,15 @@ import { determineTableName, eventTableKey } from '.'
 export const publishEvent =
   (channel: amqp.Channel, pgClient: PoolClient): EventData.FnPublishEvent =>
   async (requestId: string, event: EventData.AnyEvent) => {
-    await sendEvent(channel, requestId, event)
+    await sendEventInBroker(channel, requestId, event)
     await updateEventInDbAsPublished(pgClient, event)
   }
 
-const sendEvent = async (channel: amqp.Channel, requestId: string, event: EventData.AnyEvent) => {
+const sendEventInBroker = async (
+  channel: amqp.Channel,
+  requestId: string,
+  event: EventData.AnyEvent
+) => {
   const exchange = event.payload.tag
   await channel.assertExchange(exchange, 'fanout', { durable: true })
   channel.publish(exchange, '', Buffer.from(Common.JsonSerializer.serialize(event)), {

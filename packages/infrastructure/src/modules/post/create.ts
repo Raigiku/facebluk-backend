@@ -7,7 +7,6 @@ import { eventTableName } from '../user'
 export const create =
   (pgClient: PoolClient): Post.FnCreate =>
   async (event: Post.CreatedEvent) => {
-    await _create(pgClient, event)
     await registerEvent(pgClient, eventTableName, event)
   }
 
