@@ -1,3 +1,4 @@
+import { Logger, Uuid } from '@facebluk/domain'
 import { Common } from '@facebluk/infra-common'
 import { Infra } from '@facebluk/infrastructure'
 import { FastifyPluginCallback } from 'fastify'
@@ -9,11 +10,13 @@ declare module 'fastify' {
     rabbitMqConnection: Infra.RabbitMQ.Connection
     supabaseClient: Infra.Supabase.SupabaseClient
     commonConfig: Common.Config.Data
+    cLog: Logger.FnLog
   }
 
   interface FastifyRequest {
     rabbitMqChannel: Infra.RabbitMQ.Channel
     postgreSqlPoolClient: Infra.PostgreSQL.PoolClient
+    userId?: string
   }
 }
 
@@ -158,10 +161,53 @@ const commonPlugin: FastifyPluginCallback<Common.Config.Data> = (fastify, option
     done()
     return
   }
-
   fastify.decorate('commonConfig', options)
+
+  if (fastify.cLog != null) {
+    done()
+    return
+  }
+  fastify.decorate('cLog', Common.Logger.log(fastify.log))
+
   done()
 }
 export const fastifyCommonPlugin = fp(commonPlugin, {
   name: 'fastify-common-plugin',
+})
+
+const userAuthPlugin: FastifyPluginCallback<Common.Config.Data> = (fastify, options, done) => {
+  fastify.addHook('onRequest', async (request) => {
+    const authHeader = request.headers.authorization
+    if (authHeader === undefined) throw new Error('auth header undefined')
+
+    if (!authHeader.toLowerCase().startsWith('bearer '))
+      throw new Error('auth header is not bearer token')
+
+    let userId
+    if (options.environment !== 'production') {
+      try {
+        userId = authHeader.split(' ')[1]
+        await Uuid.validator.validateAsync(userId)
+      } catch (error) {
+        throw new Error('auth header is not an uuid')
+      }
+    } else {
+      const jwt: Infra.User.JwtModel = await request.jwtVerify()
+      userId = jwt.sub
+    }
+
+    const userAuthMetadata = await Infra.User.findAuthMetadata(
+      fastify.supabaseClient,
+      fastify.cLog,
+      request.id
+    )(userId)
+    if (userAuthMetadata === undefined) throw new Error('authenticated user does not exist')
+
+    request.userId = userId
+  })
+
+  done()
+}
+export const fastifyUserAuth = fp(userAuthPlugin, {
+  name: 'fastify-user-auth-plugin',
 })

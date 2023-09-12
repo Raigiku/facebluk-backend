@@ -1,15 +1,14 @@
-import Joi from 'joi'
-import { EventData, Post, Uuid } from '../../modules'
+import { EventData, Post } from '../../modules'
 
-export const handle = async (req: Request, deps: Dependencies): Promise<Response> => {
-  await validator.validateAsync(req)
-
-  const [, createdPostEvent] = Post.create(req.description, req.userId, req.taggedUserIds)
-
+export const handle = async (req: Request, deps: Dependencies): Promise<void> => {
+  const [, createdPostEvent] = Post.create(
+    req.postId,
+    req.description,
+    req.userId,
+    req.taggedUserIds
+  )
   await deps.createPost(createdPostEvent)
-  await deps.publishEvent(req.id, createdPostEvent)
-
-  return { postId: createdPostEvent.data.aggregateId }
+  await deps.publishEvent(req.requestId, createdPostEvent)
 }
 
 export type Dependencies = {
@@ -18,19 +17,9 @@ export type Dependencies = {
 }
 
 export type Request = {
-  readonly id: string
+  readonly requestId: string
+  readonly postId: string
   readonly userId: string
   readonly description: string
   readonly taggedUserIds: string[]
-}
-
-export const validator = Joi.object<Request, true>({
-  id: Uuid.validator.required(),
-  userId: Uuid.validator.required(),
-  description: Post.descriptionValidator.required(),
-  taggedUserIds: Post.taggedUserIdsValidator.required(),
-})
-
-export type Response = {
-  readonly postId: string
 }

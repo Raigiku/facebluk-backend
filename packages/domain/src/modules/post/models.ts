@@ -11,11 +11,12 @@ export type Aggregate = {
 }
 
 export const create = (
+  id: string,
   description: string,
   userId: string,
   taggedUserIds: string[]
 ): [Aggregate, CreatedEvent] => {
-  const aggregateData = AggregateData.create()
+  const aggregateData = AggregateData.createWithId(id)
   return [
     {
       aggregate: aggregateData,

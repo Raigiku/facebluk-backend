@@ -1,5 +1,4 @@
 import { CMD } from '@facebluk/domain'
-import { Common } from '@facebluk/infra-common'
 import { Infra } from '@facebluk/infrastructure'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
@@ -26,7 +25,7 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
           publishEvents: Infra.Event.publishEvents(
             request.rabbitMqChannel,
             request.postgreSqlPoolClient,
-            Common.Logger.log(request.log)
+            fastify.cLog
           ),
           friendUser: Infra.UserRelationship.friend(request.postgreSqlPoolClient),
         }

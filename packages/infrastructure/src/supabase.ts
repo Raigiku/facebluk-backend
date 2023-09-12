@@ -1,4 +1,4 @@
-import supabase, { SupabaseClient } from '@supabase/supabase-js'
+import { SupabaseClient, createClient as createClientSb } from '@supabase/supabase-js'
 
 export type Config = {
   supabaseApiUrl: string
@@ -13,7 +13,7 @@ export const createConfig = (): Config => ({
 })
 
 export const createClient = (config: Config) =>
-  supabase.createClient(config.supabaseApiUrl, config.supabaseServiceRole, {
+  createClientSb(config.supabaseApiUrl, config.supabaseServiceRole, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

@@ -1,5 +1,4 @@
 import { BusinessRuleError, CMD, RequestImage } from '@facebluk/domain'
-import { Common } from '@facebluk/infra-common'
 import { Infra } from '@facebluk/infrastructure'
 import { FastifyPluginCallback } from 'fastify'
 import { FormFile } from '../common'
@@ -43,14 +42,14 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
         registerUser: Infra.User.register(request.postgreSqlPoolClient),
         findUserAuthMetadata: Infra.User.findAuthMetadata(
           fastify.supabaseClient,
-          Common.Logger.log(fastify.log),
+          fastify.cLog,
           request.id
         ),
         findFileUrl: Infra.File.findFileUrl(fastify.supabaseClient),
         uploadFile: Infra.File.uploadFile(fastify.supabaseClient),
         markUserAsRegistered: Infra.User.markAsRegistered(
           fastify.supabaseClient,
-          Common.Logger.log(fastify.log),
+          fastify.cLog,
           request.id
         ),
         publishEvent: Infra.Event.publishEvent(
