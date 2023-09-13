@@ -1,4 +1,4 @@
-import { EventData } from '..'
+import { Event } from '..'
 import { TaggedType } from '../common'
 
 export type Event = RegisteredEvent | InfoUpdatedEvent
@@ -10,7 +10,7 @@ export type RegisteredEventPayload = TaggedType<typeof registeredEventTag> & {
   readonly alias: string
 }
 export type RegisteredEvent = {
-  readonly data: EventData.Data
+  readonly data: Event.Data
   readonly payload: RegisteredEventPayload
 }
 
@@ -20,6 +20,6 @@ export type InfoUpdatedEventPayload = TaggedType<typeof updatedInfoEventTag> & {
   readonly profilePictureUrl?: string
 }
 export type InfoUpdatedEvent = {
-  readonly data: EventData.Data
+  readonly data: Event.Data
   readonly payload: InfoUpdatedEventPayload
 }

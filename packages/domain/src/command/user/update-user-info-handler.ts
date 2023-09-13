@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { BusinessRuleError, EventData, File, RequestImage, User, Uuid } from '../../modules'
+import { BusinessRuleError, Event, File, RequestImage, User, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   await validator.validateAsync(req)
@@ -29,7 +29,7 @@ export type Dependencies = {
   updateUserInfo: User.FnUpdateInfo
   uploadFile: File.FnUpload
   findFileUrl: File.FnFindFileUrl
-  publishEvent: EventData.FnPublishEvent
+  publishEvent: Event.FnPublishEvent
 }
 
 export type Request = {

@@ -3,7 +3,7 @@ import { Common } from '@facebluk/infra-common'
 import * as dotenv from 'dotenv'
 import Fastify from 'fastify'
 import { setupErrorHandling, setupPlugins, setupRoutes } from './common'
-import * as Config from './config'
+import { Config } from './config'
 
 const runServer = async () => {
   const commonConfig = Common.Config.create()

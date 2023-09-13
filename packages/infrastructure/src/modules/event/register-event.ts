@@ -1,11 +1,11 @@
-import { EventData } from '@facebluk/domain'
+import { Event } from '@facebluk/domain'
 import { PoolClient } from 'pg'
 import { eventTableKey } from '.'
 
 export const registerEvent = async (
   pgClient: PoolClient,
   tableName: string,
-  event: EventData.AnyEvent
+  event: Event.AnyEvent
 ) => {
   await pgClient.query(
     `

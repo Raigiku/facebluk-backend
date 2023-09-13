@@ -1,4 +1,4 @@
-import { EventData, Post } from '../../modules'
+import { Event, Post } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies): Promise<void> => {
   const [, createdPostEvent] = Post.create(
@@ -13,7 +13,7 @@ export const handle = async (req: Request, deps: Dependencies): Promise<void> =>
 
 export type Dependencies = {
   createPost: Post.FnCreate
-  publishEvent: EventData.FnPublishEvent
+  publishEvent: Event.FnPublishEvent
 }
 
 export type Request = {

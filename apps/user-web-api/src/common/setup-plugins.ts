@@ -12,8 +12,8 @@ import * as Config from '../config'
 
 export const setupPlugins = async (
   server: FastifyInstance,
-  webApiConfig: Config.Data,
-  commonConfig: Common.Config.Data
+  webApiConfig: Config.Config,
+  commonConfig: Common.Config
 ) => {
   // init env configs
   const userAuthConfig = Infra.Supabase.createConfig()

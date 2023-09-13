@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { EventData } from '..'
+import { Event } from '..'
 import { AggregateData } from '../common'
 import { CreatedEvent } from './events'
 
@@ -25,7 +25,7 @@ export const create = (
       taggedUserIds,
     },
     {
-      data: EventData.create(aggregateData, aggregateData.createdAt),
+      data: Event.create(aggregateData, aggregateData.createdAt),
       payload: {
         tag: 'post-created',
         description,

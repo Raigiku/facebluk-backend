@@ -1,4 +1,4 @@
-import { EventData, File, RequestImage, User } from '../../modules'
+import { Event, File, RequestImage, User } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   let profilePictureUrl: string | undefined = undefined
@@ -32,7 +32,7 @@ export type Dependencies = {
   uploadFile: File.FnUpload
   findFileUrl: File.FnFindFileUrl
   markUserAsRegistered: User.FnMarkAsRegistered
-  publishEvent: EventData.FnPublishEvent
+  publishEvent: Event.FnPublishEvent
 }
 
 export type Request = {

@@ -2,7 +2,7 @@ export * from './publish-event'
 export * from './publish-events'
 export * from './register-event'
 
-import { EventData } from '@facebluk/domain'
+import { Event } from '@facebluk/domain'
 import { FriendRequest, Post, User, UserRelationship } from '..'
 
 export type EventTable = {
@@ -10,9 +10,9 @@ export type EventTable = {
   readonly aggregate_version: bigint
   readonly created_at: Date
   readonly published: boolean
-} & EventData.AnyEventPayload
+} & Event.AnyEventPayload
 export const eventTableKey = (k: keyof EventTable) => k
-export const determineTableName = (event: EventData.AnyEvent) =>
+export const determineTableName = (event: Event.AnyEvent) =>
   event.payload.tag.includes('post')
     ? Post.eventTableName
     : event.payload.tag.includes('friend-request')

@@ -9,7 +9,7 @@ declare module 'fastify' {
     postgreSqlPool: Infra.PostgreSQL.Pool
     rabbitMqConnection: Infra.RabbitMQ.Connection
     supabaseClient: Infra.Supabase.SupabaseClient
-    commonConfig: Common.Config.Data
+    commonConfig: Common.Config
     cLog: Logger.FnLog
   }
 
@@ -156,7 +156,7 @@ export const fastifySupabase = fp(supabasePlugin, {
   name: 'fastify-supabase-plugin',
 })
 
-const commonPlugin: FastifyPluginCallback<Common.Config.Data> = (fastify, options, done) => {
+const commonPlugin: FastifyPluginCallback<Common.Config> = (fastify, options, done) => {
   if (fastify.commonConfig != null) {
     done()
     return
@@ -175,7 +175,7 @@ export const fastifyCommonPlugin = fp(commonPlugin, {
   name: 'fastify-common-plugin',
 })
 
-const userAuthPlugin: FastifyPluginCallback<Common.Config.Data> = (fastify, options, done) => {
+const userAuthPlugin: FastifyPluginCallback<Common.Config> = (fastify, options, done) => {
   fastify.addHook('onRequest', async (request) => {
     const authHeader = request.headers.authorization
     if (authHeader === undefined) throw new Error('auth header undefined')

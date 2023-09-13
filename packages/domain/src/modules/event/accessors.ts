@@ -1,9 +1,9 @@
-import { EventData } from '..'
+import { AnyEvent } from './models'
 
 // mutations
-export type FnPublishEvent = (requestId: string, event: EventData.AnyEvent) => Promise<void>
+export type FnPublishEvent = (requestId: string, event: AnyEvent) => Promise<void>
 export type FnPublishEvents = (
   requestId: string,
-  events: EventData.AnyEvent[],
+  events: AnyEvent[],
   userId?: string
 ) => Promise<void>

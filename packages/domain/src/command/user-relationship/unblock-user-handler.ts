@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { BusinessRuleError, EventData, User, UserRelationship, Uuid } from '../../modules'
+import { BusinessRuleError, Event, User, UserRelationship, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   await validator.validateAsync(req)
@@ -28,7 +28,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
 export type Dependencies = {
   findUserById: User.FnFindOneById
   findUserRelationshipBetween: UserRelationship.FnFindOneBetweenUsers
-  publishEvent: EventData.FnPublishEvent
+  publishEvent: Event.FnPublishEvent
 }
 
 export type Request = {

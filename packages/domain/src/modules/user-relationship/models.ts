@@ -1,4 +1,4 @@
-import { EventData } from '..'
+import { Event } from '..'
 import { AggregateData, TaggedType } from '../common'
 import {
   BlockedUserEvent,
@@ -80,7 +80,7 @@ export const newFriend = (
       friendStatus: { tag: 'friended', friendedAt, fromUserId, toUserId },
     },
     {
-      data: EventData.create(aggregateData, friendedAt),
+      data: Event.create(aggregateData, friendedAt),
       payload: {
         tag: 'user-relationship-friended',
         fromUserId,
@@ -104,7 +104,7 @@ export const friend = (
       friendStatus: { tag: 'friended', friendedAt, fromUserId, toUserId },
     },
     {
-      data: EventData.create(aggregateData, friendedAt),
+      data: Event.create(aggregateData, friendedAt),
       payload: {
         tag: 'user-relationship-friended',
         fromUserId,
@@ -128,7 +128,7 @@ export const unfriend = (
       friendStatus: { tag: 'unfriended', unfriendedAt, fromUserId, toUserId },
     },
     {
-      data: EventData.create(aggregateData, unfriendedAt),
+      data: Event.create(aggregateData, unfriendedAt),
       payload: {
         tag: 'user-relationship-unfriended',
         fromUserId,
@@ -151,7 +151,7 @@ export const newBlock = (
       blockedStatus: { tag: 'blocked', blockedAt, fromUserId, toUserId },
     },
     {
-      data: EventData.create(aggregateData, blockedAt),
+      data: Event.create(aggregateData, blockedAt),
       payload: {
         tag: 'user-relationship-blocked',
         fromUserId,
@@ -175,7 +175,7 @@ export const block = (
       blockedStatus: { tag: 'blocked', blockedAt, fromUserId, toUserId },
     },
     {
-      data: EventData.create(aggregateData, blockedAt),
+      data: Event.create(aggregateData, blockedAt),
       payload: {
         tag: 'user-relationship-blocked',
         fromUserId,
@@ -199,7 +199,7 @@ export const unblock = (
       blockedStatus: { tag: 'unblocked', unblockedAt, fromUserId, toUserId },
     },
     {
-      data: EventData.create(aggregateData, unblockedAt),
+      data: Event.create(aggregateData, unblockedAt),
       payload: {
         tag: 'user-relationship-unblocked',
         fromUserId,

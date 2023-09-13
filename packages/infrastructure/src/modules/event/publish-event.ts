@@ -1,12 +1,12 @@
-import { EventData } from '@facebluk/domain'
+import { Event } from '@facebluk/domain'
 import { Common } from '@facebluk/infra-common'
 import amqp from 'amqplib'
 import { PoolClient } from 'pg'
 import { determineTableName, eventTableKey } from '.'
 
 export const publishEvent =
-  (channel: amqp.Channel, pgClient: PoolClient): EventData.FnPublishEvent =>
-  async (requestId: string, event: EventData.AnyEvent) => {
+  (channel: amqp.Channel, pgClient: PoolClient): Event.FnPublishEvent =>
+  async (requestId: string, event: Event.AnyEvent) => {
     await sendEventInBroker(channel, requestId, event)
     await updateEventInDbAsPublished(pgClient, event)
   }
@@ -14,7 +14,7 @@ export const publishEvent =
 const sendEventInBroker = async (
   channel: amqp.Channel,
   requestId: string,
-  event: EventData.AnyEvent
+  event: Event.AnyEvent
 ) => {
   const exchange = event.payload.tag
   await channel.assertExchange(exchange, 'fanout', { durable: true })
@@ -24,7 +24,7 @@ const sendEventInBroker = async (
   })
 }
 
-const updateEventInDbAsPublished = async (pgClient: PoolClient, event: EventData.AnyEvent) => {
+const updateEventInDbAsPublished = async (pgClient: PoolClient, event: Event.AnyEvent) => {
   await pgClient.query(
     `
     UPDATE ${determineTableName(event)}

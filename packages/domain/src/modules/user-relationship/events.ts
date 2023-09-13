@@ -1,4 +1,4 @@
-import { EventData } from '..'
+import { Event } from '..'
 import { TaggedType } from '../common'
 
 export type Event = FriendedUserEvent | UnfriendedUserEvent | BlockedUserEvent | UnblockedUserEvent
@@ -8,7 +8,7 @@ export type FriendedUserEventPayload = TaggedType<'user-relationship-friended'> 
   readonly toUserId: string
 }
 export type FriendedUserEvent = {
-  readonly data: EventData.Data
+  readonly data: Event.Data
   readonly payload: FriendedUserEventPayload
 }
 
@@ -17,7 +17,7 @@ export type UnfriendedUserEventPayload = TaggedType<'user-relationship-unfriende
   readonly toUserId: string
 }
 export type UnfriendedUserEvent = {
-  readonly data: EventData.Data
+  readonly data: Event.Data
   readonly payload: UnfriendedUserEventPayload
 }
 
@@ -26,7 +26,7 @@ export type BlockedUserEventPayload = TaggedType<'user-relationship-blocked'> & 
   readonly toUserId: string
 }
 export type BlockedUserEvent = {
-  readonly data: EventData.Data
+  readonly data: Event.Data
   readonly payload: BlockedUserEventPayload
 }
 
@@ -35,6 +35,6 @@ export type UnblockedUserEventPayload = TaggedType<'user-relationship-unblocked'
   readonly toUserId: string
 }
 export type UnblockedUserEvent = {
-  readonly data: EventData.Data
+  readonly data: Event.Data
   readonly payload: UnblockedUserEventPayload
 }

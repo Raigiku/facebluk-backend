@@ -1,4 +1,4 @@
-import { EventData } from '..'
+import { Event } from '..'
 import { AggregateData, TaggedType } from '../common'
 import { AcceptedEvent, CancelledEvent, RejectedEvent, SentEvent } from './events'
 
@@ -50,7 +50,7 @@ export const create = (
       status: { tag: 'pending' },
     },
     {
-      data: EventData.create(aggregateData, aggregateData.createdAt),
+      data: Event.create(aggregateData, aggregateData.createdAt),
       payload: {
         tag: 'friend-request-sent',
         fromUserId,
@@ -71,7 +71,7 @@ export const accept = (
       status: { tag: 'accepted', acceptedAt },
     },
     {
-      data: EventData.create(updatedVersionAggregate, acceptedAt),
+      data: Event.create(updatedVersionAggregate, acceptedAt),
       payload: {
         tag: 'friend-request-accepted',
       },
@@ -90,7 +90,7 @@ export const cancel = (
       status: { tag: 'cancelled', cancelledAt },
     },
     {
-      data: EventData.create(updatedVersionAggregate, cancelledAt),
+      data: Event.create(updatedVersionAggregate, cancelledAt),
       payload: {
         tag: 'friend-request-cancelled',
       },
@@ -109,7 +109,7 @@ export const reject = (
       status: { tag: 'rejected', rejectedAt },
     },
     {
-      data: EventData.create(updatedVersionAggregate, rejectedAt),
+      data: Event.create(updatedVersionAggregate, rejectedAt),
       payload: {
         tag: 'friend-request-rejected',
       },

@@ -1,5 +1,5 @@
 export * from './common'
-export * as EventData from './event'
+export * as Event from './event'
 export * as File from './file'
 export * as FriendRequest from './friend-request'
 export * as Post from './post'

@@ -20,4 +20,8 @@ export type AnyEventPayload =
   | Pick<FriendRequest.Event, 'payload'>
   | Pick<UserRelationship.Event, 'payload'>
 
-export type AnyEvent = Post.Event | User.Event | FriendRequest.Event | UserRelationship.Event
+export type AnyEvent =
+  | Post.Event
+  | User.Event
+  | FriendRequest.Event
+  | UserRelationship.Event

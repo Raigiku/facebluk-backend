@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { EventData } from '..'
+import { Event } from '..'
 import { AggregateData } from '../common'
 import { InfoUpdatedEvent, RegisteredEvent } from './events'
 
@@ -26,7 +26,7 @@ export const register = (
       profilePictureUrl,
     },
     {
-      data: EventData.create(aggregateData, new Date()),
+      data: Event.create(aggregateData, new Date()),
       payload: {
         tag: 'user-registered',
         name,
@@ -51,7 +51,7 @@ export const updateInfo = (
       profilePictureUrl: profilePictureUrl ?? user.profilePictureUrl,
     },
     {
-      data: EventData.create(aggregateData, new Date()),
+      data: Event.create(aggregateData, new Date()),
       payload: {
         tag: 'user-info-updated',
         name,

@@ -1,12 +1,12 @@
-import { EventData, Logger } from '@facebluk/domain'
+import { Event, Logger } from '@facebluk/domain'
 import { Common } from '@facebluk/infra-common'
 import amqp from 'amqplib'
 import { PoolClient } from 'pg'
 import { determineTableName, eventTableKey } from '.'
 
 export const publishEvents =
-  (channel: amqp.Channel, pgClient: PoolClient, log: Logger.FnLog): EventData.FnPublishEvents =>
-  async (requestId: string, events: EventData.AnyEvent[], userId?: string) => {
+  (channel: amqp.Channel, pgClient: PoolClient, log: Logger.FnLog): Event.FnPublishEvents =>
+  async (requestId: string, events: Event.AnyEvent[], userId?: string) => {
     for (const event of events) {
       try {
         const exchange = event.payload.tag

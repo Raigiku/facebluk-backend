@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import {
   BusinessRuleError,
-  EventData,
+  Event,
   FriendRequest,
   User,
   UserRelationship,
@@ -44,7 +44,7 @@ export type Dependencies = {
   findLastFriendRequestBetweenUsers: FriendRequest.FnFindOneLastBetweenUsers
   sendFriendRequest: FriendRequest.FnSend
   findUserById: User.FnFindOneById
-  publishEvent: EventData.FnPublishEvent
+  publishEvent: Event.FnPublishEvent
 }
 
 export type Request = {
