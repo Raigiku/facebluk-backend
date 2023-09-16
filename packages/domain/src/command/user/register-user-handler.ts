@@ -42,3 +42,5 @@ export type Request = {
   readonly alias: string
   readonly profilePicture?: RequestImage
 }
+
+export const id = 'register-user'

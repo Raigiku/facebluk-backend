@@ -23,3 +23,5 @@ export type Request = {
   readonly description: string
   readonly taggedUserIds: string[]
 }
+
+export const id = 'create-post'

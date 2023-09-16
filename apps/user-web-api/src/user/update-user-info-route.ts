@@ -1,20 +1,26 @@
-import { BusinessRuleError, CMD, RequestImage } from '@facebluk/domain'
+import { BusinessRuleError, CMD, RequestImage, User } from '@facebluk/domain'
 import { Infra } from '@facebluk/infrastructure'
 import { FastifyPluginCallback } from 'fastify'
 import { FormFile } from '../common'
+import Joi from 'joi'
 
 export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post('/update-info/v1', async (request, reply) => {
-    const jwt: Infra.User.JwtModel = await request.jwtVerify()
-
-    const formData = request.body as FormData
-
-    if (formData.profilePicture !== undefined) {
-      if (formData.profilePicture.length === 0)
-        throw new BusinessRuleError(request.id, 'profile picture must have at least 1 image')
-      if (formData.profilePicture[0].type === 'file')
-        throw new BusinessRuleError(request.id, 'profile picture is a required file')
+    const rawFormData = request.body as RawFormData
+    const formData = {
+      name: rawFormData.name,
+      profilePicture:
+        rawFormData.profilePicture === undefined || rawFormData.profilePicture.length === 0
+          ? undefined
+          : RequestImage.create(
+            rawFormData.profilePicture[0].data,
+            rawFormData.profilePicture[0].mimetype
+          ),
     }
+    await syntaxValidator.validateAsync(formData)
+
+    if (formData.name === undefined && formData.profilePicture === undefined)
+      throw new BusinessRuleError(request.id, '"name" and "profilePicture" are both undefined')
 
     await CMD.UpdateUserInfo.handle(
       {
@@ -25,9 +31,9 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
           formData.profilePicture === undefined
             ? undefined
             : RequestImage.create(
-                formData.profilePicture[0].data,
-                formData.profilePicture[0].mimetype
-              ),
+              formData.profilePicture[0].data,
+              formData.profilePicture[0].mimetype
+            ),
       },
       {
         updateUserInfo: Infra.User.updateInfo(request.postgreSqlPoolClient),
@@ -46,7 +52,12 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
   done()
 }
 
-type FormData = {
+const syntaxValidator = Joi.object({
+  name: User.nameValidator,
+  profilePicture: RequestImage.validator,
+})
+
+type RawFormData = {
   name?: string
   profilePicture?: FormFile[]
 }

@@ -14,39 +14,22 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
         rawFormData.profilePicture === undefined || rawFormData.profilePicture.length === 0
           ? undefined
           : RequestImage.create(
-              rawFormData.profilePicture[0].data,
-              rawFormData.profilePicture[0].mimetype
-            ),
+            rawFormData.profilePicture[0].data,
+            rawFormData.profilePicture[0].mimetype
+          ),
     }
     await syntaxValidator.validateAsync(formData)
 
     const aliasExists = await Infra.User.aliasExists(fastify.postgreSqlPool)(formData.alias!)
     if (aliasExists) throw new BusinessRuleError(request.id, 'alias already exists')
 
-    await CMD.RegisterUser.handle(
-      {
-        requestId: request.id,
-        userAuthMetadata: request.userAuthMetadata!,
-        name: formData.name!,
-        alias: formData.alias!,
-        profilePicture: formData.profilePicture,
-      },
-      {
-        findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
-        registerUser: Infra.User.register(request.postgreSqlPoolClient),
-        findFileUrl: Infra.File.findFileUrl(fastify.supabaseClient),
-        uploadFile: Infra.File.uploadFile(fastify.supabaseClient),
-        markUserAsRegistered: Infra.User.markAsRegistered(
-          fastify.supabaseClient,
-          fastify.cLog,
-          request.id
-        ),
-        publishEvent: Infra.Event.publishEvent(
-          request.rabbitMqChannel,
-          request.postgreSqlPoolClient
-        ),
-      }
-    )
+    await Infra.Event.sendBrokerMsg(request.rabbitMqChannel, request.id, CMD.RegisterUser.id, {
+      requestId: request.id,
+      userAuthMetadata: request.userAuthMetadata!,
+      name: formData.name!,
+      alias: formData.alias!,
+      profilePicture: formData.profilePicture,
+    } as CMD.RegisterUser.Request)
 
     await reply.status(200).send()
   })

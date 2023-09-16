@@ -11,22 +11,13 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
 
     const postId = Uuid.create()
 
-    await CMD.CreatePost.handle(
-      {
-        requestId: request.id,
-        postId,
-        description: request.body.description,
-        userId: request.userAuthMetadata!.id,
-        taggedUserIds: request.body.taggedUserIds,
-      },
-      {
-        createPost: Infra.Post.create(request.postgreSqlPoolClient),
-        publishEvent: Infra.Event.publishEvent(
-          request.rabbitMqChannel,
-          request.postgreSqlPoolClient
-        ),
-      }
-    )
+    await Infra.Event.sendBrokerMsg(request.rabbitMqChannel, request.id, CMD.CreatePost.id, {
+      requestId: request.id,
+      postId,
+      description: request.body.description,
+      userId: request.userAuthMetadata!.id,
+      taggedUserIds: request.body.taggedUserIds,
+    } as CMD.CreatePost.Request)
 
     await reply.status(200).send({ postId })
   })
