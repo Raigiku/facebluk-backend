@@ -6,28 +6,32 @@ import { businessRuleErrorResponseSchema } from '../common'
 
 export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>(
-    '/unfriend/v1',
+    '/unfriend-user/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Infra.User.JwtModel = await request.jwtVerify()
-      await CMD.UnfriendUser.handle(
+      await CMD.UnfriendUser.validate(
+        request.id,
         {
-          id: request.id,
-          userId: jwt.sub,
-          toUserId: request.body.toUserId,
+          otherUserId: request.body.otherUserId,
+          userId: request.userAuthMetadata!.id,
         },
         {
           findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
-          findUserRelationshipBetween: Infra.UserRelationship.findOneBetweenUsers(
-            fastify.postgreSqlPool
-          ),
-          unfriend: Infra.UserRelationship.unfriend(request.postgreSqlPoolClient),
-          publishEvent: Infra.Event.publishEvent(
-            request.rabbitMqChannel,
-            request.postgreSqlPoolClient
-          ),
+          areUsersFriends: () => Promise.resolve(true),
         }
       )
+
+      await Infra.Event.sendBrokerMsg<CMD.UnfriendUser.Request>(
+        request.rabbitMqChannel,
+        request.id,
+        CMD.UnfriendUser.id,
+        {
+          requestId: request.id,
+          otherUserId: request.body.otherUserId,
+          userId: request.userAuthMetadata!.id,
+        }
+      )
+
       await reply.status(200).send()
     }
   )
@@ -35,7 +39,7 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
 }
 
 const bodySchema = Type.Object({
-  toUserId: Type.String({ minLength: 1, format: 'uuid' }),
+  otherUserId: Type.String({ minLength: 1, format: 'uuid' }),
 })
 
 const responseSchema = {

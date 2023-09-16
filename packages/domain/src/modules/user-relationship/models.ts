@@ -118,24 +118,15 @@ export const unfriend = (
   userRelationship: Aggregate<BlockStatus, FriendStatus>,
   fromUserId: string,
   toUserId: string
-): [Aggregate<BlockStatus, UnFriendedStatus>, UnfriendedUserEvent] => {
-  const aggregateData = AggregateData.increaseVersion(userRelationship.aggregate)
-  const unfriendedAt = new Date()
-  return [
-    {
-      ...userRelationship,
-      aggregate: aggregateData,
-      friendStatus: { tag: 'unfriended', unfriendedAt, fromUserId, toUserId },
+): UnfriendedUserEvent => {
+  return {
+    data: Event.create(AggregateData.increaseVersion(userRelationship.aggregate), new Date()),
+    payload: {
+      tag: 'user-relationship-unfriended',
+      fromUserId,
+      toUserId,
     },
-    {
-      data: Event.create(aggregateData, unfriendedAt),
-      payload: {
-        tag: 'user-relationship-unfriended',
-        fromUserId,
-        toUserId,
-      },
-    },
-  ]
+  }
 }
 
 export const newBlock = (

@@ -15,25 +15,17 @@ export const create = (
   description: string,
   userId: string,
   taggedUserIds: string[]
-): [Aggregate, CreatedEvent] => {
+): CreatedEvent => {
   const aggregateData = AggregateData.createWithId(id)
-  return [
-    {
-      aggregate: aggregateData,
+  return {
+    data: Event.create(aggregateData, aggregateData.createdAt),
+    payload: {
+      tag: 'post-created',
       description,
       userId,
       taggedUserIds,
     },
-    {
-      data: Event.create(aggregateData, aggregateData.createdAt),
-      payload: {
-        tag: 'post-created',
-        description,
-        userId,
-        taggedUserIds,
-      },
-    },
-  ]
+  }
 }
 
 // validation

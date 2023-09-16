@@ -1,12 +1,16 @@
-import { BusinessRuleError, CMD, RequestImage, User } from '@facebluk/domain'
+import { BusinessRuleError, CMD, RequestImage } from '@facebluk/domain'
 import { Infra } from '@facebluk/infrastructure'
 import { FastifyPluginCallback } from 'fastify'
-import Joi from 'joi'
 import { FormFile } from '../common'
 
 export const registerUserRoute: FastifyPluginCallback = (fastify, options, done) => {
-  fastify.post('/register/v1', async (request, reply) => {
+  fastify.post('/register-user/v1', async (request, reply) => {
     const rawFormData = request.body as RawFormData
+    if (rawFormData.name === undefined)
+      throw new BusinessRuleError(request.id, '"name" is required')
+    if (rawFormData.alias === undefined)
+      throw new BusinessRuleError(request.id, '"alias" is required')
+
     const formData = {
       name: rawFormData.name,
       alias: rawFormData.alias,
@@ -14,33 +18,31 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
         rawFormData.profilePicture === undefined || rawFormData.profilePicture.length === 0
           ? undefined
           : RequestImage.create(
-            rawFormData.profilePicture[0].data,
-            rawFormData.profilePicture[0].mimetype
-          ),
+              rawFormData.profilePicture[0].data,
+              rawFormData.profilePicture[0].mimetype
+            ),
     }
-    await syntaxValidator.validateAsync(formData)
+    await CMD.RegisterUser.validate(request.id, formData, {
+      aliasExists: Infra.User.aliasExists(fastify.postgreSqlPool),
+    })
 
-    const aliasExists = await Infra.User.aliasExists(fastify.postgreSqlPool)(formData.alias!)
-    if (aliasExists) throw new BusinessRuleError(request.id, 'alias already exists')
-
-    await Infra.Event.sendBrokerMsg(request.rabbitMqChannel, request.id, CMD.RegisterUser.id, {
-      requestId: request.id,
-      userAuthMetadata: request.userAuthMetadata!,
-      name: formData.name!,
-      alias: formData.alias!,
-      profilePicture: formData.profilePicture,
-    } as CMD.RegisterUser.Request)
+    await Infra.Event.sendBrokerMsg<CMD.RegisterUser.Request>(
+      request.rabbitMqChannel,
+      request.id,
+      CMD.RegisterUser.id,
+      {
+        requestId: request.id,
+        userAuthMetadata: request.userAuthMetadata!,
+        name: formData.name,
+        alias: formData.alias,
+        profilePicture: formData.profilePicture,
+      }
+    )
 
     await reply.status(200).send()
   })
   done()
 }
-
-const syntaxValidator = Joi.object({
-  name: User.nameValidator.required(),
-  alias: User.aliasValidator.required(),
-  profilePicture: RequestImage.validator,
-})
 
 type RawFormData = {
   name?: string

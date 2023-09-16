@@ -15,50 +15,33 @@ export const register = (
   name: string,
   alias: string,
   profilePictureUrl?: string
-): [Aggregate, RegisteredEvent] => {
+): RegisteredEvent => {
   const aggregateData = AggregateData.createWithId(userId)
   alias = alias.toLowerCase()
-  return [
-    {
-      aggregate: aggregateData,
+  return {
+    data: Event.create(aggregateData, new Date()),
+    payload: {
+      tag: 'user-registered',
       name,
-      alias,
       profilePictureUrl,
+      alias,
     },
-    {
-      data: Event.create(aggregateData, new Date()),
-      payload: {
-        tag: 'user-registered',
-        name,
-        profilePictureUrl,
-        alias,
-      },
-    },
-  ]
+  }
 }
 
 export const updateInfo = (
   user: Aggregate,
   name?: string,
   profilePictureUrl?: string
-): [Aggregate, InfoUpdatedEvent] => {
-  const aggregateData = AggregateData.increaseVersion(user.aggregate)
-  return [
-    {
-      ...user,
-      aggregate: aggregateData,
-      name: name ?? user.name,
-      profilePictureUrl: profilePictureUrl ?? user.profilePictureUrl,
+): InfoUpdatedEvent => {
+  return {
+    data: Event.create(AggregateData.increaseVersion(user.aggregate), new Date()),
+    payload: {
+      tag: 'user-info-updated',
+      name,
+      profilePictureUrl,
     },
-    {
-      data: Event.create(aggregateData, new Date()),
-      payload: {
-        tag: 'user-info-updated',
-        name,
-        profilePictureUrl,
-      },
-    },
-  ]
+  }
 }
 
 export type AuthMetadata = {

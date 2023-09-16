@@ -1,4 +1,5 @@
-import { Event, File, RequestImage, User } from '../../modules'
+import Joi from 'joi'
+import { BusinessRuleError, Event, File, RequestImage, User } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   let profilePictureUrl: string | undefined = undefined
@@ -9,25 +10,25 @@ export const handle = async (req: Request, deps: Dependencies) => {
     profilePictureUrl = deps.findFileUrl(bucket, filePath)
   }
 
-  let user = await deps.findUserById(req.userAuthMetadata.id)
-  if (user === undefined) {
-    const [newUser, registeredUserEvent] = User.register(
+  let registeredEvent = await deps.findUserRegisteredEvent(req.userAuthMetadata.id)
+  if (registeredEvent === undefined) {
+    const newRegisteredEvent = User.register(
       req.userAuthMetadata.id,
       req.name,
       req.alias,
       profilePictureUrl
     )
-    user = newUser
-    await deps.registerUser(registeredUserEvent)
-    await deps.publishEvent(req.requestId, registeredUserEvent)
+    registeredEvent = newRegisteredEvent
+    await deps.registerUser(newRegisteredEvent)
+    await deps.publishEvent(req.requestId, newRegisteredEvent)
   }
 
   if (!User.isRegistered(req.userAuthMetadata))
-    await deps.markUserAsRegistered(req.userAuthMetadata.id, user.aggregate.createdAt)
+    await deps.markUserAsRegistered(req.userAuthMetadata.id, registeredEvent.data.createdAt)
 }
 
 export type Dependencies = {
-  findUserById: User.FnFindOneById
+  findUserRegisteredEvent: User.FnFindRegisteredEvent
   registerUser: User.FnRegister
   uploadFile: File.FnUpload
   findFileUrl: File.FnFindFileUrl
@@ -44,3 +45,26 @@ export type Request = {
 }
 
 export const id = 'register-user'
+
+export const validate = async (requestId: string, payload: ValidatePayload, deps: ValidateDeps) => {
+  await syntaxValidator.validateAsync(payload)
+
+  const aliasExists = await deps.aliasExists(payload.alias)
+  if (aliasExists) throw new BusinessRuleError(requestId, 'alias already exists')
+}
+
+type ValidatePayload = {
+  readonly name: string
+  readonly alias: string
+  readonly profilePicture?: RequestImage
+}
+
+type ValidateDeps = {
+  aliasExists: User.FnAliasExists
+}
+
+const syntaxValidator = Joi.object({
+  name: User.nameValidator.required(),
+  alias: User.aliasValidator.required(),
+  profilePicture: RequestImage.validator,
+})

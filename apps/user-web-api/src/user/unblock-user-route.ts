@@ -6,7 +6,7 @@ import { businessRuleErrorResponseSchema } from '../common'
 
 export const unblockUserRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>(
-    '/unblock/v1',
+    '/unblock-user/v1',
     routeOptions,
     async (request, reply) => {
       const jwt: Infra.User.JwtModel = await request.jwtVerify()

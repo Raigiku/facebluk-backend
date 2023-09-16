@@ -6,7 +6,7 @@ import { businessRuleErrorResponseSchema } from '../common'
 
 export const cancelFriendRequestRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post<{ Body: Static<typeof bodySchema> }>(
-    '/cancel/v1',
+    '/cancel-friend-request/v1',
     routeOptions,
     async (request, reply) => {
       const jwt: Infra.User.JwtModel = await request.jwtVerify()
