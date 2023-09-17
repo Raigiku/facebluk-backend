@@ -10,4 +10,3 @@ export type FnAliasExists = (alias: string) => Promise<boolean>
 export type FnFindOneById = (id: string) => Promise<Aggregate | undefined>
 export type FnFindRegisteredEvent = (userId: string) => Promise<RegisteredEvent | undefined>
 export type FnFindAuthMetadata = (id: string) => Promise<AuthMetadata | undefined>
-export type FnAreFriends = (userAId: string, userBId: string) => Promise<boolean>

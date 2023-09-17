@@ -9,7 +9,7 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
     '/unfriend-user/v1',
     routeOptions,
     async (request, reply) => {
-      await CMD.UnfriendUser.validate(
+      const valRes = await CMD.UnfriendUser.validate(
         request.id,
         {
           otherUserId: request.body.otherUserId,
@@ -17,7 +17,9 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
         },
         {
           findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
-          areUsersFriends: () => Promise.resolve(true),
+          findRelationshipBetweenUsers: Infra.UserRelationship.findOneBetweenUsers(
+            fastify.postgreSqlPool
+          ),
         }
       )
 
@@ -27,8 +29,9 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
         CMD.UnfriendUser.id,
         {
           requestId: request.id,
-          otherUserId: request.body.otherUserId,
-          userId: request.userAuthMetadata!.id,
+          fromUserId: request.userAuthMetadata!.id,
+          toUserId: request.body.otherUserId,
+          userRelationship: valRes.userRelationship,
         }
       )
 
