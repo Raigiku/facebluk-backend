@@ -37,27 +37,16 @@ export const isRejected = (
   friendRequest: Aggregate<AggregateStatus>
 ): friendRequest is Aggregate<RejectedStatus> => friendRequest.status.tag === 'rejected'
 
-export const create = (
-  fromUserId: string,
-  toUserId: string
-): [Aggregate<PendingStatus>, SentEvent] => {
+export const create = (fromUserId: string, toUserId: string): SentEvent => {
   const aggregateData = AggregateData.create()
-  return [
-    {
-      aggregate: aggregateData,
+  return {
+    data: Event.create(aggregateData, aggregateData.createdAt),
+    payload: {
+      tag: 'friend-request-sent',
       fromUserId,
       toUserId,
-      status: { tag: 'pending' },
     },
-    {
-      data: Event.create(aggregateData, aggregateData.createdAt),
-      payload: {
-        tag: 'friend-request-sent',
-        fromUserId,
-        toUserId,
-      },
-    },
-  ]
+  }
 }
 export const accept = (
   friendRequest: Aggregate<PendingStatus>

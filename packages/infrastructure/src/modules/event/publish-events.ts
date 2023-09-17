@@ -1,9 +1,7 @@
 import { Event, Logger } from '@facebluk/domain'
-import { Common } from '@facebluk/infra-common'
 import amqp from 'amqplib'
 import { PoolClient } from 'pg'
-import { markEventPublished } from '.'
-import { sendBrokerMsg } from './send-broker-msg'
+import { markEventPublished, sendBrokerMsg } from '.'
 
 export const publishEvents =
   (channel: amqp.Channel, pgClient: PoolClient, log: Logger.FnLog): Event.FnPublishEvents =>

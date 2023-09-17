@@ -3,11 +3,15 @@ import { PoolClient } from 'pg'
 import { postTableKey, postTableName } from '.'
 import { registerEvent } from '../event'
 import { eventTableName } from '../user'
+import { Common } from '..'
 
 export const create =
   (pgClient: PoolClient): Post.FnCreate =>
   async (event: Post.CreatedEvent) => {
-    await registerEvent(pgClient, eventTableName, event)
+    await Common.pgTransaction(pgClient, async () => {
+      await _create(pgClient, event)
+      await registerEvent(pgClient, eventTableName, event)
+    })
   }
 
 export const _create = async (pgClient: PoolClient, event: Post.CreatedEvent) => {

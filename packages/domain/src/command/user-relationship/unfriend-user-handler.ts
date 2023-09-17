@@ -36,16 +36,12 @@ export const validate = async (
 ): Promise<ValidateResponse> => {
   await syntaxValidator.validateAsync(payload)
 
-  const otherUser = await deps.findUserById(payload.otherUserId)
-  if (otherUser === undefined)
-    throw new BusinessRuleError(requestId, 'the other user does not exist')
-
-  if (payload.userId === payload.otherUserId)
-    throw new BusinessRuleError(requestId, 'cannot unfriend yourself')
+  const toUser = await deps.findUserById(payload.toUserId)
+  if (toUser === undefined) throw new BusinessRuleError(requestId, 'the other user does not exist')
 
   const userRelationship = await deps.findRelationshipBetweenUsers(
-    payload.userId,
-    payload.otherUserId
+    payload.fromUserId,
+    payload.toUserId
   )
   if (userRelationship === undefined || !UserRelationship.isFriend(userRelationship))
     throw new BusinessRuleError(requestId, 'users are not friends')
@@ -54,8 +50,8 @@ export const validate = async (
 }
 
 type ValidatePayload = {
-  readonly userId: string
-  readonly otherUserId: string
+  readonly fromUserId: string
+  readonly toUserId: string
 }
 
 type ValidateDeps = {
@@ -71,5 +67,8 @@ type ValidateResponse = {
 }
 
 const syntaxValidator = Joi.object({
-  otherUserId: Uuid.validator.required(),
+  fromUserId: Uuid.validator.required(),
+  toUserId: Uuid.validator.disallow(Joi.ref('userId')).required().messages({
+    'any.invalid': 'you cannot unfriend yourself',
+  }),
 })

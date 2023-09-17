@@ -1,4 +1,4 @@
-import { CMD } from '@facebluk/domain'
+import { CMD, Uuid } from '@facebluk/domain'
 import { Infra } from '@facebluk/infrastructure'
 import { Static, Type } from '@sinclair/typebox'
 import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
@@ -9,33 +9,41 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
     '/send-friend-request/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Infra.User.JwtModel = await request.jwtVerify()
-      const response = await CMD.SendFriendRequest.handle(
+      const friendRequestId = Uuid.create()
+
+      await CMD.SendFriendRequest.validate(
+        request.id,
         {
-          id: request.id,
-          userId: jwt.sub,
-          toUserId: request.body.toUserId,
+          fromUserId: request.userAuthMetadata!.id,
+          toUserId: request.body.otherUserId,
         },
         {
           findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
-          publishEvent: Infra.Event.publishEvent(
-            request.rabbitMqChannel,
-            request.postgreSqlPoolClient
-          ),
-          sendFriendRequest: Infra.FriendRequest.send(request.postgreSqlPoolClient),
           findUserRelationship: Infra.UserRelationship.findOneBetweenUsers(fastify.postgreSqlPool),
           findLastFriendRequestBetweenUsers:
             Infra.FriendRequest.findOneLastFriendRequestBetweenUsers(fastify.postgreSqlPool),
         }
       )
-      await reply.status(200).send(response)
+
+      await Infra.Event.sendBrokerMsg<CMD.SendFriendRequest.Request>(
+        request.rabbitMqChannel,
+        request.id,
+        CMD.SendFriendRequest.id,
+        {
+          requestId: request.id,
+          fromUserId: request.userAuthMetadata!.id,
+          toUserId: request.body.otherUserId,
+        }
+      )
+
+      await reply.status(200).send({ friendRequestId })
     }
   )
   done()
 }
 
 const bodySchema = Type.Object({
-  toUserId: Type.String({ minLength: 1, format: 'uuid' }),
+  otherUserId: Type.String({ minLength: 1, format: 'uuid' }),
 })
 
 const responseSchema = {

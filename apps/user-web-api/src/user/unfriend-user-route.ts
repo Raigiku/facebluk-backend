@@ -12,8 +12,8 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
       const valRes = await CMD.UnfriendUser.validate(
         request.id,
         {
-          otherUserId: request.body.otherUserId,
-          userId: request.userAuthMetadata!.id,
+          toUserId: request.body.otherUserId,
+          fromUserId: request.userAuthMetadata!.id,
         },
         {
           findUserById: Infra.User.findOneById(fastify.postgreSqlPool),

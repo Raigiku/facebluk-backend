@@ -2,12 +2,15 @@ import { User } from '@facebluk/domain'
 import { PoolClient } from 'pg'
 import { eventTableName, userTableKey, userTableName } from '.'
 import { registerEvent } from '../event'
+import { Common } from '..'
 
 export const register =
   (pgClient: PoolClient): User.FnRegister =>
   async (event: User.RegisteredEvent) => {
-    await _register(pgClient, event)
-    await registerEvent(pgClient, eventTableName, event)
+    await Common.pgTransaction(pgClient, async () => {
+      await _register(pgClient, event)
+      await registerEvent(pgClient, eventTableName, event)
+    })
   }
 
 export const _register = async (pgClient: PoolClient, event: User.RegisteredEvent) => {
