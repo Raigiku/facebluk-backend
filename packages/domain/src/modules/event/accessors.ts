@@ -2,8 +2,8 @@ import { AnyEvent } from './models'
 
 // mutations
 export type FnPublishEvent = (requestId: string, event: AnyEvent) => Promise<void>
-export type FnPublishEvents = (
+export type FnSendBrokerMsg = (
   requestId: string,
-  events: AnyEvent[],
-  userId?: string
+  exchange: string,
+  body: object
 ) => Promise<void>

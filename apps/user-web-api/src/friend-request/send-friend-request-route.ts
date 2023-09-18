@@ -25,15 +25,14 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
         }
       )
 
-      await Infra.Event.sendBrokerMsg<CMD.SendFriendRequest.Request>(
-        request.rabbitMqChannel,
+      await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(
         request.id,
         CMD.SendFriendRequest.id,
         {
           requestId: request.id,
           fromUserId: request.userAuthMetadata!.id,
           toUserId: request.body.otherUserId,
-        }
+        } as CMD.SendFriendRequest.Request
       )
 
       await reply.status(200).send({ friendRequestId })

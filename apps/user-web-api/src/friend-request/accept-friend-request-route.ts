@@ -9,27 +9,27 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
     '/accept-friend-request/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Infra.User.JwtModel = await request.jwtVerify()
-      await CMD.AcceptFriendRequest.handle(
+      const valRes = await CMD.AcceptFriendRequest.validate(
+        request.id,
         {
-          id: request.id,
-          userId: jwt.sub,
+          userId: request.userAuthMetadata!.id,
           friendRequestId: request.body.friendRequestId,
         },
         {
           findFriendRequest: Infra.FriendRequest.findOneById(fastify.postgreSqlPool),
-          acceptFriendRequest: Infra.FriendRequest.accept(request.postgreSqlPoolClient),
-          findUserRelationshipBetween: Infra.UserRelationship.findOneBetweenUsers(
-            fastify.postgreSqlPool
-          ),
-          publishEvents: Infra.Event.publishEvents(
-            request.rabbitMqChannel,
-            request.postgreSqlPoolClient,
-            fastify.cLog
-          ),
-          friendUser: Infra.UserRelationship.friend(request.postgreSqlPoolClient),
         }
       )
+
+      await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(
+        request.id,
+        CMD.AcceptFriendRequest.id,
+        {
+          requestId: request.id,
+          userId: request.userAuthMetadata!.id,
+          friendRequest: valRes.friendRequest,
+        } as CMD.AcceptFriendRequest.Request
+      )
+
       await reply.status(200).send()
     }
   )

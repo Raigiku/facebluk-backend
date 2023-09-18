@@ -9,22 +9,24 @@ export const cancelFriendRequestRoute: FastifyPluginCallback = (fastify, options
     '/cancel-friend-request/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Infra.User.JwtModel = await request.jwtVerify()
-      await CMD.CancelFriendRequest.handle(
+      const valRes = await CMD.CancelFriendRequest.validate(
+        request.id,
         {
-          id: request.id,
+          userId: request.userAuthMetadata!.id,
           friendRequestId: request.body.friendRequestId,
-          userId: jwt.sub,
         },
-        {
-          cancelFriendRequest: Infra.FriendRequest.cancel(request.postgreSqlPoolClient),
-          findFriendRequestById: Infra.FriendRequest.findOneById(fastify.postgreSqlPool),
-          publishEvent: Infra.Event.publishEvent(
-            request.rabbitMqChannel,
-            request.postgreSqlPoolClient
-          ),
-        }
+        { findFriendRequest: Infra.FriendRequest.findOneById(fastify.postgreSqlPool) }
       )
+
+      await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(
+        request.id,
+        CMD.CancelFriendRequest.id,
+        {
+          requestId: request.id,
+          friendRequest: valRes.friendRequest,
+        } as CMD.CancelFriendRequest.Request
+      )
+
       await reply.status(200).send()
     }
   )

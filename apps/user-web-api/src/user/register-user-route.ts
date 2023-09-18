@@ -26,18 +26,13 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
       aliasExists: Infra.User.aliasExists(fastify.postgreSqlPool),
     })
 
-    await Infra.Event.sendBrokerMsg<CMD.RegisterUser.Request>(
-      request.rabbitMqChannel,
-      request.id,
-      CMD.RegisterUser.id,
-      {
-        requestId: request.id,
-        userAuthMetadata: request.userAuthMetadata!,
-        name: formData.name,
-        alias: formData.alias,
-        profilePicture: formData.profilePicture,
-      }
-    )
+    await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(request.id, CMD.RegisterUser.id, {
+      requestId: request.id,
+      userAuthMetadata: request.userAuthMetadata!,
+      name: formData.name,
+      alias: formData.alias,
+      profilePicture: formData.profilePicture,
+    } as CMD.RegisterUser.Request)
 
     await reply.status(200).send()
   })

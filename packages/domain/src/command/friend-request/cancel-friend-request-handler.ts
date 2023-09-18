@@ -2,38 +2,57 @@ import Joi from 'joi'
 import { BusinessRuleError, Event, FriendRequest, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  await validator.validateAsync(req)
-
-  const friendRequest = await deps.findFriendRequestById(req.friendRequestId)
-  if (friendRequest === undefined)
-    throw new BusinessRuleError(req.id, 'the friend request does not exist')
-
-  if (!FriendRequest.isPending(friendRequest))
-    throw new BusinessRuleError(req.id, 'the friend request is not pending')
-
-  if (friendRequest.fromUserId !== req.userId)
-    throw new BusinessRuleError(req.id, 'the user is not the sender of the friend request')
-
-  const [, cancelledFriendRequestEvent] = FriendRequest.cancel(friendRequest)
-
+  const cancelledFriendRequestEvent = FriendRequest.cancel(req.friendRequest)
   await deps.cancelFriendRequest(cancelledFriendRequestEvent)
-  await deps.publishEvent(req.id, cancelledFriendRequestEvent)
+  await deps.publishEvent(req.requestId, cancelledFriendRequestEvent)
 }
 
 export type Dependencies = {
-  findFriendRequestById: FriendRequest.FnFindOneById
   cancelFriendRequest: FriendRequest.FnCancel
   publishEvent: Event.FnPublishEvent
 }
 
 export type Request = {
-  readonly id: string
-  readonly userId: string
-  readonly friendRequestId: string
+  readonly requestId: string
+  readonly friendRequest: FriendRequest.Aggregate<FriendRequest.PendingStatus>
 }
 
-export const validator = Joi.object<Request, true>({
-  id: Uuid.validator.required(),
-  userId: Uuid.validator.required(),
+export const id = 'cancel-friend-request'
+
+export const validate = async (
+  requestId: string,
+  payload: ValidatePayload,
+  deps: ValidateDeps
+): Promise<ValidateResponse> => {
+  await syntaxValidator.validateAsync(payload)
+
+  const friendRequest = await deps.findFriendRequest(payload.friendRequestId)
+  if (friendRequest === undefined)
+    throw new BusinessRuleError(requestId, 'the friend request does not exist')
+
+  if (!FriendRequest.isPending(friendRequest))
+    throw new BusinessRuleError(requestId, 'the friend request is not pending')
+
+  if (friendRequest.fromUserId !== payload.userId)
+    throw new BusinessRuleError(requestId, 'the user is not the sender of the friend request')
+
+  return { friendRequest }
+}
+
+type ValidatePayload = {
+  readonly friendRequestId: string
+  readonly userId: string
+}
+
+type ValidateDeps = {
+  findFriendRequest: FriendRequest.FnFindOneById
+}
+
+type ValidateResponse = {
+  readonly friendRequest: FriendRequest.Aggregate<FriendRequest.PendingStatus>
+}
+
+const syntaxValidator = Joi.object({
   friendRequestId: Uuid.validator.required(),
+  userId: Uuid.validator.required(),
 })

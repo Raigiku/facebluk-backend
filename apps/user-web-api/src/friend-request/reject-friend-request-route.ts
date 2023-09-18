@@ -9,22 +9,26 @@ export const rejectFriendRequestRoute: FastifyPluginCallback = (fastify, options
     '/reject-friend-request/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Infra.User.JwtModel = await request.jwtVerify()
-      await CMD.RejectFriendRequest.handle(
+      const valRes = await CMD.RejectFriendRequest.validate(
+        request.id,
         {
-          id: request.id,
           friendRequestId: request.body.friendRequestId,
-          userId: jwt.sub,
+          userId: request.userAuthMetadata!.id,
         },
         {
-          findFriendRequestById: Infra.FriendRequest.findOneById(fastify.postgreSqlPool),
-          publishEvent: Infra.Event.publishEvent(
-            request.rabbitMqChannel,
-            request.postgreSqlPoolClient
-          ),
-          rejectFriendRequest: Infra.FriendRequest.reject(request.postgreSqlPoolClient),
+          findFriendRequest: Infra.FriendRequest.findOneById(fastify.postgreSqlPool),
         }
       )
+
+      await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(
+        request.id,
+        CMD.RejectFriendRequest.id,
+        {
+          requestId: request.id,
+          friendRequest: valRes.friendRequest,
+        } as CMD.RejectFriendRequest.Request
+      )
+
       await reply.status(200).send()
     }
   )

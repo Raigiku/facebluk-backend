@@ -1,5 +1,4 @@
 export * from './publish-event'
-export * from './publish-events'
 export * from './register-event'
 export * from './mark-event-as-published'
 export * from './send-broker-msg'

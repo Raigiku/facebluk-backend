@@ -23,17 +23,12 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
         }
       )
 
-      await Infra.Event.sendBrokerMsg<CMD.UnfriendUser.Request>(
-        request.rabbitMqChannel,
-        request.id,
-        CMD.UnfriendUser.id,
-        {
-          requestId: request.id,
-          fromUserId: request.userAuthMetadata!.id,
-          toUserId: request.body.otherUserId,
-          userRelationship: valRes.userRelationship,
-        }
-      )
+      await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(request.id, CMD.UnfriendUser.id, {
+        requestId: request.id,
+        fromUserId: request.userAuthMetadata!.id,
+        toUserId: request.body.otherUserId,
+        userRelationship: valRes.userRelationship,
+      } as CMD.UnfriendUser.Request)
 
       await reply.status(200).send()
     }

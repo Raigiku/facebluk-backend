@@ -48,60 +48,27 @@ export const create = (fromUserId: string, toUserId: string): SentEvent => {
     },
   }
 }
-export const accept = (
-  friendRequest: Aggregate<PendingStatus>
-): [Aggregate<AcceptedStatus>, AcceptedEvent] => {
-  const acceptedAt = new Date()
-  const updatedVersionAggregate = AggregateData.increaseVersion(friendRequest.aggregate)
-  return [
-    {
-      ...friendRequest,
-      aggregate: updatedVersionAggregate,
-      status: { tag: 'accepted', acceptedAt },
+export const accept = (friendRequest: Aggregate<PendingStatus>): AcceptedEvent => {
+  return {
+    data: Event.create(AggregateData.increaseVersion(friendRequest.aggregate), new Date()),
+    payload: {
+      tag: 'friend-request-accepted',
     },
-    {
-      data: Event.create(updatedVersionAggregate, acceptedAt),
-      payload: {
-        tag: 'friend-request-accepted',
-      },
-    },
-  ]
+  }
 }
-export const cancel = (
-  friendRequest: Aggregate<PendingStatus>
-): [Aggregate<CancelledStatus>, CancelledEvent] => {
-  const cancelledAt = new Date()
-  const updatedVersionAggregate = AggregateData.increaseVersion(friendRequest.aggregate)
-  return [
-    {
-      ...friendRequest,
-      aggregate: updatedVersionAggregate,
-      status: { tag: 'cancelled', cancelledAt },
+export const cancel = (friendRequest: Aggregate<PendingStatus>): CancelledEvent => {
+  return {
+    data: Event.create(AggregateData.increaseVersion(friendRequest.aggregate), new Date()),
+    payload: {
+      tag: 'friend-request-cancelled',
     },
-    {
-      data: Event.create(updatedVersionAggregate, cancelledAt),
-      payload: {
-        tag: 'friend-request-cancelled',
-      },
-    },
-  ]
+  }
 }
-export const reject = (
-  friendRequest: Aggregate<PendingStatus>
-): [Aggregate<RejectedStatus>, RejectedEvent] => {
-  const rejectedAt = new Date()
-  const updatedVersionAggregate = AggregateData.increaseVersion(friendRequest.aggregate)
-  return [
-    {
-      ...friendRequest,
-      aggregate: updatedVersionAggregate,
-      status: { tag: 'rejected', rejectedAt },
+export const reject = (friendRequest: Aggregate<PendingStatus>): RejectedEvent => {
+  return {
+    data: Event.create(AggregateData.increaseVersion(friendRequest.aggregate), new Date()),
+    payload: {
+      tag: 'friend-request-rejected',
     },
-    {
-      data: Event.create(updatedVersionAggregate, rejectedAt),
-      payload: {
-        tag: 'friend-request-rejected',
-      },
-    },
-  ]
+  }
 }

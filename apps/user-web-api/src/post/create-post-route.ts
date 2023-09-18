@@ -13,18 +13,13 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
 
       const postId = Uuid.create()
 
-      await Infra.Event.sendBrokerMsg<CMD.CreatePost.Request>(
-        request.rabbitMqChannel,
-        request.id,
-        CMD.CreatePost.id,
-        {
-          requestId: request.id,
-          postId,
-          description: request.body.description,
-          userId: request.userAuthMetadata!.id,
-          taggedUserIds: request.body.taggedUserIds,
-        }
-      )
+      await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(request.id, CMD.CreatePost.id, {
+        requestId: request.id,
+        postId,
+        description: request.body.description,
+        userId: request.userAuthMetadata!.id,
+        taggedUserIds: request.body.taggedUserIds,
+      } as CMD.CreatePost.Request)
 
       await reply.status(200).send({ postId })
     }

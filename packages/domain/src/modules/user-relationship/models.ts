@@ -67,51 +67,30 @@ export const isUnFriended = (
 ): aggregate is Aggregate<BlockStatus, UnFriendedStatus> =>
   aggregate.friendStatus.tag === 'unfriended'
 
-export const newFriend = (
-  fromUserId: string,
-  toUserId: string
-): [Aggregate<NotBlockedStatus, FriendedStatus>, FriendedUserEvent] => {
-  const aggregateData = AggregateData.create()
-  const friendedAt = new Date()
-  return [
-    {
-      aggregate: aggregateData,
-      blockedStatus: { tag: 'not-blocked' },
-      friendStatus: { tag: 'friended', friendedAt, fromUserId, toUserId },
+export const newFriend = (fromUserId: string, toUserId: string): FriendedUserEvent => {
+  return {
+    data: Event.create(AggregateData.create(), new Date()),
+    payload: {
+      tag: 'user-relationship-friended',
+      fromUserId,
+      toUserId,
     },
-    {
-      data: Event.create(aggregateData, friendedAt),
-      payload: {
-        tag: 'user-relationship-friended',
-        fromUserId,
-        toUserId,
-      },
-    },
-  ]
+  }
 }
 
 export const friend = (
   userRelationship: Aggregate<BlockStatus, FriendStatus>,
   fromUserId: string,
   toUserId: string
-): [Aggregate<BlockStatus, FriendedStatus>, FriendedUserEvent] => {
-  const aggregateData = AggregateData.increaseVersion(userRelationship.aggregate)
-  const friendedAt = new Date()
-  return [
-    {
-      ...userRelationship,
-      aggregate: aggregateData,
-      friendStatus: { tag: 'friended', friendedAt, fromUserId, toUserId },
+): FriendedUserEvent => {
+  return {
+    data: Event.create(AggregateData.increaseVersion(userRelationship.aggregate), new Date()),
+    payload: {
+      tag: 'user-relationship-friended',
+      fromUserId,
+      toUserId,
     },
-    {
-      data: Event.create(aggregateData, friendedAt),
-      payload: {
-        tag: 'user-relationship-friended',
-        fromUserId,
-        toUserId,
-      },
-    },
-  ]
+  }
 }
 
 export const unfriend = (
