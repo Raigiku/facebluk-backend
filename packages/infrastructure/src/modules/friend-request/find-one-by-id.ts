@@ -3,7 +3,7 @@ import { Pool } from 'pg'
 import { friendRequestTableKey, friendRequestTableName, friendRequestTableToAggregate } from '.'
 
 export const findOneById =
-  (pool: Pool): FriendRequest.FnFindOneById =>
+  (pool: Pool): FriendRequest.DbQueries.FindOneById =>
   async (id: string) => {
     const { rows } = await pool.query(
       `

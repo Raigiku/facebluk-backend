@@ -1,33 +1,30 @@
 import Joi from 'joi'
-import { BusinessRuleError, Event, File, RequestImage, User } from '../../modules'
+import { BusinessRuleError, Event, User } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  let profilePictureUrl: string | undefined = undefined
-  if (req.profilePicture !== undefined) {
-    const bucket = 'images'
-    const filePath = `users/${req.user.aggregate.id}/${req.profilePicture.id}`
-    await deps.uploadFile(bucket, filePath, req.profilePicture.bytes)
-    profilePictureUrl = deps.findFileUrl(bucket, filePath)
-  }
+  const infoUpdatedLookup = await deps.db_findInfoUpdatedEvent<User.InfoUpdatedEvent>(req.requestId)
 
-  const infoUpdatedEvent = User.updateInfo(req.user, req.name, profilePictureUrl)
+  const infoUpdatedEvent =
+    infoUpdatedLookup === undefined
+      ? User.InfoUpdatedEvent.create(req.requestId, req.user, req.name, req.profilePictureUrl)
+      : infoUpdatedLookup
 
-  await deps.updateUserInfo(infoUpdatedEvent)
-  await deps.publishEvent(req.requestId, infoUpdatedEvent)
+  await deps.updateUserInfo(infoUpdatedEvent, infoUpdatedLookup === undefined)
+
+  await deps.publishEvent(infoUpdatedEvent)
 }
 
 export type Dependencies = {
-  updateUserInfo: User.FnUpdateInfo
-  uploadFile: File.FnUpload
-  findFileUrl: File.FnFindFileUrl
-  publishEvent: Event.FnPublishEvent
+  db_findInfoUpdatedEvent: Event.DbQueries.FindEvent
+  updateUserInfo: User.Mutations.UpdateInfo
+  publishEvent: Event.Mutations.PublishEvent
 }
 
 export type Request = {
   readonly requestId: string
   readonly user: User.Aggregate
   readonly name?: string
-  readonly profilePicture?: RequestImage
+  readonly profilePictureUrl?: string | null
 }
 
 export const id = 'update-user-info'
@@ -39,7 +36,7 @@ export const validate = async (
 ): Promise<ValidateResponse> => {
   await syntaxValidator.validateAsync(payload)
 
-  if (payload.name === undefined && payload.profilePicture === undefined)
+  if (payload.name === undefined && payload.profilePictureUrl === undefined)
     throw new BusinessRuleError(requestId, '"name" and "profilePicture" are both undefined')
 
   const user = await deps.findUserById(payload.userId)
@@ -50,12 +47,12 @@ export const validate = async (
 
 type ValidatePayload = {
   readonly name?: string
-  readonly profilePicture?: RequestImage
+  readonly profilePictureUrl?: string | null
   readonly userId: string
 }
 
 type ValidateDeps = {
-  findUserById: User.FnFindOneById
+  findUserById: User.DbQueries.FindOneById
 }
 
 type ValidateResponse = {
@@ -64,5 +61,5 @@ type ValidateResponse = {
 
 const syntaxValidator = Joi.object({
   name: User.nameValidator,
-  profilePicture: RequestImage.validator,
+  profilePictureUrl: Joi.string().uri(),
 })

@@ -2,19 +2,29 @@ import Joi from 'joi'
 import { BusinessRuleError, Event, User, UserRelationship, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const unfriendedEvent = UserRelationship.unfriend(
-    req.userRelationship,
-    req.fromUserId,
-    req.toUserId
+  const unfriendedLookup = await deps.db_findUnfriendedEvent<UserRelationship.UnfriendedUserEvent>(
+    req.requestId
   )
-  await deps.unfriend(unfriendedEvent)
-  await deps.publishEvent(req.requestId, unfriendedEvent)
+
+  const unfriendedEvent =
+    unfriendedLookup === undefined
+      ? UserRelationship.UnfriendedUserEvent.create(
+          req.requestId,
+          req.userRelationship,
+          req.fromUserId,
+          req.toUserId
+        )
+      : unfriendedLookup
+
+  await deps.unfriend(unfriendedEvent, unfriendedLookup === undefined)
+
+  await deps.publishEvent(unfriendedEvent)
 }
 
 export type Dependencies = {
-  findUserRelationshipBetween: UserRelationship.FnFindOneBetweenUsers
-  unfriend: UserRelationship.FnUnfriend
-  publishEvent: Event.FnPublishEvent
+  db_findUnfriendedEvent: Event.DbQueries.FindEvent
+  unfriend: UserRelationship.Mutations.Unfriend
+  publishEvent: Event.Mutations.PublishEvent
 }
 
 export type Request = {
@@ -55,8 +65,8 @@ type ValidatePayload = {
 }
 
 type ValidateDeps = {
-  findUserById: User.FnFindOneById
-  findRelationshipBetweenUsers: UserRelationship.FnFindOneBetweenUsers
+  findUserById: User.DbQueries.FindOneById
+  findRelationshipBetweenUsers: UserRelationship.DbQueries.FindOneBetweenUsers
 }
 
 type ValidateResponse = {

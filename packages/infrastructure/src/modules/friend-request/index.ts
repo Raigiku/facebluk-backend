@@ -9,10 +9,11 @@ import { FriendRequest } from '@facebluk/domain'
 
 // postgresql
 export const eventTableName = 'friend_request_event'
+
 export const friendRequestTableName = 'friend_request'
+
 export type FriendRequestTable = {
   readonly id: string
-  readonly version: bigint
   readonly created_at: Date
   readonly from_user_id: string
   readonly to_user_id: string
@@ -20,7 +21,9 @@ export type FriendRequestTable = {
   readonly cancelled_at: Date | null
   readonly rejected_at: Date | null
 }
+
 export const friendRequestTableKey = (k: keyof FriendRequestTable) => k
+
 export const friendRequestTableToAggregate = (
   row: FriendRequestTable
 ): FriendRequest.Aggregate<FriendRequest.AggregateStatus> => {
@@ -34,7 +37,7 @@ export const friendRequestTableToAggregate = (
   else friendRequestStatus = { tag: 'pending' }
 
   return {
-    aggregate: { id: row.id, version: row.version, createdAt: row.created_at },
+    aggregate: { id: row.id, createdAt: row.created_at },
     fromUserId: row.from_user_id,
     toUserId: row.to_user_id,
     status: friendRequestStatus,

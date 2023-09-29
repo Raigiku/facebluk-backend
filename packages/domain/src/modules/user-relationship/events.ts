@@ -1,24 +1,82 @@
+import { Aggregate, BlockStatus, FriendStatus } from '.'
 import { Event } from '..'
-import { TaggedType } from '../common'
+import { AggregateData, TaggedType } from '../common'
 
 export type Event = FriendedUserEvent | UnfriendedUserEvent | BlockedUserEvent | UnblockedUserEvent
 
-export type FriendedUserEventPayload = TaggedType<'user-relationship-friended'> & {
-  readonly fromUserId: string
-  readonly toUserId: string
-}
 export type FriendedUserEvent = {
   readonly data: Event.Data
-  readonly payload: FriendedUserEventPayload
+  readonly payload: FriendedUserEvent.Payload
 }
 
-export type UnfriendedUserEventPayload = TaggedType<'user-relationship-unfriended'> & {
-  readonly fromUserId: string
-  readonly toUserId: string
+export namespace FriendedUserEvent {
+  const tag = 'user-relationship-friended'
+
+  export type Payload = TaggedType<typeof tag> & {
+    readonly fromUserId: string
+    readonly toUserId: string
+  }
+
+  export const createNewRelationship = (
+    requestId: string,
+    fromUserId: string,
+    toUserId: string
+  ): FriendedUserEvent => {
+    return {
+      data: Event.create(requestId, AggregateData.create()),
+      payload: {
+        tag: 'user-relationship-friended',
+        fromUserId,
+        toUserId,
+      },
+    }
+  }
+
+  export const createForExistingRelationship = (
+    requestId: string,
+    userRelationship: Aggregate<BlockStatus, FriendStatus>,
+    fromUserId: string,
+    toUserId: string
+  ): FriendedUserEvent => {
+    return {
+      data: Event.create(requestId, userRelationship.aggregate),
+      payload: {
+        tag: 'user-relationship-friended',
+        fromUserId,
+        toUserId,
+      },
+    }
+  }
 }
+
 export type UnfriendedUserEvent = {
   readonly data: Event.Data
-  readonly payload: UnfriendedUserEventPayload
+  readonly payload: UnfriendedUserEvent.Payload
+}
+
+export namespace UnfriendedUserEvent {
+  const tag = 'user-relationship-unfriended'
+
+  export type Payload = TaggedType<typeof tag> & {
+    readonly fromUserId: string
+    readonly toUserId: string
+  }
+
+  export const create = (
+    requestId: string,
+    userRelationship: Aggregate<BlockStatus, FriendStatus>,
+    fromUserId: string,
+    toUserId: string
+  ): UnfriendedUserEvent => {
+    return {
+      data: Event.create(requestId, userRelationship.aggregate),
+      payload: {
+        tag: 'user-relationship-unfriended',
+        fromUserId,
+        toUserId,
+      },
+    }
+  }
 }
 
 export type BlockedUserEventPayload = TaggedType<'user-relationship-blocked'> & {

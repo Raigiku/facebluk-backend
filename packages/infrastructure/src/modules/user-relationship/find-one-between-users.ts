@@ -7,7 +7,7 @@ import {
 } from '.'
 
 export const findOneBetweenUsers =
-  (pool: Pool): UserRelationship.FnFindOneBetweenUsers =>
+  (pool: Pool): UserRelationship.DbQueries.FindOneBetweenUsers =>
   async (userAId: string, userBId: string) => {
     const { rows } = await pool.query(
       `

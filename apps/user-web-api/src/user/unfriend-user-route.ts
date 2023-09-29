@@ -13,7 +13,7 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
         request.id,
         {
           toUserId: request.body.otherUserId,
-          fromUserId: request.userAuthMetadata!.id,
+          fromUserId: request.userAuthMetadata!.userId,
         },
         {
           findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
@@ -25,7 +25,7 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
 
       await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(request.id, CMD.UnfriendUser.id, {
         requestId: request.id,
-        fromUserId: request.userAuthMetadata!.id,
+        fromUserId: request.userAuthMetadata!.userId,
         toUserId: request.body.otherUserId,
         userRelationship: valRes.userRelationship,
       } as CMD.UnfriendUser.Request)

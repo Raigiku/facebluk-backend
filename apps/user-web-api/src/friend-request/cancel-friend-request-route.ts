@@ -12,7 +12,7 @@ export const cancelFriendRequestRoute: FastifyPluginCallback = (fastify, options
       const valRes = await CMD.CancelFriendRequest.validate(
         request.id,
         {
-          userId: request.userAuthMetadata!.id,
+          userId: request.userAuthMetadata!.userId,
           friendRequestId: request.body.friendRequestId,
         },
         { findFriendRequest: Infra.FriendRequest.findOneById(fastify.postgreSqlPool) }

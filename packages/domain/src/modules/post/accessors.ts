@@ -1,4 +1,5 @@
 import { CreatedEvent } from './events'
 
-// mutations
-export type FnCreate = (event: CreatedEvent) => Promise<void>
+export namespace Mutations {
+  export type Create = (event: CreatedEvent, persistEvent: boolean) => Promise<void>
+}

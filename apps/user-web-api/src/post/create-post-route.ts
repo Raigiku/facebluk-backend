@@ -17,7 +17,7 @@ export const createPostRoute: FastifyPluginCallback = (fastify, options, done) =
         requestId: request.id,
         postId,
         description: request.body.description,
-        userId: request.userAuthMetadata!.id,
+        userId: request.userAuthMetadata!.userId,
         taggedUserIds: request.body.taggedUserIds,
       } as CMD.CreatePost.Request)
 

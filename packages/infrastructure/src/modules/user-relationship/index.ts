@@ -1,15 +1,15 @@
 export * from './find-one-between-users'
-export * from './friend'
 export * from './unfriend'
 
 import { UserRelationship } from '@facebluk/domain'
 
 // postgresql
 export const eventTableName = 'user_relationship_event'
+
 export const userRelationshipTableName = 'user_relationship'
+
 export type UserRelationshipTable = {
   readonly id: string
-  readonly version: bigint
   readonly created_at: Date
   readonly friend_from_user_id: string | null
   readonly friend_to_user_id: string | null
@@ -20,7 +20,9 @@ export type UserRelationshipTable = {
   readonly blocked_status: 'blocked' | 'unblocked' | null
   readonly blocked_status_updated_at: Date | null
 }
+
 export const userRelationshipTableKey = (k: keyof UserRelationshipTable) => k
+
 export const userRelationshipTableToAggregate = (
   row: UserRelationshipTable
 ): UserRelationship.Aggregate<UserRelationship.BlockStatus, UserRelationship.FriendStatus> => {
@@ -61,7 +63,7 @@ export const userRelationshipTableToAggregate = (
   } else blockedStatus = { tag: 'not-blocked' }
 
   return {
-    aggregate: { id: row.id, version: row.version, createdAt: row.created_at },
+    aggregate: { id: row.id, createdAt: row.created_at },
     friendStatus,
     blockedStatus,
   }

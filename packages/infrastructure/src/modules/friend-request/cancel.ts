@@ -1,24 +1,30 @@
 import { FriendRequest } from '@facebluk/domain'
 import { PoolClient } from 'pg'
 import { eventTableName, friendRequestTableKey, friendRequestTableName } from '.'
-import { registerEvent } from '../event'
+import { insertEvent } from '../event'
+import { Common } from '..'
 
 export const cancel =
-  (pgClient: PoolClient): FriendRequest.FnCancel =>
-  async (event: FriendRequest.CancelledEvent) => {
-    await _cancel(pgClient, event)
-    await registerEvent(pgClient, eventTableName, event)
+  (pgClient: PoolClient): FriendRequest.Mutations.Cancel =>
+  async (event, persistEvent) => {
+    if (persistEvent)
+      await Common.pgTransaction(pgClient, async () => {
+        await updateUserRelationshipTable(pgClient, event)
+        await insertEvent(pgClient, eventTableName, event)
+      })
   }
 
-export const _cancel = async (pgClient: PoolClient, event: FriendRequest.CancelledEvent) => {
+const updateUserRelationshipTable = async (
+  pgClient: PoolClient,
+  event: FriendRequest.CancelledEvent
+) => {
   await pgClient.query(
     `
       UPDATE ${friendRequestTableName}
-      SET 
-        ${friendRequestTableKey('version')} = $1,
-        ${friendRequestTableKey('cancelled_at')} = $2
-      WHERE ${friendRequestTableKey('id')} = $3
+      SET
+        ${friendRequestTableKey('cancelled_at')} = $1
+      WHERE ${friendRequestTableKey('id')} = $2
     `,
-    [event.data.aggregateVersion, event.data.createdAt, event.data.aggregateId]
+    [event.data.createdAt, event.data.aggregateId]
   )
 }

@@ -3,7 +3,7 @@ import { Pool } from 'pg'
 import { UserTable, userTableKey, userTableName, userTableToAggregate } from '.'
 
 export const findOneById =
-  (pool: Pool): User.FnFindOneById =>
+  (pool: Pool): User.DbQueries.FindOneById =>
   async (userId: string) => {
     const { rows } = await pool.query<UserTable>(
       `

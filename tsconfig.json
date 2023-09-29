@@ -2,6 +2,8 @@
   "files": [],
   "references": [
     { "path": "apps/user-web-api" },
+    { "path": "apps/adhoc" },
+    { "path": "apps/msg-consumer" },
     { "path": "packages/domain" },
     { "path": "packages/infra-common" },
     { "path": "packages/infrastructure" }

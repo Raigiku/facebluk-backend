@@ -14,7 +14,7 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
       await CMD.SendFriendRequest.validate(
         request.id,
         {
-          fromUserId: request.userAuthMetadata!.id,
+          fromUserId: request.userAuthMetadata!.userId,
           toUserId: request.body.otherUserId,
         },
         {
@@ -30,7 +30,7 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
         CMD.SendFriendRequest.id,
         {
           requestId: request.id,
-          fromUserId: request.userAuthMetadata!.id,
+          fromUserId: request.userAuthMetadata!.userId,
           toUserId: request.body.otherUserId,
         } as CMD.SendFriendRequest.Request
       )

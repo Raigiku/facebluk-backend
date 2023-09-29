@@ -1,2 +1,2 @@
-export * from './find-file-url';
+export * from './generate-file-url';
 export * from './upload-file';

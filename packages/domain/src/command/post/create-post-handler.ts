@@ -2,14 +2,28 @@ import Joi from 'joi'
 import { Event, Post } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies): Promise<void> => {
-  const createdPostEvent = Post.create(req.postId, req.description, req.userId, req.taggedUserIds)
-  await deps.createPost(createdPostEvent)
-  await deps.publishEvent(req.requestId, createdPostEvent)
+  const postCreatedLookup = await deps.db_findPostCreatedEvent<Post.CreatedEvent>(req.requestId)
+
+  const createdPostEvent =
+    postCreatedLookup === undefined
+      ? Post.CreatedEvent.create(
+          req.requestId,
+          req.postId,
+          req.description,
+          req.userId,
+          req.taggedUserIds
+        )
+      : postCreatedLookup
+
+  await deps.createPost(createdPostEvent, postCreatedLookup === undefined)
+
+  await deps.publishEvent(createdPostEvent)
 }
 
 export type Dependencies = {
-  createPost: Post.FnCreate
-  publishEvent: Event.FnPublishEvent
+  db_findPostCreatedEvent: Event.DbQueries.FindEvent
+  createPost: Post.Mutations.Create
+  publishEvent: Event.Mutations.PublishEvent
 }
 
 export type Request = {
@@ -35,4 +49,3 @@ const syntaxValidator = Joi.object({
   description: Post.descriptionValidator.required(),
   taggedUserIds: Post.taggedUserIdsValidator.required(),
 })
-

@@ -1,15 +1,48 @@
 import Joi from 'joi'
-import { BusinessRuleError, Event, FriendRequest, Uuid } from '../../modules'
+import { BusinessRuleError, Event, FriendRequest, UserRelationship, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const acceptedFriendRequestEvent = FriendRequest.accept(req.friendRequest)
-  await deps.acceptFriendRequest(acceptedFriendRequestEvent)
-  await deps.publishEvent(req.requestId, acceptedFriendRequestEvent)
+  const acceptedFriendRequestEventLookup =
+    await deps.db_findAcceptedFriendRequestEvent<FriendRequest.AcceptedEvent>(req.requestId)
+
+  const acceptedFriendRequestEvent =
+    acceptedFriendRequestEventLookup === undefined
+      ? FriendRequest.AcceptedEvent.create(req.requestId, req.friendRequest)
+      : acceptedFriendRequestEventLookup
+
+  const userRelationshipLookup = await deps.db_findUserRelationshipBetween(
+    req.friendRequest.fromUserId,
+    req.friendRequest.toUserId
+  )
+  const friendedRelationshipEvent =
+    userRelationshipLookup === undefined
+      ? UserRelationship.FriendedUserEvent.createNewRelationship(
+          req.requestId,
+          req.friendRequest.fromUserId,
+          req.friendRequest.toUserId
+        )
+      : UserRelationship.FriendedUserEvent.createForExistingRelationship(
+          req.requestId,
+          userRelationshipLookup,
+          req.friendRequest.fromUserId,
+          req.friendRequest.toUserId
+        )
+
+  await deps.acceptFriendRequest(
+    acceptedFriendRequestEvent,
+    acceptedFriendRequestEventLookup === undefined,
+    friendedRelationshipEvent,
+    userRelationshipLookup === undefined
+  )
+
+  await deps.publishEvent(acceptedFriendRequestEvent)
 }
 
 export type Dependencies = {
-  acceptFriendRequest: FriendRequest.FnAccept
-  publishEvent: Event.FnPublishEvent
+  db_findAcceptedFriendRequestEvent: Event.DbQueries.FindEvent
+  db_findUserRelationshipBetween: UserRelationship.DbQueries.FindOneBetweenUsers
+  acceptFriendRequest: FriendRequest.Mutations.Accept
+  publishEvent: Event.Mutations.PublishEvent
 }
 
 export type Request = {
@@ -45,7 +78,7 @@ type ValidatePayload = {
 }
 
 type ValidateDeps = {
-  findFriendRequest: FriendRequest.FnFindOneById
+  findFriendRequest: FriendRequest.DbQueries.FindOneById
 }
 
 type ValidateResponse = {

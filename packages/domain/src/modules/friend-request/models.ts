@@ -1,6 +1,4 @@
-import { Event } from '..'
 import { AggregateData, TaggedType } from '../common'
-import { AcceptedEvent, CancelledEvent, RejectedEvent, SentEvent } from './events'
 
 export type Aggregate<T extends AggregateStatus> = {
   readonly aggregate: AggregateData
@@ -36,39 +34,3 @@ export type RejectedStatus = TaggedType<'rejected'> & {
 export const isRejected = (
   friendRequest: Aggregate<AggregateStatus>
 ): friendRequest is Aggregate<RejectedStatus> => friendRequest.status.tag === 'rejected'
-
-export const create = (fromUserId: string, toUserId: string): SentEvent => {
-  const aggregateData = AggregateData.create()
-  return {
-    data: Event.create(aggregateData, aggregateData.createdAt),
-    payload: {
-      tag: 'friend-request-sent',
-      fromUserId,
-      toUserId,
-    },
-  }
-}
-export const accept = (friendRequest: Aggregate<PendingStatus>): AcceptedEvent => {
-  return {
-    data: Event.create(AggregateData.increaseVersion(friendRequest.aggregate), new Date()),
-    payload: {
-      tag: 'friend-request-accepted',
-    },
-  }
-}
-export const cancel = (friendRequest: Aggregate<PendingStatus>): CancelledEvent => {
-  return {
-    data: Event.create(AggregateData.increaseVersion(friendRequest.aggregate), new Date()),
-    payload: {
-      tag: 'friend-request-cancelled',
-    },
-  }
-}
-export const reject = (friendRequest: Aggregate<PendingStatus>): RejectedEvent => {
-  return {
-    data: Event.create(AggregateData.increaseVersion(friendRequest.aggregate), new Date()),
-    payload: {
-      tag: 'friend-request-rejected',
-    },
-  }
-}

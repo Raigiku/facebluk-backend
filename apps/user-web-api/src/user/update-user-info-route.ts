@@ -5,28 +5,38 @@ import { FormFile } from '../common'
 
 export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post('/update-user-info/v1', async (request, reply) => {
-    const rawFormData = request.body as RawFormData
-    const formData = {
-      name: rawFormData.name,
-      profilePicture:
-        rawFormData.profilePicture === undefined || rawFormData.profilePicture.length === 0
-          ? undefined
-          : RequestImage.create(
-              rawFormData.profilePicture[0].data,
-              rawFormData.profilePicture[0].mimetype
-            ),
-    }
+    const formData = buildFormData(request.body as RawFormData)
+
+    const fileBucket = 'images'
+    const fileRemotePath = `users/${request.userAuthMetadata!.userId}/${
+      formData.profilePicture?.id
+    }`
+    const profilePictureUrl =
+      formData.profilePicture != null
+        ? Infra.File.generateFileUrl(fastify.supabaseClient)(fileBucket, fileRemotePath)
+        : formData.profilePicture
 
     const valRes = await CMD.UpdateUserInfo.validate(
       request.id,
-      { ...formData, userId: request.userAuthMetadata!.id },
+      {
+        name: formData.name,
+        profilePictureUrl: profilePictureUrl,
+        userId: request.userAuthMetadata!.userId,
+      },
       { findUserById: Infra.User.findOneById(fastify.postgreSqlPool) }
     )
+
+    if (formData.profilePicture != null)
+      await Infra.File.uploadFile(fastify.supabaseClient)(
+        fileBucket,
+        fileRemotePath,
+        formData.profilePicture.bytes
+      )
 
     await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(request.id, CMD.UpdateUserInfo.id, {
       requestId: request.id,
       name: formData.name,
-      profilePicture: formData.profilePicture,
+      profilePictureUrl: profilePictureUrl,
       user: valRes.user,
     } as CMD.UpdateUserInfo.Request)
 
@@ -35,7 +45,22 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
   done()
 }
 
+const buildFormData = (rawFormData: RawFormData) => {
+  return {
+    name: rawFormData.name,
+    profilePicture:
+      rawFormData.profilePicture === null
+        ? null
+        : rawFormData.profilePicture === undefined || rawFormData.profilePicture.length === 0
+        ? undefined
+        : RequestImage.create(
+            rawFormData.profilePicture[0].data,
+            rawFormData.profilePicture[0].mimetype
+          ),
+  }
+}
+
 type RawFormData = {
   name?: string
-  profilePicture?: FormFile[]
+  profilePicture?: FormFile[] | null
 }

@@ -2,7 +2,7 @@ import { Logger, User } from '@facebluk/domain'
 import { SupabaseClient } from '@supabase/supabase-js'
 
 export const findAuthMetadata =
-  (supabase: SupabaseClient, log: Logger.FnLog, requestId: string): User.FnFindAuthMetadata =>
+  (supabase: SupabaseClient, log: Logger.FnLog, requestId: string): User.AuthQueries.FindAuthMetadata =>
   async (id: string) => {
     const { data, error } = await supabase.auth.admin.getUserById(id)
     if (error !== null) {
@@ -11,7 +11,7 @@ export const findAuthMetadata =
     }
     if (data.user === null) return undefined
     return {
-      id,
+      userId: id,
       registeredAt: data.user.user_metadata.registeredAt,
     }
   }

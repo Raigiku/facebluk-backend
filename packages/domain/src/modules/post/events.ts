@@ -1,14 +1,37 @@
 import { Event } from '..'
-import { TaggedType } from '../common'
+import { AggregateData, TaggedType } from '../common'
 
 export type Event = CreatedEvent
 
-export type CreatedEventPayload = TaggedType<'post-created'> & {
-  readonly userId: string
-  readonly description: string
-  readonly taggedUserIds: string[]
-}
 export type CreatedEvent = {
   readonly data: Event.Data
-  readonly payload: CreatedEventPayload
+  readonly payload: CreatedEvent.Payload
+}
+
+export namespace CreatedEvent {
+  const tag = 'post-created'
+
+  export type Payload = TaggedType<typeof tag> & {
+    readonly userId: string
+    readonly description: string
+    readonly taggedUserIds: string[]
+  }
+
+  export const create = (
+    requestId: string,
+    id: string,
+    description: string,
+    userId: string,
+    taggedUserIds: string[]
+  ): CreatedEvent => {
+    return {
+      data: Event.create(requestId, AggregateData.createWithId(id)),
+      payload: {
+        tag: 'post-created',
+        description,
+        userId,
+        taggedUserIds,
+      },
+    }
+  }
 }

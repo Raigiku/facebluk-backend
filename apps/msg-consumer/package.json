@@ -1,0 +1,14 @@
+{
+  "name": "@facebluk/msg-consumer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@facebluk/domain": "workspace:*",
+    "@facebluk/infrastructure": "workspace:*",
+    "dotenv": "^16.0.3"
+  }
+}

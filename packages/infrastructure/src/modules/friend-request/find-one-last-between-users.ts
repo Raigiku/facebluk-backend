@@ -3,7 +3,7 @@ import { Pool } from 'pg'
 import { friendRequestTableKey, friendRequestTableName, friendRequestTableToAggregate } from '.'
 
 export const findOneLastFriendRequestBetweenUsers =
-  (pool: Pool): FriendRequest.FnFindOneLastBetweenUsers =>
+  (pool: Pool): FriendRequest.DbQueries.FindOneLastBetweenUsers =>
   async (userAId: string, userBId: string) => {
     const { rows } = await pool.query(
       `

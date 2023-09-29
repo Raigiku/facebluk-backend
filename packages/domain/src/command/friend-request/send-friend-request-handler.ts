@@ -9,14 +9,24 @@ import {
 } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const sentEvent = FriendRequest.create(req.fromUserId, req.toUserId)
-  await deps.sendFriendRequest(sentEvent)
-  await deps.publishEvent(req.requestId, sentEvent)
+  const friendRequestSentLookup = await deps.db_findFriendRequestSentEvent<FriendRequest.SentEvent>(
+    req.requestId
+  )
+
+  const sentEvent =
+    friendRequestSentLookup === undefined
+      ? FriendRequest.SentEvent.create(req.requestId, req.fromUserId, req.toUserId)
+      : friendRequestSentLookup
+
+  await deps.sendFriendRequest(sentEvent, friendRequestSentLookup === undefined)
+
+  await deps.publishEvent(sentEvent)
 }
 
 export type Dependencies = {
-  sendFriendRequest: FriendRequest.FnSend
-  publishEvent: Event.FnPublishEvent
+  db_findFriendRequestSentEvent: Event.DbQueries.FindEvent
+  sendFriendRequest: FriendRequest.Mutations.Send
+  publishEvent: Event.Mutations.PublishEvent
 }
 
 export type Request = {
@@ -61,9 +71,9 @@ type ValidatePayload = {
 }
 
 type ValidateDeps = {
-  findUserRelationship: UserRelationship.FnFindOneBetweenUsers
-  findUserById: User.FnFindOneById
-  findLastFriendRequestBetweenUsers: FriendRequest.FnFindOneLastBetweenUsers
+  findUserRelationship: UserRelationship.DbQueries.FindOneBetweenUsers
+  findUserById: User.DbQueries.FindOneById
+  findLastFriendRequestBetweenUsers: FriendRequest.DbQueries.FindOneLastBetweenUsers
 }
 
 const syntaxValidator = Joi.object({

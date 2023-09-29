@@ -13,7 +13,7 @@ export const rejectFriendRequestRoute: FastifyPluginCallback = (fastify, options
         request.id,
         {
           friendRequestId: request.body.friendRequestId,
-          userId: request.userAuthMetadata!.id,
+          userId: request.userAuthMetadata!.userId,
         },
         {
           findFriendRequest: Infra.FriendRequest.findOneById(fastify.postgreSqlPool),

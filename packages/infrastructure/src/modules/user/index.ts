@@ -1,7 +1,6 @@
 export * from './alias-exists'
 export * from './find-auth-metadata'
 export * from './find-one-by-id'
-export * from './mark-as-registered'
 export * from './register'
 export * from './update-info'
 
@@ -9,18 +8,21 @@ import { User } from '@facebluk/domain'
 
 // postgresql
 export const eventTableName = 'user_event'
+
 export const userTableName = '"user"'
+
 export type UserTable = {
   readonly id: string
-  readonly version: bigint
   readonly created_at: Date
   readonly alias: string
   readonly name: string
   readonly profile_picture_url: string | null
 }
+
 export const userTableKey = (k: keyof UserTable) => k
+
 export const userTableToAggregate = (row: UserTable): User.Aggregate => ({
-  aggregate: { id: row.id, version: row.version, createdAt: row.created_at },
+  aggregate: { id: row.id, createdAt: row.created_at },
   alias: row.alias,
   name: row.name,
   profilePictureUrl: row.profile_picture_url ?? undefined,
@@ -30,6 +32,7 @@ export const userTableToAggregate = (row: UserTable): User.Aggregate => ({
 export const bucketNames = {
   userProfilePicture: 'user-profile-picture',
 }
+
 export type JwtModel = {
   aud: string
   exp: number

@@ -2,15 +2,23 @@ import Joi from 'joi'
 import { BusinessRuleError, Event, FriendRequest, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const rejectedFriendRequestEvent = FriendRequest.reject(req.friendRequest)
-  await deps.rejectFriendRequest(rejectedFriendRequestEvent)
-  await deps.publishEvent(req.requestId, rejectedFriendRequestEvent)
+  const friendRequestEventLookup =
+    await deps.db_findFriendRequestEvent<FriendRequest.RejectedEvent>(req.requestId)
+
+  const rejectedFriendRequestEvent =
+    friendRequestEventLookup === undefined
+      ? FriendRequest.RejectedEvent.create(req.requestId, req.friendRequest)
+      : friendRequestEventLookup
+
+  await deps.rejectFriendRequest(rejectedFriendRequestEvent, friendRequestEventLookup === undefined)
+
+  await deps.publishEvent(rejectedFriendRequestEvent)
 }
 
 export type Dependencies = {
-  findFriendRequestById: FriendRequest.FnFindOneById
-  rejectFriendRequest: FriendRequest.FnReject
-  publishEvent: Event.FnPublishEvent
+  db_findFriendRequestEvent: Event.DbQueries.FindEvent
+  rejectFriendRequest: FriendRequest.Mutations.Reject
+  publishEvent: Event.Mutations.PublishEvent
 }
 
 export type Request = {
@@ -46,7 +54,7 @@ type ValidatePayload = {
 }
 
 type ValidateDeps = {
-  findFriendRequest: FriendRequest.FnFindOneById
+  findFriendRequest: FriendRequest.DbQueries.FindOneById
 }
 
 type ValidateResponse = {

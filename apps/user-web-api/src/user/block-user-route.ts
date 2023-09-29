@@ -10,23 +10,23 @@ export const blockUserRoute: FastifyPluginCallback = (fastify, options, done) =>
     routeOptions,
     async (request, reply) => {
       const jwt: Infra.User.JwtModel = await request.jwtVerify()
-      await CMD.BlockUser.handle(
-        {
-          id: request.id,
-          userId: jwt.sub,
-          toUserId: request.body.toUserId,
-        },
-        {
-          findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
-          findUserRelationshipBetween: Infra.UserRelationship.findOneBetweenUsers(
-            fastify.postgreSqlPool
-          ),
-          publishEvent: Infra.Event.publishEvent(
-            request.rabbitMqChannel,
-            request.postgreSqlPoolClient
-          ),
-        }
-      )
+      // await CMD.BlockUser.handle(
+      //   {
+      //     id: request.id,
+      //     userId: jwt.sub,
+      //     toUserId: request.body.toUserId,
+      //   },
+      //   {
+      //     findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
+      //     findUserRelationshipBetween: Infra.UserRelationship.findOneBetweenUsers(
+      //       fastify.postgreSqlPool
+      //     ),
+      //     publishEvent: Infra.Event.publishEvent(
+      //       request.rabbitMqChannel,
+      //       request.postgreSqlPoolClient
+      //     ),
+      //   }
+      // )
       await reply.status(200).send()
     }
   )

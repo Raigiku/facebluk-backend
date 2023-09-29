@@ -7,9 +7,8 @@ export const markEventPublished = async (pgClient: PoolClient, event: Event.AnyE
     `
     UPDATE ${determineTableName(event)}
     SET ${eventTableKey('published')} = true
-    WHERE ${eventTableKey('aggregate_id')} = $1 AND
-      ${eventTableKey('aggregate_version')} = $2
+    WHERE ${eventTableKey('event_id')} = $1
   `,
-    [event.data.aggregateId, event.data.aggregateVersion]
+    [event.data.eventId]
   )
 }

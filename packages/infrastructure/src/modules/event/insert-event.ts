@@ -2,7 +2,7 @@ import { Event } from '@facebluk/domain'
 import { PoolClient } from 'pg'
 import { eventTableKey } from '.'
 
-export const registerEvent = async (
+export const insertEvent = async (
   pgClient: PoolClient,
   tableName: string,
   event: Event.AnyEvent
@@ -10,8 +10,8 @@ export const registerEvent = async (
   await pgClient.query(
     `
       INSERT INTO ${tableName} (
+        ${eventTableKey('event_id')},
         ${eventTableKey('aggregate_id')},
-        ${eventTableKey('aggregate_version')},
         ${eventTableKey('created_at')},
         ${eventTableKey('published')},
         ${eventTableKey('payload')}
@@ -19,8 +19,8 @@ export const registerEvent = async (
       VALUES ($1, $2, $3, $4, $5)
     `,
     [
+      event.data.eventId,
       event.data.aggregateId,
-      event.data.aggregateVersion,
       event.data.createdAt,
       event.data.published,
       event.payload,

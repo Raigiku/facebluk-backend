@@ -12,7 +12,7 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
       const valRes = await CMD.AcceptFriendRequest.validate(
         request.id,
         {
-          userId: request.userAuthMetadata!.id,
+          userId: request.userAuthMetadata!.userId,
           friendRequestId: request.body.friendRequestId,
         },
         {
@@ -25,7 +25,7 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
         CMD.AcceptFriendRequest.id,
         {
           requestId: request.id,
-          userId: request.userAuthMetadata!.id,
+          userId: request.userAuthMetadata!.userId,
           friendRequest: valRes.friendRequest,
         } as CMD.AcceptFriendRequest.Request
       )

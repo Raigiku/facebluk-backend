@@ -1,39 +1,33 @@
 import Joi from 'joi'
-import { BusinessRuleError, Event, File, RequestImage, User } from '../../modules'
+import { BusinessRuleError, Event, User } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  let profilePictureUrl: string | undefined = undefined
-  if (req.profilePicture !== undefined) {
-    const bucket = 'images'
-    const filePath = `users/${req.userAuthMetadata.id}/${req.profilePicture.id}`
-    await deps.uploadFile(bucket, filePath, req.profilePicture.bytes)
-    profilePictureUrl = deps.findFileUrl(bucket, filePath)
-  }
+  const userRegisteredLookup = await deps.db_findUserRegisteredEvent(req.userAuthMetadata.userId)
 
-  let registeredEvent = await deps.findUserRegisteredEvent(req.userAuthMetadata.id)
-  if (registeredEvent === undefined) {
-    const newRegisteredEvent = User.register(
-      req.userAuthMetadata.id,
-      req.name,
-      req.alias,
-      profilePictureUrl
-    )
-    registeredEvent = newRegisteredEvent
-    await deps.registerUser(newRegisteredEvent)
-    await deps.publishEvent(req.requestId, newRegisteredEvent)
-  }
+  const userRegisteredEvent =
+    userRegisteredLookup === undefined
+      ? User.RegisteredEvent.create(
+          req.requestId,
+          req.userAuthMetadata.userId,
+          req.name,
+          req.alias,
+          req.profilePictureUrl
+        )
+      : userRegisteredLookup
 
-  if (!User.isRegistered(req.userAuthMetadata))
-    await deps.markUserAsRegistered(req.userAuthMetadata.id, registeredEvent.data.createdAt)
+  await deps.registerUser(
+    userRegisteredEvent,
+    userRegisteredLookup === undefined,
+    req.userAuthMetadata.registeredAt === undefined
+  )
+
+  await deps.publishEvent(userRegisteredEvent)
 }
 
 export type Dependencies = {
-  findUserRegisteredEvent: User.FnFindRegisteredEvent
-  registerUser: User.FnRegister
-  uploadFile: File.FnUpload
-  findFileUrl: File.FnFindFileUrl
-  markUserAsRegistered: User.FnMarkAsRegistered
-  publishEvent: Event.FnPublishEvent
+  db_findUserRegisteredEvent: User.DbQueries.FindRegisteredEvent
+  registerUser: User.Mutations.Register
+  publishEvent: Event.Mutations.PublishEvent
 }
 
 export type Request = {
@@ -41,7 +35,7 @@ export type Request = {
   readonly userAuthMetadata: User.AuthMetadata
   readonly name: string
   readonly alias: string
-  readonly profilePicture?: RequestImage
+  readonly profilePictureUrl?: string
 }
 
 export const id = 'register-user'
@@ -49,22 +43,22 @@ export const id = 'register-user'
 export const validate = async (requestId: string, payload: ValidatePayload, deps: ValidateDeps) => {
   await syntaxValidator.validateAsync(payload)
 
-  const aliasExists = await deps.aliasExists(payload.alias)
+  const aliasExists = await deps.db_aliasExists(payload.alias)
   if (aliasExists) throw new BusinessRuleError(requestId, 'alias already exists')
 }
 
 type ValidatePayload = {
   readonly name: string
   readonly alias: string
-  readonly profilePicture?: RequestImage
+  readonly profilePictureUrl?: string
 }
 
 type ValidateDeps = {
-  aliasExists: User.FnAliasExists
+  db_aliasExists: User.DbQueries.AliasExists
 }
 
 const syntaxValidator = Joi.object({
   name: User.nameValidator.required(),
   alias: User.aliasValidator.required(),
-  profilePicture: RequestImage.validator,
+  profilePictureUrl: Joi.string().uri(),
 })

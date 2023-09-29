@@ -3,7 +3,7 @@ import { Pool } from 'pg'
 import { userTableKey, userTableName } from '.'
 
 export const aliasExists =
-  (pool: Pool): User.FnAliasExists =>
+  (pool: Pool): User.DbQueries.AliasExists =>
   async (alias: string) => {
     const { rows } = await pool.query(
       `
