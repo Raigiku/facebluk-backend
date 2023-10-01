@@ -2,8 +2,9 @@ import Joi from 'joi'
 import { BusinessRuleError, Event, User, UserRelationship, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const unfriendedLookup = await deps.db_findUnfriendedEvent<UserRelationship.UnfriendedUserEvent>(
-    req.requestId
+  const unfriendedLookup = await deps.db_findUnfriendedEvent(
+    req.requestId,
+    'user-relationship-unfriended'
   )
 
   const unfriendedEvent =
@@ -14,7 +15,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
           req.fromUserId,
           req.toUserId
         )
-      : unfriendedLookup
+      : unfriendedLookup as UserRelationship.UnfriendedUserEvent
 
   await deps.unfriend(unfriendedEvent, unfriendedLookup === undefined)
 

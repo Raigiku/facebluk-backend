@@ -8,6 +8,7 @@
   "license": "ISC",
   "dependencies": {
     "@facebluk/domain": "workspace:*",
-    "fastify": "^4.12.0"
+    "pino": "^8.15.3",
+    "pino-pretty": "^9.1.1"
   }
 }

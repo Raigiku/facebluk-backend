@@ -2,6 +2,7 @@ export * from './publish-event'
 export * from './insert-event'
 export * from './mark-event-as-published'
 export * from './send-broker-msg'
+export * from './find-event'
 
 import { Event } from '@facebluk/domain'
 import { FriendRequest, Post, User, UserRelationship } from '..'

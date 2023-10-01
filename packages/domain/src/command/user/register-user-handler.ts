@@ -2,7 +2,10 @@ import Joi from 'joi'
 import { BusinessRuleError, Event, User } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const userRegisteredLookup = await deps.db_findUserRegisteredEvent(req.userAuthMetadata.userId)
+  const userRegisteredLookup = await deps.db_findUserRegisteredEvent(
+    req.requestId,
+    'user-registered'
+  )
 
   const userRegisteredEvent =
     userRegisteredLookup === undefined
@@ -13,7 +16,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
           req.alias,
           req.profilePictureUrl
         )
-      : userRegisteredLookup
+      : (userRegisteredLookup as User.RegisteredEvent)
 
   await deps.registerUser(
     userRegisteredEvent,
@@ -25,7 +28,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
 }
 
 export type Dependencies = {
-  db_findUserRegisteredEvent: User.DbQueries.FindRegisteredEvent
+  db_findUserRegisteredEvent: Event.DbQueries.FindEvent
   registerUser: User.Mutations.Register
   publishEvent: Event.Mutations.PublishEvent
 }

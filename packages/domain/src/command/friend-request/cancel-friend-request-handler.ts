@@ -2,13 +2,15 @@ import Joi from 'joi'
 import { BusinessRuleError, Event, FriendRequest, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const cancelledFriendRequestEventLookup =
-    await deps.db_findCancelledFriendRequestEvent<FriendRequest.CancelledEvent>(req.requestId)
+  const cancelledFriendRequestEventLookup = await deps.db_findCancelledFriendRequestEvent(
+    req.requestId,
+    'friend-request-cancelled'
+  )
 
   const cancelledFriendRequestEvent =
     cancelledFriendRequestEventLookup === undefined
       ? FriendRequest.CancelledEvent.create(req.requestId, req.friendRequest)
-      : cancelledFriendRequestEventLookup
+      : (cancelledFriendRequestEventLookup as FriendRequest.CancelledEvent)
 
   await deps.cancelFriendRequest(
     cancelledFriendRequestEvent,

@@ -3,5 +3,10 @@ export namespace AuthQueries {
 }
 
 export namespace Mutations {
-  export type Upload = (bucket: string, path: string, bytes: ArrayBuffer) => Promise<void>
+  export type Upload = (
+    bucket: string,
+    path: string,
+    bytes: ArrayBuffer,
+    fileType: string
+  ) => Promise<void>
 }

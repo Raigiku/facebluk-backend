@@ -4,11 +4,6 @@ import { ValidationError } from 'joi'
 
 export const setupErrorHandling = (server: FastifyInstance) => {
   server.setErrorHandler(async (error, request, reply) => {
-    if (error.statusCode !== undefined) {
-      await reply.status(error.statusCode).send({ message: error.message })
-      return
-    }
-
     if (error instanceof ValidationError) {
       await reply.status(422).send({ message: error.message })
       return

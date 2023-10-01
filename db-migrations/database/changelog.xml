@@ -9,10 +9,10 @@
                         http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
     <changeSet id="1" author="diego">
         <createTable tableName="post_event">
-            <column name="aggregate_id" type="uuid">
-                <constraints nullable="false" />
+            <column name="event_id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="aggregate_version" type="bigint">
+            <column name="aggregate_id" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="payload" type="jsonb">
@@ -25,15 +25,14 @@
                 <constraints nullable="false" />
             </column>
         </createTable>
-        <addPrimaryKey tableName="post_event" columnNames="aggregate_id,aggregate_version" />
     </changeSet>
 
     <changeSet id="2" author="diego">
         <createTable tableName="friend_request_event">
-            <column name="aggregate_id" type="uuid">
-                <constraints nullable="false" />
+            <column name="event_id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="aggregate_version" type="bigint">
+            <column name="aggregate_id" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="payload" type="jsonb">
@@ -46,15 +45,14 @@
                 <constraints nullable="false" />
             </column>
         </createTable>
-        <addPrimaryKey tableName="friend_request_event" columnNames="aggregate_id,aggregate_version" />
     </changeSet>
 
     <changeSet id="3" author="diego">
         <createTable tableName="user_relationship_event">
-            <column name="aggregate_id" type="uuid">
-                <constraints nullable="false" />
+            <column name="event_id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="aggregate_version" type="bigint">
+            <column name="aggregate_id" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="payload" type="jsonb">
@@ -67,16 +65,14 @@
                 <constraints nullable="false" />
             </column>
         </createTable>
-        <addPrimaryKey tableName="user_relationship_event"
-            columnNames="aggregate_id,aggregate_version" />
     </changeSet>
 
     <changeSet id="4" author="diego">
         <createTable tableName="user_event">
-            <column name="aggregate_id" type="uuid">
-                <constraints nullable="false" />
+            <column name="event_id" type="uuid">
+                <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="aggregate_version" type="bigint">
+            <column name="aggregate_id" type="uuid">
                 <constraints nullable="false" />
             </column>
             <column name="payload" type="jsonb">
@@ -89,17 +85,12 @@
                 <constraints nullable="false" />
             </column>
         </createTable>
-        <addPrimaryKey tableName="user_event"
-            columnNames="aggregate_id,aggregate_version" />
     </changeSet>
 
     <changeSet id="5" author="diego">
         <createTable tableName="user">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
-            </column>
-            <column name="version" type="bigint">
-                <constraints nullable="false" />
             </column>
             <column name="created_at" type="timestamptz">
                 <constraints nullable="false" />
@@ -120,9 +111,6 @@
         <createTable tableName="friend_request">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
-            </column>
-            <column name="version" type="bigint">
-                <constraints nullable="false" />
             </column>
             <column name="created_at" type="timestamptz">
                 <constraints nullable="false" />
@@ -150,9 +138,6 @@
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
             </column>
-            <column name="version" type="bigint">
-                <constraints nullable="false" />
-            </column>
             <column name="created_at" type="timestamptz">
                 <constraints nullable="false" />
             </column>
@@ -162,19 +147,18 @@
             <column name="user_id" type="uuid">
                 <constraints nullable="false" foreignKeyName="fk_user" references="user(id)" />
             </column>
+            <column name="tagged_user_ids" type="uuid[]">
+                <constraints nullable="false" />
+            </column>
         </createTable>
     </changeSet>
 
     <changeSet id="8" author="diego">
         <sql> CREATE TYPE friend_status AS ENUM ('friended', 'unfriended'); </sql>
-        <sql> CREATE TYPE blocked_status AS ENUM ('blocked', 'unblocked'); </sql>
 
         <createTable tableName="user_relationship">
             <column name="id" type="uuid">
                 <constraints nullable="false" primaryKey="true" />
-            </column>
-            <column name="version" type="bigint">
-                <constraints nullable="false" />
             </column>
             <column name="created_at" type="timestamptz">
                 <constraints nullable="false" />
@@ -191,20 +175,6 @@
                 <constraints nullable="true" />
             </column>
             <column name="friend_status_updated_at" type="timestamptz">
-                <constraints nullable="true" />
-            </column>
-            <column name="blocked_from_user_id" type="uuid">
-                <constraints nullable="true" foreignKeyName="fk_blocked_from_user"
-                    references="user(id)" />
-            </column>
-            <column name="blocked_to_user_id" type="uuid">
-                <constraints nullable="true" foreignKeyName="fk_blocked_to_user"
-                    references="user(id)" />
-            </column>
-            <column name="blocked_status" type="blocked_status">
-                <constraints nullable="true" />
-            </column>
-            <column name="blocked_status_updated_at" type="timestamptz">
                 <constraints nullable="true" />
             </column>
         </createTable>

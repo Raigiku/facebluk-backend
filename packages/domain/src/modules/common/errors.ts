@@ -4,10 +4,3 @@ export class BusinessRuleError extends Error {
     Object.setPrototypeOf(this, BusinessRuleError.prototype)
   }
 }
-
-export class DuplicateEventError extends Error {
-  constructor() {
-    super()
-    Object.setPrototypeOf(this, DuplicateEventError.prototype)
-  }
-}

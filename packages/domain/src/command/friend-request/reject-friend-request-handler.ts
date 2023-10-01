@@ -2,13 +2,15 @@ import Joi from 'joi'
 import { BusinessRuleError, Event, FriendRequest, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const friendRequestEventLookup =
-    await deps.db_findFriendRequestEvent<FriendRequest.RejectedEvent>(req.requestId)
+  const friendRequestEventLookup = await deps.db_findFriendRequestEvent(
+    req.requestId,
+    'friend-request-rejected'
+  )
 
   const rejectedFriendRequestEvent =
     friendRequestEventLookup === undefined
       ? FriendRequest.RejectedEvent.create(req.requestId, req.friendRequest)
-      : friendRequestEventLookup
+      : (friendRequestEventLookup as FriendRequest.RejectedEvent)
 
   await deps.rejectFriendRequest(rejectedFriendRequestEvent, friendRequestEventLookup === undefined)
 

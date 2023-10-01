@@ -9,14 +9,15 @@ import {
 } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const friendRequestSentLookup = await deps.db_findFriendRequestSentEvent<FriendRequest.SentEvent>(
-    req.requestId
+  const friendRequestSentLookup = await deps.db_findFriendRequestSentEvent(
+    req.requestId,
+    'friend-request-sent'
   )
 
   const sentEvent =
     friendRequestSentLookup === undefined
       ? FriendRequest.SentEvent.create(req.requestId, req.fromUserId, req.toUserId)
-      : friendRequestSentLookup
+      : (friendRequestSentLookup as FriendRequest.SentEvent)
 
   await deps.sendFriendRequest(sentEvent, friendRequestSentLookup === undefined)
 

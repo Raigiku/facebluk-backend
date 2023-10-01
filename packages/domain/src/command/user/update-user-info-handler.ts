@@ -2,12 +2,12 @@ import Joi from 'joi'
 import { BusinessRuleError, Event, User } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
-  const infoUpdatedLookup = await deps.db_findInfoUpdatedEvent<User.InfoUpdatedEvent>(req.requestId)
+  const infoUpdatedLookup = await deps.db_findInfoUpdatedEvent(req.requestId, 'user-info-updated')
 
   const infoUpdatedEvent =
     infoUpdatedLookup === undefined
       ? User.InfoUpdatedEvent.create(req.requestId, req.user, req.name, req.profilePictureUrl)
-      : infoUpdatedLookup
+      : (infoUpdatedLookup as User.InfoUpdatedEvent)
 
   await deps.updateUserInfo(infoUpdatedEvent, infoUpdatedLookup === undefined)
 

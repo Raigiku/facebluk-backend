@@ -9,6 +9,7 @@
   "dependencies": {
     "@facebluk/domain": "workspace:*",
     "@facebluk/infrastructure": "workspace:*",
+    "@facebluk/infra-common": "workspace:*",
     "dotenv": "^16.0.3"
   }
 }

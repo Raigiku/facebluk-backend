@@ -1,7 +1,7 @@
-import { AnyEvent } from './models'
+import { AnyEvent, AnyEventTag } from './models'
 
 export namespace DbQueries {
-  export type FindEvent = <T>(eventId: string) => Promise<T | undefined>
+  export type FindEvent = (eventId: string, eventTag: AnyEventTag) => Promise<AnyEvent | undefined>
 }
 
 export namespace Mutations {

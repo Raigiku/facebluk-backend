@@ -30,7 +30,8 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
       await Infra.File.uploadFile(fastify.supabaseClient)(
         fileBucket,
         fileRemotePath,
-        formData.profilePicture.bytes
+        formData.profilePicture.bytes,
+        formData.profilePicture.fileType
       )
 
     await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(request.id, CMD.UpdateUserInfo.id, {

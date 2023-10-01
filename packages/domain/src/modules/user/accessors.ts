@@ -5,7 +5,6 @@ import { Aggregate, AuthMetadata } from './models'
 export namespace DbQueries {
   export type AliasExists = (alias: string) => Promise<boolean>
   export type FindOneById = (userId: string) => Promise<Aggregate | undefined>
-  export type FindRegisteredEvent = (userId: string) => Promise<User.RegisteredEvent | undefined>
 }
 
 export namespace AuthQueries {

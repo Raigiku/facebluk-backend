@@ -2,7 +2,7 @@ import Joi from 'joi'
 import { Event, Post } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies): Promise<void> => {
-  const postCreatedLookup = await deps.db_findPostCreatedEvent<Post.CreatedEvent>(req.requestId)
+  const postCreatedLookup = await deps.db_findPostCreatedEvent(req.requestId, 'post-created')
 
   const createdPostEvent =
     postCreatedLookup === undefined
@@ -13,7 +13,7 @@ export const handle = async (req: Request, deps: Dependencies): Promise<void> =>
           req.userId,
           req.taggedUserIds
         )
-      : postCreatedLookup
+      : (postCreatedLookup as Post.CreatedEvent)
 
   await deps.createPost(createdPostEvent, postCreatedLookup === undefined)
 
