@@ -5,6 +5,7 @@ import {
   Post as PostInfra,
   UserRelationship as UserRelationshipInfra,
   FriendRequest as FriendRequestInfra,
+  Event as EventInfra
 } from '..'
 import { EventTable } from './index'
 
@@ -16,7 +17,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${UserInfra.eventTableName} e
-        WHERE e.${UserInfra.userTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )
@@ -42,7 +43,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${UserInfra.eventTableName} e
-        WHERE e.${UserInfra.userTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )
@@ -67,7 +68,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${PostInfra.eventTableName} e
-        WHERE e.${PostInfra.postTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )
@@ -93,7 +94,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${FriendRequestInfra.eventTableName} e
-        WHERE e.${FriendRequestInfra.friendRequestTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )
@@ -118,7 +119,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${FriendRequestInfra.eventTableName} e
-        WHERE e.${FriendRequestInfra.friendRequestTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )
@@ -141,7 +142,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${FriendRequestInfra.eventTableName} e
-        WHERE e.${FriendRequestInfra.friendRequestTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )
@@ -164,7 +165,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${FriendRequestInfra.eventTableName} e
-        WHERE e.${FriendRequestInfra.friendRequestTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )
@@ -187,7 +188,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${UserRelationshipInfra.eventTableName} e
-        WHERE e.${UserRelationshipInfra.userRelationshipTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )
@@ -212,7 +213,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${UserRelationshipInfra.eventTableName} e
-        WHERE e.${UserRelationshipInfra.userRelationshipTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )
@@ -237,7 +238,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${UserRelationshipInfra.eventTableName} e
-        WHERE e.${UserRelationshipInfra.userRelationshipTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )
@@ -262,7 +263,7 @@ export const findEvent =
         `
         SELECT *
         FROM ${UserRelationshipInfra.eventTableName} e
-        WHERE e.${UserRelationshipInfra.userRelationshipTableKey('id')} = $1
+        WHERE e.${EventInfra.eventTableKey('event_id')} = $1
         `,
         [eventId]
       )

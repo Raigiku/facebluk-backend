@@ -1,0 +1,1 @@
+export * as CreatePost from './create-post-consumer'

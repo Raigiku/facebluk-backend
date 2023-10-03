@@ -8,13 +8,20 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
     const formData = buildFormData(request.body as RawFormData)
 
     const fileBucket = 'images'
-    const fileRemotePath = `users/${request.userAuthMetadata!.userId}/${
-      formData.profilePicture?.id
-    }`
+    const fileRemotePath =
+      formData.profilePicture === undefined
+        ? undefined
+        : formData.profilePicture === null
+        ? null
+        : `users/${request.userAuthMetadata!.userId}/${
+            formData.profilePicture.id
+          }.${RequestImage.fileExtension(formData.profilePicture.fileType)}`
     const profilePictureUrl =
-      formData.profilePicture != null
-        ? Infra.File.generateFileUrl(fastify.supabaseClient)(fileBucket, fileRemotePath)
-        : formData.profilePicture
+      fileRemotePath === undefined
+        ? undefined
+        : fileRemotePath === null
+        ? null
+        : Infra.File.generateFileUrl(fastify.supabaseClient)(fileBucket, fileRemotePath)
 
     const valRes = await CMD.UpdateUserInfo.validate(
       request.id,
@@ -26,7 +33,7 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
       { findUserById: Infra.User.findOneById(fastify.postgreSqlPool) }
     )
 
-    if (formData.profilePicture != null)
+    if (formData.profilePicture != null && fileRemotePath != null)
       await Infra.File.uploadFile(fastify.supabaseClient)(
         fileBucket,
         fileRemotePath,

@@ -22,7 +22,7 @@ const main = async () => {
     await rabbitChannel.assertQueue(queueName, { durable: true, deadLetterExchange })
     await rabbitChannel.bindQueue(queueName, queues[queueName].exchange, '')
 
-    const deadLetterQueue = `${queueName}-dlx`
+    const deadLetterQueue = `${queueName}-dlq`
     await rabbitChannel.assertQueue(deadLetterQueue, { durable: true })
     await rabbitChannel.bindQueue(deadLetterQueue, deadLetterExchange, '')
 
@@ -33,7 +33,7 @@ const main = async () => {
         noAck: false,
       }
     )
-    log('info', '', `rabbitmq queue ${queueName} consumer created`)
+    log('info', '', `RabbitMQ: queue ${queueName} consumer created`)
   }
 }
 

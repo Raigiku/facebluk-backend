@@ -15,9 +15,9 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
             formData.profilePicture.id
           }.${RequestImage.fileExtension(formData.profilePicture.fileType)}`
     const profilePictureUrl =
-      fileRemotePath !== undefined
-        ? Infra.File.generateFileUrl(fastify.supabaseClient)(fileBucket, fileRemotePath)
-        : undefined
+      fileRemotePath === undefined
+        ? undefined
+        : Infra.File.generateFileUrl(fastify.supabaseClient)(fileBucket, fileRemotePath)
 
     await CMD.RegisterUser.validate(
       request.id,

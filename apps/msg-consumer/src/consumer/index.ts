@@ -1,7 +1,15 @@
 import { Infra } from '@facebluk/infrastructure'
 import { Common } from '@facebluk/infra-common'
 import { CMD, Logger } from '@facebluk/domain'
-import { RegisterUser } from './user'
+import { RegisterUser, UpdateUserInfo } from './user'
+import { CreatePost } from './post'
+import {
+  AcceptFriendRequest,
+  CancelFriendRequest,
+  RejectFriendRequest,
+  SendFriendRequest,
+} from './friend-request'
+import { UnfriendUser } from './user-relationship'
 
 export type MsgConsumer = {
   [queue: string]: {
@@ -14,6 +22,34 @@ export const queues: MsgConsumer = {
   [RegisterUser.queueName]: {
     exchange: CMD.RegisterUser.id,
     consumer: RegisterUser.consume,
+  },
+  [UpdateUserInfo.queueName]: {
+    exchange: CMD.UpdateUserInfo.id,
+    consumer: UpdateUserInfo.consume,
+  },
+  [CreatePost.queueName]: {
+    exchange: CMD.CreatePost.id,
+    consumer: CreatePost.consume,
+  },
+  [AcceptFriendRequest.queueName]: {
+    exchange: CMD.AcceptFriendRequest.id,
+    consumer: AcceptFriendRequest.consume,
+  },
+  [CancelFriendRequest.queueName]: {
+    exchange: CMD.CancelFriendRequest.id,
+    consumer: CancelFriendRequest.consume,
+  },
+  [RejectFriendRequest.queueName]: {
+    exchange: CMD.RejectFriendRequest.id,
+    consumer: RejectFriendRequest.consume,
+  },
+  [SendFriendRequest.queueName]: {
+    exchange: CMD.SendFriendRequest.id,
+    consumer: SendFriendRequest.consume,
+  },
+  [UnfriendUser.queueName]: {
+    exchange: CMD.UnfriendUser.id,
+    consumer: UnfriendUser.consume,
   },
 }
 
