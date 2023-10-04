@@ -1,5 +1,4 @@
-import { Logger, User, Uuid } from '@facebluk/domain'
-import { Common } from '@facebluk/infra-common'
+import { FnLog, User, Uuid } from '@facebluk/domain'
 import { Infra } from '@facebluk/infrastructure'
 import { FastifyPluginCallback } from 'fastify'
 import fp from 'fastify-plugin'
@@ -9,8 +8,8 @@ declare module 'fastify' {
     postgreSqlPool: Infra.PostgreSQL.Pool
     rabbitMqConnection: Infra.RabbitMQ.Connection
     supabaseClient: Infra.Supabase.SupabaseClient
-    commonConfig: Common.Config
-    cLog: Logger.FnLog
+    commonConfig: Infra.Common.Config
+    cLog: FnLog
   }
 
   interface FastifyRequest {
@@ -156,7 +155,7 @@ export const fastifySupabase = fp(supabasePlugin, {
   name: 'fastify-supabase-plugin',
 })
 
-const commonPlugin: FastifyPluginCallback<Common.Config> = (fastify, options, done) => {
+const commonPlugin: FastifyPluginCallback<Infra.Common.Config> = (fastify, options, done) => {
   if (fastify.commonConfig != null) {
     done()
     return
@@ -167,7 +166,7 @@ const commonPlugin: FastifyPluginCallback<Common.Config> = (fastify, options, do
     done()
     return
   }
-  fastify.decorate('cLog', Common.Logger.log(fastify.log))
+  fastify.decorate('cLog', Infra.Common.log(fastify.log))
 
   done()
 }
@@ -175,7 +174,7 @@ export const fastifyCommonPlugin = fp(commonPlugin, {
   name: 'fastify-common-plugin',
 })
 
-const userAuthPlugin: FastifyPluginCallback<Common.Config> = (fastify, options, done) => {
+const userAuthPlugin: FastifyPluginCallback<Infra.Common.Config> = (fastify, options, done) => {
   fastify.addHook('onRequest', async (request) => {
     const authHeader = request.headers.authorization
     if (authHeader === undefined) throw new Error('auth header undefined')

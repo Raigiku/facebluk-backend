@@ -1,4 +1,3 @@
-import { Common } from '@facebluk/infra-common'
 import { Infra } from '@facebluk/infrastructure'
 import fastifyCors from '@fastify/cors'
 import fastifyJwt from '@fastify/jwt'
@@ -13,7 +12,7 @@ import * as Config from '../config'
 export const setupPlugins = async (
   server: FastifyInstance,
   webApiConfig: Config.Config,
-  commonConfig: Common.Config
+  commonConfig: Infra.Common.Config
 ) => {
   // init env configs
   const userAuthConfig = Infra.Supabase.createConfig()

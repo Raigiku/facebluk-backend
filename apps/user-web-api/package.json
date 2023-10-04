@@ -8,7 +8,6 @@
   "license": "ISC",
   "dependencies": {
     "@facebluk/domain": "workspace:*",
-    "@facebluk/infra-common": "workspace:*",
     "@facebluk/infrastructure": "workspace:*",
     "@fastify/cors": "^8.2.0",
     "@fastify/jwt": "^6.7.1",

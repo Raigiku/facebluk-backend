@@ -7,6 +7,5 @@
   "references": [
     { "path": "../../packages/domain" },
     { "path": "../../packages/infrastructure" },
-    { "path": "../../packages/infra-common" },
   ]
 }

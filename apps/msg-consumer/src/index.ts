@@ -1,14 +1,13 @@
-import { Logger } from '@facebluk/domain'
-import { Common } from '@facebluk/infra-common'
 import { Infra } from '@facebluk/infrastructure'
 import dotenv from 'dotenv'
 import { queues } from './consumer'
+import { FnLog } from '@facebluk/domain'
 
 const main = async () => {
   dotenv.config()
 
-  const commonConfig = Common.Config.create()
-  const log = Common.Logger.createLogFn(commonConfig.environment)
+  const commonConfig = Infra.Common.createConfig()
+  const log = Infra.Common.createLogFn(commonConfig.environment)
 
   const rabbitChannel = await setupRabbitMq(log)
   const supabaseClient = setupSupabase(log)
@@ -37,7 +36,7 @@ const main = async () => {
   }
 }
 
-const setupRabbitMq = async (log: Logger.FnLog) => {
+const setupRabbitMq = async (log: FnLog) => {
   let rabbitConn: Infra.RabbitMQ.Connection
   try {
     rabbitConn = await Infra.RabbitMQ.connect(Infra.RabbitMQ.createConfig())
@@ -57,7 +56,7 @@ const setupRabbitMq = async (log: Logger.FnLog) => {
   return rabbitChannel
 }
 
-const setupSupabase = (log: Logger.FnLog) => {
+const setupSupabase = (log: FnLog) => {
   let supabaseClient: Infra.Supabase.SupabaseClient
   try {
     supabaseClient = Infra.Supabase.createClient(Infra.Supabase.createConfig())
@@ -68,7 +67,7 @@ const setupSupabase = (log: Logger.FnLog) => {
   return supabaseClient
 }
 
-const setupPostgreSQL = async (log: Logger.FnLog) => {
+const setupPostgreSQL = async (log: FnLog) => {
   const pgConfig = Infra.PostgreSQL.createConfig()
   let pgPool: Infra.PostgreSQL.Pool
   try {

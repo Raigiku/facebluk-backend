@@ -1,8 +1,8 @@
-import { Logger, User } from '@facebluk/domain'
+import { FnLog, User } from '@facebluk/domain'
 import { SupabaseClient } from '@supabase/supabase-js'
 
 export const findAuthMetadata =
-  (supabase: SupabaseClient, log: Logger.FnLog, requestId: string): User.AuthQueries.FindAuthMetadata =>
+  (supabase: SupabaseClient, log: FnLog, requestId: string): User.AuthQueries.FindAuthMetadata =>
   async (id: string) => {
     const { data, error } = await supabase.auth.admin.getUserById(id)
     if (error !== null) {

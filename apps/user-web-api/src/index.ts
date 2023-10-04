@@ -1,12 +1,12 @@
 import { Uuid } from '@facebluk/domain'
-import { Common } from '@facebluk/infra-common'
 import * as dotenv from 'dotenv'
 import Fastify from 'fastify'
 import { setupErrorHandling, setupPlugins, setupRoutes } from './common'
 import { Config } from './config'
+import { Infra } from '@facebluk/infrastructure'
 
 const runServer = async () => {
-  const commonConfig = Common.Config.create()
+  const commonConfig = Infra.Common.createConfig()
   const server = Fastify({
     genReqId() {
       return Uuid.create()

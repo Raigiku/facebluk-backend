@@ -1,6 +1,5 @@
 import { Infra } from '@facebluk/infrastructure'
-import { Common } from '@facebluk/infra-common'
-import { CMD, Logger } from '@facebluk/domain'
+import { CMD, FnLog } from '@facebluk/domain'
 import { RegisterUser, UpdateUserInfo } from './user'
 import { CreatePost } from './post'
 import {
@@ -57,13 +56,13 @@ export type MsgConsumerFn = (
   rabbitChannel: Infra.RabbitMQ.Channel,
   supabaseClient: Infra.Supabase.SupabaseClient,
   pgPool: Infra.PostgreSQL.Pool,
-  log: Logger.FnLog
+  log: FnLog
 ) => (msg: Infra.RabbitMQ.ConsumeMessage | null) => void
 
 export const consumerHandler = async <T>(
   rabbitChannel: Infra.RabbitMQ.Channel,
   pgPool: Infra.PostgreSQL.Pool,
-  log: Logger.FnLog,
+  log: FnLog,
   msg: Infra.RabbitMQ.Message | null,
   handle: (pgClient: Infra.PostgreSQL.PoolClient, commandRequest: T) => Promise<void>
 ) => {
@@ -75,7 +74,7 @@ export const consumerHandler = async <T>(
   log('info', msg.properties.messageId, JSON.stringify(msg.fields))
 
   try {
-    const commandRequest = Common.JsonSerializer.deserialize<T>(msg.content.toString())
+    const commandRequest = JSON.parse(msg.content.toString())
     const pgClient = await pgPool.connect()
     await handle(pgClient, commandRequest)
     rabbitChannel.ack(msg)
