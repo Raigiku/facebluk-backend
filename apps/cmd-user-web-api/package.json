@@ -1,5 +1,5 @@
 {
-  "name": "@facebluk/user-web-api",
+  "name": "@facebluk/cmd-user-web-api",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",

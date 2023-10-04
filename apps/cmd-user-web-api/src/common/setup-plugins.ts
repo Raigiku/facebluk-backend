@@ -35,8 +35,8 @@ export const setupPlugins = async (
   await server.register(fastifySwagger, {
     mode: 'static',
     specification: {
-      baseDir: './apps/user-web-api/documentation',
-      path: './apps/user-web-api/documentation/openapi-docs.yaml',
+      baseDir: './apps/cmd-user-web-api/documentation',
+      path: './apps/cmd-user-web-api/documentation/openapi-docs.yaml',
     },
   })
   if (commonConfig.environment !== 'production')
