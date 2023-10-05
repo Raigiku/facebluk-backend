@@ -4,6 +4,7 @@
     { "path": "apps/cmd-user-web-api" },
     { "path": "apps/adhoc" },
     { "path": "apps/msg-consumer" },
+    { "path": "apps/query-user-web-api" },
     { "path": "packages/domain" },
     { "path": "packages/infrastructure" }
   ]

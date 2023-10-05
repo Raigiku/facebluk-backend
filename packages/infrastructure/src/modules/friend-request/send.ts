@@ -1,6 +1,6 @@
 import { FriendRequest } from '@facebluk/domain'
 import { PoolClient } from 'pg'
-import { eventTableName, friendRequestTableKey, friendRequestTableName } from '.'
+import { eventTableName, friendRequestTableKey, friendRequestTableName } from './index'
 import { insertEvent } from '../event'
 import { Common } from '..'
 

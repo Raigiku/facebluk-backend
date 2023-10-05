@@ -1,0 +1,2 @@
+export { postsResolver } from './resolver';
+

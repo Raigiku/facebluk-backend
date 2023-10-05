@@ -1,10 +1,4 @@
-import { Event } from '..'
 import { AggregateData, TaggedType } from '../common'
-import {
-  BlockedUserEvent,
-  FriendedUserEvent,
-  UnblockedUserEvent,
-} from './events'
 
 export type Aggregate<T1 extends BlockStatus, T2 extends FriendStatus> = {
   readonly aggregate: AggregateData
@@ -20,7 +14,8 @@ export const isNotBlocked = (
 ): aggregate is Aggregate<NotBlockedStatus, FriendStatus> =>
   aggregate.blockedStatus.tag === 'not-blocked'
 
-export type BlockedStatus = TaggedType<'blocked'> & {
+export const blockedTag = 'blocked'
+export type BlockedStatus = TaggedType<typeof blockedTag> & {
   readonly blockedAt: Date
   readonly fromUserId: string
   readonly toUserId: string
@@ -47,7 +42,8 @@ export const isNotFriend = (
 ): aggregate is Aggregate<BlockStatus, NotFriendedStatus> =>
   aggregate.friendStatus.tag === 'not-friended'
 
-export type FriendedStatus = TaggedType<'friended'> & {
+export const friendedStatusTag = 'friended'
+export type FriendedStatus = TaggedType<typeof friendedStatusTag> & {
   readonly friendedAt: Date
   readonly fromUserId: string
   readonly toUserId: string

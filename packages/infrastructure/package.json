@@ -7,9 +7,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@elastic/elasticsearch": "^8.10.0",
     "@facebluk/domain": "workspace:*",
     "@supabase/supabase-js": "^2.7.1",
     "amqplib": "^0.10.3",
+    "mongodb": "^6.1.0",
     "pg": "^8.9.0",
     "pino": "^8.15.4",
     "pino-pretty": "^9.1.1"

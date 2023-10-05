@@ -63,3 +63,21 @@ export type JwtModel = {
   }[]
   session_id: string
 }
+
+// mongodb
+export namespace MongoDB {
+  export const collectionName = 'user'
+
+  export type Document = User.Aggregate
+}
+
+// elasticsearch
+export namespace ElasticSeach {
+  export const indexName = 'user'
+
+  export type Document = {
+    readonly createdAt: Date
+    readonly name: string
+    readonly alias: string
+  }
+}

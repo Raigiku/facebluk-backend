@@ -1,0 +1,2 @@
+export { usersResolver } from './resolver';
+

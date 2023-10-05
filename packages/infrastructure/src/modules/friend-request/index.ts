@@ -43,3 +43,26 @@ export const friendRequestTableToAggregate = (
     status: friendRequestStatus,
   }
 }
+
+// mongodb
+export namespace MongoDB {
+  export const collectionName = 'friend_request'
+
+  export type Document = Omit<
+    FriendRequest.Aggregate<FriendRequest.AggregateStatus>,
+    'fromUserId' | 'toUserId'
+  > & {
+    readonly fromUser: {
+      readonly id: string
+      readonly name: string
+      readonly alias: string
+      readonly profilePictureUrl?: string
+    }
+    readonly toUser: {
+      readonly id: string
+      readonly name: string
+      readonly alias: string
+      readonly profilePictureUrl?: string
+    }
+  }
+}

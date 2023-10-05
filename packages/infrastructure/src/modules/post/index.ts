@@ -23,3 +23,10 @@ export const postTableToAggregate = (row: PostTable): Post.Aggregate => ({
   userId: row.user_id,
   taggedUserIds: row.tagged_user_ids,
 })
+
+// mongodb
+export namespace MongoDB {
+  export const collectionName = 'post'
+
+  export type Document = Post.Aggregate
+}

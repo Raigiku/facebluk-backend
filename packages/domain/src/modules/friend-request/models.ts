@@ -9,7 +9,8 @@ export type Aggregate<T extends AggregateStatus> = {
 
 export type AggregateStatus = PendingStatus | AcceptedStatus | CancelledStatus | RejectedStatus
 
-export type PendingStatus = TaggedType<'pending'>
+export const pendingStatusTag = 'pending'
+export type PendingStatus = TaggedType<typeof pendingStatusTag>
 export const isPending = (
   friendRequest: Aggregate<AggregateStatus>
 ): friendRequest is Aggregate<PendingStatus> => friendRequest.status.tag === 'pending'

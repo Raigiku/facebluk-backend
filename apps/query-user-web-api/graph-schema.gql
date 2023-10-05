@@ -1,0 +1,159 @@
+type Query {
+  user(filter: UserFilter!): User
+  users(filter: UsersFilter!, pagination: Pagination!): UserPaginationResponse!
+  friendRequests(
+    filter: FriendRequestsFilter!
+    pagination: Pagination!
+  ): FriendRequestPaginationResponse!
+  posts(filter: PostsFilter!, pagination: Pagination!): PostPaginationResponse!
+}
+
+# ================== Pagination ==================
+input Pagination {
+  page: Int
+  pageSize: Int
+}
+
+# ================== Posts ==================
+# =============== Multiple Posts ===============
+input PostsFilter {
+  a: PostsFilterA
+  b: PostsFilterB
+}
+
+"""
+find my and friends posts
+"""
+input PostsFilterA {
+  placeholder: Boolean
+}
+
+"""
+find the posts of a user
+"""
+input PostsFilterB {
+  userId: ID
+}
+
+# =============== Post Responses =============
+type PostPaginationResponse {
+  nextPage: Int
+  data: [Post]
+}
+
+type Post {
+  id: ID
+  description: String
+  user: Post_U
+}
+
+type Post_U {
+  id: ID
+  name: String
+  alias: String
+  profilePictureUrl: String
+}
+
+# ================== Users ==================
+# =============== Single User ===============
+input UserFilter {
+  a: UserFilterA
+  b: UserFilterB
+}
+
+"""
+find a user by their id
+"""
+input UserFilterA {
+  id: ID
+}
+
+"""
+find a user by their alias
+"""
+input UserFilterB {
+  alias: String
+}
+# =============== Multiple Users =============
+input UsersFilter {
+  a: UsersFilterA
+  b: UsersFilterB
+}
+
+"""
+search for non blocked users that have a similar name or alias
+to the search query
+"""
+input UsersFilterA {
+  searchQuery: String
+}
+
+"""
+find friends of request user
+"""
+input UsersFilterB {
+  placeholder: Boolean
+}
+# =============== User Responses =============
+type UserPaginationResponse {
+  nextPage: Int
+  data: [User]
+}
+
+type User {
+  id: ID
+  name: String
+  alias: String
+  profilePictureUrl: String
+  relationshipWithUser: User_RWU
+}
+
+type User_RWU {
+  isFriend: Boolean
+  pendingFriendRequest: User_RWU_PFR
+}
+
+type User_RWU_PFR {
+  id: ID
+  isRequestUserReceiver: Boolean
+}
+
+# ================== Friend Requests ==================
+# =============== Multiple Friend Requests =============
+input FriendRequestsFilter {
+  a: FriendRequestsFilterA
+}
+
+"""
+find pending friend requests of request user
+"""
+input FriendRequestsFilterA {
+  placeholder: Boolean
+}
+# =============== Friend Request Responses =============
+type FriendRequestPaginationResponse {
+  nextPage: Int
+  data: [FriendRequest]
+}
+
+type FriendRequest {
+  id: ID
+  fromUser: FriendRequest_U
+  toUser: FriendRequest_U
+  status: FriendRequestStatus
+  createdAt: String
+}
+
+type FriendRequest_U {
+  id: ID
+  name: String
+  alias: String
+  profilePictureUrl: String
+}
+
+enum FriendRequestStatus {
+  pending
+  cancelled
+  accepted
+  rejected
+}

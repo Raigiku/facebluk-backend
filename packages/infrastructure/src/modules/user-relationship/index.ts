@@ -68,3 +68,10 @@ export const userRelationshipTableToAggregate = (
     blockedStatus,
   }
 }
+
+// mongodb
+export namespace MongoDB {
+  export const collectionName = 'user_relationship'
+
+  export type Document = UserRelationship.Aggregate<UserRelationship.BlockStatus, UserRelationship.FriendStatus>
+}
