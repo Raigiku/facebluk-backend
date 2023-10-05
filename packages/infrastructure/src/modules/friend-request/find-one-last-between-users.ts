@@ -1,6 +1,6 @@
 import { FriendRequest } from '@facebluk/domain'
 import { Pool } from 'pg'
-import { friendRequestTableKey, friendRequestTableName, friendRequestTableToAggregate } from '.'
+import { PostgreSQL as FriendRequestInfra } from '.'
 
 export const findOneLastFriendRequestBetweenUsers =
   (pool: Pool): FriendRequest.DbQueries.FindOneLastBetweenUsers =>
@@ -8,19 +8,19 @@ export const findOneLastFriendRequestBetweenUsers =
     const { rows } = await pool.query(
       `
       SELECT *
-      FROM ${friendRequestTableName} fr
+      FROM ${FriendRequestInfra.friendRequestTableName} fr
       WHERE (
-          fr.${friendRequestTableKey('from_user_id')} = $1 
-          AND fr.${friendRequestTableKey('to_user_id')} = $2
+          fr.${FriendRequestInfra.friendRequestTableKey('from_user_id')} = $1 
+          AND fr.${FriendRequestInfra.friendRequestTableKey('to_user_id')} = $2
         ) OR (
-          fr.${friendRequestTableKey('to_user_id')} = $1
-          AND fr.${friendRequestTableKey('from_user_id')} = $2
+          fr.${FriendRequestInfra.friendRequestTableKey('to_user_id')} = $1
+          AND fr.${FriendRequestInfra.friendRequestTableKey('from_user_id')} = $2
         )
-      ORDER BY fr.${friendRequestTableKey('created_at')} DESC
+      ORDER BY fr.${FriendRequestInfra.friendRequestTableKey('created_at')} DESC
       LIMIT 1
       `,
       [userAId, userBId]
     )
     if (rows.length === 0) return undefined
-    return friendRequestTableToAggregate(rows[0])
+    return FriendRequestInfra.friendRequestTableToAggregate(rows[0])
   }

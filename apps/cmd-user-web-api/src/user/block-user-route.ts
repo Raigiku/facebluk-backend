@@ -9,7 +9,7 @@ export const blockUserRoute: FastifyPluginCallback = (fastify, options, done) =>
     '/block-user/v1',
     routeOptions,
     async (request, reply) => {
-      const jwt: Infra.User.JwtModel = await request.jwtVerify()
+      // const jwt: Infra.User.JwtModel = await request.jwtVerify()
       // await CMD.BlockUser.handle(
       //   {
       //     id: request.id,

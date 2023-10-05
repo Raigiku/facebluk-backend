@@ -1,6 +1,6 @@
 import { User } from '@facebluk/domain'
 import { Pool } from 'pg'
-import { userTableKey, userTableName } from '.'
+import { PostgreSQL as UserInfra } from '.'
 
 export const aliasExists =
   (pool: Pool): User.DbQueries.AliasExists =>
@@ -8,8 +8,8 @@ export const aliasExists =
     const { rows } = await pool.query(
       `
       SELECT 1
-      FROM ${userTableName} u
-      WHERE u.${userTableKey('alias')} = $1
+      FROM ${UserInfra.userTableName} u
+      WHERE u.${UserInfra.userTableKey('alias')} = $1
       `,
       [alias]
     )

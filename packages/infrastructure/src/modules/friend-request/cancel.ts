@@ -1,6 +1,6 @@
 import { FriendRequest } from '@facebluk/domain'
 import { PoolClient } from 'pg'
-import { eventTableName, friendRequestTableKey, friendRequestTableName } from '.'
+import { PostgreSQL as FriendRequestInfra } from '.'
 import { insertEvent } from '../event'
 import { Common } from '..'
 
@@ -10,7 +10,7 @@ export const cancel =
     if (persistEvent)
       await Common.pgTransaction(pgClient, async () => {
         await updateUserRelationshipTable(pgClient, event)
-        await insertEvent(pgClient, eventTableName, event)
+        await insertEvent(pgClient, FriendRequestInfra.eventTableName, event)
       })
   }
 
@@ -20,10 +20,10 @@ const updateUserRelationshipTable = async (
 ) => {
   await pgClient.query(
     `
-      UPDATE ${friendRequestTableName}
+      UPDATE ${FriendRequestInfra.friendRequestTableName}
       SET
-        ${friendRequestTableKey('cancelled_at')} = $1
-      WHERE ${friendRequestTableKey('id')} = $2
+        ${FriendRequestInfra.friendRequestTableKey('cancelled_at')} = $1
+      WHERE ${FriendRequestInfra.friendRequestTableKey('id')} = $2
     `,
     [event.data.createdAt, event.data.aggregateId]
   )

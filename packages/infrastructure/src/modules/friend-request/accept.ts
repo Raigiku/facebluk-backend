@@ -2,30 +2,30 @@ import { FriendRequest, UserRelationship } from '@facebluk/domain'
 import { PoolClient } from 'pg'
 import { insertEvent } from '../event'
 import { Common } from '..'
-import * as FriendRequestInfra from '.'
-import * as UserRelationshipInfra from '../user-relationship'
+import { PostgreSQL as FriendRequestInfra } from '.'
+import { PostgreSQL as UserRelationshipInfra } from '../user-relationship'
 
 export const accept =
   (pgClient: PoolClient): FriendRequest.Mutations.Accept =>
-  async (
-    friendRequestEvent,
-    persistEvents,
-    userRelationshipEvent,
-    didCreateNewUserRelationship
-  ) => {
-    if (persistEvents) {
-      await Common.pgTransaction(pgClient, async () => {
-        await updateFriendRequestTable(pgClient, friendRequestEvent)
-        await insertEvent(pgClient, FriendRequestInfra.eventTableName, friendRequestEvent)
+    async (
+      friendRequestEvent,
+      persistEvents,
+      userRelationshipEvent,
+      didCreateNewUserRelationship
+    ) => {
+      if (persistEvents) {
+        await Common.pgTransaction(pgClient, async () => {
+          await updateFriendRequestTable(pgClient, friendRequestEvent)
+          await insertEvent(pgClient, FriendRequestInfra.eventTableName, friendRequestEvent)
 
-        if (didCreateNewUserRelationship)
-          await insertInUserRelationshipTable(pgClient, userRelationshipEvent)
-        else await updateUserRelationshipTable(pgClient, userRelationshipEvent)
+          if (didCreateNewUserRelationship)
+            await insertInUserRelationshipTable(pgClient, userRelationshipEvent)
+          else await updateUserRelationshipTable(pgClient, userRelationshipEvent)
 
-        await insertEvent(pgClient, UserRelationshipInfra.eventTableName, userRelationshipEvent)
-      })
+          await insertEvent(pgClient, UserRelationshipInfra.eventTableName, userRelationshipEvent)
+        })
+      }
     }
-  }
 
 export const updateFriendRequestTable = async (
   pgClient: PoolClient,

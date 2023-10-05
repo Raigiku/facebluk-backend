@@ -1,9 +1,7 @@
 import { UserRelationship } from '@facebluk/domain'
 import { Pool } from 'pg'
 import {
-  userRelationshipTableKey,
-  userRelationshipTableName,
-  userRelationshipTableToAggregate,
+  PostgreSQL as UserRelationshipInfra
 } from '.'
 
 export const findOneBetweenUsers =
@@ -12,23 +10,23 @@ export const findOneBetweenUsers =
     const { rows } = await pool.query(
       `
       SELECT *
-      FROM ${userRelationshipTableName} ur
+      FROM ${UserRelationshipInfra.userRelationshipTableName} ur
       WHERE (
-        ur.${userRelationshipTableKey('friend_from_user_id')} = $1
-        AND ur.${userRelationshipTableKey('friend_to_user_id')} = $2
+        ur.${UserRelationshipInfra.userRelationshipTableKey('friend_from_user_id')} = $1
+        AND ur.${UserRelationshipInfra.userRelationshipTableKey('friend_to_user_id')} = $2
       ) OR (
-        ur.${userRelationshipTableKey('friend_to_user_id')} = $1
-        AND ur.${userRelationshipTableKey('friend_from_user_id')} = $2
+        ur.${UserRelationshipInfra.userRelationshipTableKey('friend_to_user_id')} = $1
+        AND ur.${UserRelationshipInfra.userRelationshipTableKey('friend_from_user_id')} = $2
       ) OR (
-        ur.${userRelationshipTableKey('blocked_from_user_id')} = $1
-        AND ur.${userRelationshipTableKey('blocked_to_user_id')} = $2
+        ur.${UserRelationshipInfra.userRelationshipTableKey('blocked_from_user_id')} = $1
+        AND ur.${UserRelationshipInfra.userRelationshipTableKey('blocked_to_user_id')} = $2
       ) OR (
-        ur.${userRelationshipTableKey('blocked_to_user_id')} = $1
-        AND ur.${userRelationshipTableKey('blocked_from_user_id')} = $2
+        ur.${UserRelationshipInfra.userRelationshipTableKey('blocked_to_user_id')} = $1
+        AND ur.${UserRelationshipInfra.userRelationshipTableKey('blocked_from_user_id')} = $2
       )
       `,
       [userAId, userBId]
     )
     if (rows.length === 0) return undefined
-    return userRelationshipTableToAggregate(rows[0])
+    return UserRelationshipInfra.userRelationshipTableToAggregate(rows[0])
   }

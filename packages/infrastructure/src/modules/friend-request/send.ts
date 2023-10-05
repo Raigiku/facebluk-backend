@@ -1,6 +1,6 @@
 import { FriendRequest } from '@facebluk/domain'
 import { PoolClient } from 'pg'
-import { eventTableName, friendRequestTableKey, friendRequestTableName } from './index'
+import { PostgreSQL as FriendRequestInfra } from './index'
 import { insertEvent } from '../event'
 import { Common } from '..'
 
@@ -10,7 +10,7 @@ export const send =
     if (persistEvent)
       await Common.pgTransaction(pgClient, async () => {
         await insertInFriendRequestTable(pgClient, event)
-        await insertEvent(pgClient, eventTableName, event)
+        await insertEvent(pgClient, FriendRequestInfra.eventTableName, event)
       })
   }
 
@@ -20,11 +20,11 @@ export const insertInFriendRequestTable = async (
 ) => {
   await pgClient.query(
     `
-      INSERT INTO ${friendRequestTableName} (
-        ${friendRequestTableKey('id')},
-        ${friendRequestTableKey('created_at')},
-        ${friendRequestTableKey('from_user_id')},
-        ${friendRequestTableKey('to_user_id')}
+      INSERT INTO ${FriendRequestInfra.friendRequestTableName} (
+        ${FriendRequestInfra.friendRequestTableKey('id')},
+        ${FriendRequestInfra.friendRequestTableKey('created_at')},
+        ${FriendRequestInfra.friendRequestTableKey('from_user_id')},
+        ${FriendRequestInfra.friendRequestTableKey('to_user_id')}
       )
       VALUES ($1, $2, $3, $4)
     `,

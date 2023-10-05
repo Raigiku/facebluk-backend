@@ -18,13 +18,13 @@ export const eventTableKey = (k: keyof EventTable) => k
 
 export const determineTableName = (event: Event.AnyEvent) =>
   event.payload.tag.includes('post')
-    ? Post.eventTableName
+    ? Post.PostgreSQL.eventTableName
     : event.payload.tag.includes('friend-request')
-    ? FriendRequest.eventTableName
+    ? FriendRequest.PostgreSQL.eventTableName
     : event.payload.tag.includes('user-relationship')
-    ? UserRelationship.eventTableName
+    ? UserRelationship.PostgreSQL.eventTableName
     : event.payload.tag.includes('user')
-    ? User.eventTableName
+    ? User.PostgreSQL.eventTableName
     : (() => {
         throw new Error('undefined table')
       })()

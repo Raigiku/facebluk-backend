@@ -1,18 +1,18 @@
 import { UserRelationship } from '@facebluk/domain'
 import { PoolClient } from 'pg'
-import { eventTableName, userRelationshipTableKey, userRelationshipTableName } from '.'
+import { PostgreSQL as UserRelationshipInfra } from '.'
 import { insertEvent } from '../event'
 import { Common } from '..'
 
 export const unfriend =
   (pgClient: PoolClient): UserRelationship.Mutations.Unfriend =>
-  async (event, persistEvent) => {
-    if (persistEvent)
-      await Common.pgTransaction(pgClient, async () => {
-        await updateUserRelationshipTable(pgClient, event)
-        await insertEvent(pgClient, eventTableName, event)
-      })
-  }
+    async (event, persistEvent) => {
+      if (persistEvent)
+        await Common.pgTransaction(pgClient, async () => {
+          await updateUserRelationshipTable(pgClient, event)
+          await insertEvent(pgClient, UserRelationshipInfra.eventTableName, event)
+        })
+    }
 
 const updateUserRelationshipTable = async (
   pgClient: PoolClient,
@@ -20,13 +20,13 @@ const updateUserRelationshipTable = async (
 ) => {
   await pgClient.query(
     `
-      UPDATE ${userRelationshipTableName}
+      UPDATE ${UserRelationshipInfra.userRelationshipTableName}
       SET 
-        ${userRelationshipTableKey('friend_from_user_id')} = $1,
-        ${userRelationshipTableKey('friend_to_user_id')} = $2,
-        ${userRelationshipTableKey('friend_status')} = $3,
-        ${userRelationshipTableKey('friend_status_updated_at')} = $4
-      WHERE ${userRelationshipTableKey('id')} = $5
+        ${UserRelationshipInfra.userRelationshipTableKey('friend_from_user_id')} = $1,
+        ${UserRelationshipInfra.userRelationshipTableKey('friend_to_user_id')} = $2,
+        ${UserRelationshipInfra.userRelationshipTableKey('friend_status')} = $3,
+        ${UserRelationshipInfra.userRelationshipTableKey('friend_status_updated_at')} = $4
+      WHERE ${UserRelationshipInfra.userRelationshipTableKey('id')} = $5
     `,
     [
       event.payload.fromUserId,

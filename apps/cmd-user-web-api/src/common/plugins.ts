@@ -191,7 +191,7 @@ const userAuthPlugin: FastifyPluginCallback<Infra.Common.Config> = (fastify, opt
         throw new Error('auth header is not an uuid')
       }
     } else {
-      const jwt: Infra.User.JwtModel = await request.jwtVerify()
+      const jwt: Infra.User.Supabase.JwtModel = await request.jwtVerify()
       userId = jwt.sub
     }
 
