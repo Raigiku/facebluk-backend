@@ -72,7 +72,7 @@ const rabbitMqPlugin: FastifyPluginCallback<Infra.RabbitMQ.Config> = async (
             fastify.rabbitMqConnection = await Infra.RabbitMQ.connect(options)
             request.rabbitMqChannel = await fastify.rabbitMqConnection.createChannel()
             return
-          } catch (error) {}
+          } catch (error) { }
         }
       }
       throw new Error('RabbitMQ: could not create channel', { cause: error })
@@ -195,7 +195,7 @@ const userAuthPlugin: FastifyPluginCallback<Infra.Common.Config> = (fastify, opt
       userId = jwt.sub
     }
 
-    const userAuthMetadata = await Infra.User.findAuthMetadata(
+    const userAuthMetadata = await Infra.User.Queries.Supabase.findAuthMetadata(
       fastify.supabaseClient,
       fastify.cLog,
       request.id

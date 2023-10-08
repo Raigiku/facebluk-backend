@@ -66,8 +66,8 @@ type ValidatePayload = {
 }
 
 type ValidateDeps = {
-  findUserById: User.DbQueries.FindOneById
-  findRelationshipBetweenUsers: UserRelationship.DbQueries.FindOneBetweenUsers
+  findUserById: User.DbQueries.FindById
+  findRelationshipBetweenUsers: UserRelationship.DbQueries.FindBetweenUsers
 }
 
 type ValidateResponse = {

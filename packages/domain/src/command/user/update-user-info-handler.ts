@@ -52,7 +52,7 @@ type ValidatePayload = {
 }
 
 type ValidateDeps = {
-  findUserById: User.DbQueries.FindOneById
+  findUserById: User.DbQueries.FindById
 }
 
 type ValidateResponse = {

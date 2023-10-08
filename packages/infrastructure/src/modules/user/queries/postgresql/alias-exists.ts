@@ -1,6 +1,6 @@
 import { User } from '@facebluk/domain'
 import { Pool } from 'pg'
-import { PostgreSQL as UserInfra } from '.'
+import { PostgreSQL as UserInfra } from '../..'
 
 export const aliasExists =
   (pool: Pool): User.DbQueries.AliasExists =>

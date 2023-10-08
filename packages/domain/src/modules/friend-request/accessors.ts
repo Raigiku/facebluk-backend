@@ -3,8 +3,8 @@ import { AcceptedEvent, CancelledEvent, RejectedEvent, SentEvent } from './event
 import { Aggregate, AggregateStatus } from './models'
 
 export namespace DbQueries {
-  export type FindOneById = (id: string) => Promise<Aggregate<AggregateStatus> | undefined>
-  export type FindOneLastBetweenUsers = (
+  export type FindById = (id: string) => Promise<Aggregate<AggregateStatus> | undefined>
+  export type FindLastBetweenUsers = (
     userAId: string,
     userBId: string
   ) => Promise<Aggregate<AggregateStatus> | undefined>

@@ -4,8 +4,8 @@ import {
   PostgreSQL as UserRelationshipInfra
 } from '.'
 
-export const findOneBetweenUsers =
-  (pool: Pool): UserRelationship.DbQueries.FindOneBetweenUsers =>
+export const findBetweenUsers =
+  (pool: Pool): UserRelationship.DbQueries.FindBetweenUsers =>
   async (userAId: string, userBId: string) => {
     const { rows } = await pool.query(
       `

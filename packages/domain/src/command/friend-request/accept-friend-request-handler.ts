@@ -42,7 +42,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
 
 export type Dependencies = {
   db_findAcceptedFriendRequestEvent: Event.DbQueries.FindEvent
-  db_findUserRelationshipBetween: UserRelationship.DbQueries.FindOneBetweenUsers
+  db_findUserRelationshipBetween: UserRelationship.DbQueries.FindBetweenUsers
   acceptFriendRequest: FriendRequest.Mutations.Accept
   publishEvent: Event.Mutations.PublishEvent
 }
@@ -80,7 +80,7 @@ type ValidatePayload = {
 }
 
 type ValidateDeps = {
-  findFriendRequest: FriendRequest.DbQueries.FindOneById
+  findFriendRequest: FriendRequest.DbQueries.FindById
 }
 
 type ValidateResponse = {

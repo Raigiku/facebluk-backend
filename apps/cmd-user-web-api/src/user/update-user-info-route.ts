@@ -30,7 +30,7 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
         profilePictureUrl: profilePictureUrl,
         userId: request.userAuthMetadata!.userId,
       },
-      { findUserById: Infra.User.findOneById(fastify.postgreSqlPool) }
+      { findUserById: Infra.User.Queries.PostgreSQL.findById(fastify.postgreSqlPool) }
     )
 
     if (formData.profilePicture != null && fileRemotePath != null)

@@ -2,7 +2,7 @@ import { FriendedUserEvent, UnfriendedUserEvent } from './events'
 import { Aggregate, BlockStatus, FriendStatus } from './models'
 
 export namespace DbQueries {
-  export type FindOneBetweenUsers = (
+  export type FindBetweenUsers = (
     userAId: string,
     userBId: string
   ) => Promise<Aggregate<BlockStatus, FriendStatus> | undefined>

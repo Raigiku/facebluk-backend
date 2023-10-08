@@ -1,9 +1,9 @@
 import { User } from '@facebluk/domain'
 import { Pool } from 'pg'
-import { PostgreSQL as UserInfra } from '.'
+import { PostgreSQL as UserInfra } from '../..'
 
-export const findOneById =
-  (pool: Pool): User.DbQueries.FindOneById =>
+export const findById =
+  (pool: Pool): User.DbQueries.FindById =>
   async (userId: string) => {
     const { rows } = await pool.query<UserInfra.UserTable>(
       `

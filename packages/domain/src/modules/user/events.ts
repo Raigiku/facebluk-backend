@@ -10,7 +10,7 @@ export type RegisteredEvent = {
 }
 
 export namespace RegisteredEvent {
-  const tag = 'user-registered'
+  export const tag = 'user-registered'
 
   export type Payload = TaggedType<typeof tag> & {
     readonly name: string

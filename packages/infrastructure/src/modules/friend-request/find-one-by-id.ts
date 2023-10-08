@@ -2,8 +2,8 @@ import { FriendRequest } from '@facebluk/domain'
 import { Pool } from 'pg'
 import { PostgreSQL as FriendRequestInfra } from '.'
 
-export const findOneById =
-  (pool: Pool): FriendRequest.DbQueries.FindOneById =>
+export const findById =
+  (pool: Pool): FriendRequest.DbQueries.FindById =>
   async (id: string) => {
     const { rows } = await pool.query(
       `

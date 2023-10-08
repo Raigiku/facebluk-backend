@@ -1,8 +1,8 @@
 import { User } from '@facebluk/domain'
 import { PoolClient } from 'pg'
-import { PostgreSQL as UserInfra } from '.'
-import { insertEvent } from '../event'
-import { Common } from '..'
+import { PostgreSQL as UserInfra } from '..'
+import { insertEvent } from '../../event'
+import { Common } from '../..'
 
 export const updateInfo =
   (pgClient: PoolClient): User.Mutations.UpdateInfo =>

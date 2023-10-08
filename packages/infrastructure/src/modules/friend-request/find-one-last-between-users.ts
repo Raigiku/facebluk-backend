@@ -2,8 +2,8 @@ import { FriendRequest } from '@facebluk/domain'
 import { Pool } from 'pg'
 import { PostgreSQL as FriendRequestInfra } from '.'
 
-export const findOneLastFriendRequestBetweenUsers =
-  (pool: Pool): FriendRequest.DbQueries.FindOneLastBetweenUsers =>
+export const findLastFriendRequestBetweenUsers =
+  (pool: Pool): FriendRequest.DbQueries.FindLastBetweenUsers =>
   async (userAId: string, userBId: string) => {
     const { rows } = await pool.query(
       `

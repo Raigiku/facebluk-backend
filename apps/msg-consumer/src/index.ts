@@ -12,6 +12,8 @@ const main = async () => {
   const rabbitChannel = await setupRabbitMq(log)
   const supabaseClient = setupSupabase(log)
   const pgPool = await setupPostgreSQL(log)
+  const mongoDb = setupMongoDb(log)
+  const elasticClient = setupElasticSearch(log)
 
   for (const queueName in queues) {
     const deadLetterExchange = `${queues[queueName].exchange}-dlx`
@@ -27,13 +29,40 @@ const main = async () => {
 
     void rabbitChannel.consume(
       queueName,
-      queues[queueName].consumer(rabbitChannel, supabaseClient, pgPool, log),
+      queues[queueName].consumer(rabbitChannel, supabaseClient, pgPool, log, mongoDb, elasticClient),
       {
         noAck: false,
       }
     )
     log('info', '', `RabbitMQ: queue ${queueName} consumer created`)
   }
+}
+
+const setupElasticSearch = (log: FnLog) => {
+  const elasticConfig = Infra.ElasticSearch.createConfig()
+  let elasticClient: Infra.ElasticSearch.Client
+  try {
+    elasticClient = Infra.ElasticSearch.createClient(elasticConfig)
+  } catch (error) {
+    throw new Error('ElasticSearch: could not connect', { cause: error })
+  }
+  log('info', '', 'ElasticSearch: connected')
+
+  return elasticClient
+}
+
+const setupMongoDb = (log: FnLog) => {
+  const mongoConfig = Infra.MongoDB.createConfig()
+  let mongoDb: Infra.MongoDB.Db
+  try {
+    const mongoClient = Infra.MongoDB.createClient(mongoConfig)
+    mongoDb = mongoClient.db(mongoConfig.databaseName)
+  } catch (error) {
+    throw new Error('MongoDb: could not connect', { cause: error })
+  }
+  log('info', '', 'MongoDb: db connected')
+
+  return mongoDb
 }
 
 const setupRabbitMq = async (log: FnLog) => {

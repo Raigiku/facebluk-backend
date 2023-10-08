@@ -72,9 +72,9 @@ type ValidatePayload = {
 }
 
 type ValidateDeps = {
-  findUserRelationship: UserRelationship.DbQueries.FindOneBetweenUsers
-  findUserById: User.DbQueries.FindOneById
-  findLastFriendRequestBetweenUsers: FriendRequest.DbQueries.FindOneLastBetweenUsers
+  findUserRelationship: UserRelationship.DbQueries.FindBetweenUsers
+  findUserById: User.DbQueries.FindById
+  findLastFriendRequestBetweenUsers: FriendRequest.DbQueries.FindLastBetweenUsers
 }
 
 const syntaxValidator = Joi.object({

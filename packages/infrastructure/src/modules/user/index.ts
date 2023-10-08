@@ -1,8 +1,5 @@
-export * from './alias-exists'
-export * from './find-auth-metadata'
-export * from './find-one-by-id'
-export * from './register'
-export * from './update-info'
+export * as Queries from './queries'
+export * as Mutations from './mutations'
 
 import { User } from '@facebluk/domain'
 

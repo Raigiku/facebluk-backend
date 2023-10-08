@@ -15,7 +15,7 @@ export const cancelFriendRequestRoute: FastifyPluginCallback = (fastify, options
           userId: request.userAuthMetadata!.userId,
           friendRequestId: request.body.friendRequestId,
         },
-        { findFriendRequest: Infra.FriendRequest.findOneById(fastify.postgreSqlPool) }
+        { findFriendRequest: Infra.FriendRequest.findById(fastify.postgreSqlPool) }
       )
 
       await Infra.Event.sendBrokerMsg(request.rabbitMqChannel)(

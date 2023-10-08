@@ -14,7 +14,7 @@ export const consume: MsgConsumerFn =
       async (pgClient, cmd) => {
         await CMD.UpdateUserInfo.handle(cmd, {
           db_findInfoUpdatedEvent: Infra.Event.findEvent(pgPool),
-          updateUserInfo: Infra.User.updateInfo(pgClient),
+          updateUserInfo: Infra.User.Mutations.updateInfo(pgClient),
           publishEvent: Infra.Event.publishEvent(rabbitChannel, pgClient),
         })
       }

@@ -1,6 +1,6 @@
 import { Infra } from '@facebluk/infrastructure'
-import { CMD, FnLog } from '@facebluk/domain'
-import { RegisterUser, UpdateUserInfo } from './user'
+import { CMD, FnLog, User } from '@facebluk/domain'
+import { RegisterUser, UpdateUserInfo, UserRegistered } from './user'
 import { CreatePost } from './post'
 import {
   AcceptFriendRequest,
@@ -21,6 +21,10 @@ export const queues: MsgConsumer = {
   [RegisterUser.queueName]: {
     exchange: CMD.RegisterUser.id,
     consumer: RegisterUser.consume,
+  },
+  [User.RegisteredEvent.tag]: {
+    exchange: User.RegisteredEvent.tag,
+    consumer: UserRegistered.consume
   },
   [UpdateUserInfo.queueName]: {
     exchange: CMD.UpdateUserInfo.id,
@@ -56,7 +60,9 @@ export type MsgConsumerFn = (
   rabbitChannel: Infra.RabbitMQ.Channel,
   supabaseClient: Infra.Supabase.SupabaseClient,
   pgPool: Infra.PostgreSQL.Pool,
-  log: FnLog
+  log: FnLog,
+  mongoDb: Infra.MongoDB.Db,
+  elasticClient: Infra.ElasticSearch.Client,
 ) => (msg: Infra.RabbitMQ.ConsumeMessage | null) => void
 
 export const consumerHandler = async <T>(
@@ -64,7 +70,7 @@ export const consumerHandler = async <T>(
   pgPool: Infra.PostgreSQL.Pool,
   log: FnLog,
   msg: Infra.RabbitMQ.Message | null,
-  handle: (pgClient: Infra.PostgreSQL.PoolClient, commandRequest: T) => Promise<void>
+  handle: (pgClient: Infra.PostgreSQL.PoolClient, brokerMsg: T) => Promise<void>
 ) => {
   if (msg == null) {
     log('fatal', '', 'null msg')
@@ -74,9 +80,9 @@ export const consumerHandler = async <T>(
   log('info', msg.properties.messageId, JSON.stringify(msg.fields))
 
   try {
-    const commandRequest = JSON.parse(msg.content.toString())
+    const parsedBrokerMsg = JSON.parse(msg.content.toString())
     const pgClient = await pgPool.connect()
-    await handle(pgClient, commandRequest)
+    await handle(pgClient, parsedBrokerMsg)
     rabbitChannel.ack(msg)
   } catch (error) {
     if (error instanceof Error)

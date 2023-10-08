@@ -56,7 +56,7 @@ type ValidatePayload = {
 }
 
 type ValidateDeps = {
-  findFriendRequest: FriendRequest.DbQueries.FindOneById
+  findFriendRequest: FriendRequest.DbQueries.FindById
 }
 
 type ValidateResponse = {

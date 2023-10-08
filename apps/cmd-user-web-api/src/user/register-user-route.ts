@@ -27,7 +27,7 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
         profilePictureUrl,
       },
       {
-        db_aliasExists: Infra.User.aliasExists(fastify.postgreSqlPool),
+        db_aliasExists: Infra.User.Queries.PostgreSQL.aliasExists(fastify.postgreSqlPool),
       }
     )
 

@@ -1,8 +1,8 @@
 import { User } from '@facebluk/domain'
 import { PoolClient } from 'pg'
-import { PostgreSQL as UserInfra } from '.'
-import { insertEvent } from '../event'
-import { Common } from '..'
+import { PostgreSQL as UserInfra } from '..'
+import { insertEvent } from '../../event'
+import { Common } from '../..'
 import { SupabaseClient } from '@supabase/supabase-js'
 
 export const register =

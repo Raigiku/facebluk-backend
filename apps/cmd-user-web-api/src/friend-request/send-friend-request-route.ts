@@ -18,10 +18,10 @@ export const sendFriendRequestRoute: FastifyPluginCallback = (fastify, options, 
           toUserId: request.body.otherUserId,
         },
         {
-          findUserById: Infra.User.findOneById(fastify.postgreSqlPool),
-          findUserRelationship: Infra.UserRelationship.findOneBetweenUsers(fastify.postgreSqlPool),
+          findUserById: Infra.User.Queries.PostgreSQL.findById(fastify.postgreSqlPool),
+          findUserRelationship: Infra.UserRelationship.findBetweenUsers(fastify.postgreSqlPool),
           findLastFriendRequestBetweenUsers:
-            Infra.FriendRequest.findOneLastFriendRequestBetweenUsers(fastify.postgreSqlPool),
+            Infra.FriendRequest.findLastFriendRequestBetweenUsers(fastify.postgreSqlPool),
         }
       )
 
