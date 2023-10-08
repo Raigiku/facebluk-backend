@@ -7,6 +7,6 @@ export type PostQL = {
     id: string
     name: string
     alias: string
-    profilePictureUrl?: string
+    profilePictureUrl?: string | null
   }
 }

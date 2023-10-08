@@ -21,4 +21,6 @@ export namespace Mutations {
   export type UpdateInfo = (event: InfoUpdatedEvent, persistEvent: boolean) => Promise<void>
 
   export type ApplyRegisteredEvent = (event: RegisteredEvent) => Promise<void>
+
+  export type ApplyInfoUpdatedEvent = (event: InfoUpdatedEvent) => Promise<void>
 }

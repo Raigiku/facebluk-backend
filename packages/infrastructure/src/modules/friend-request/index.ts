@@ -54,13 +54,13 @@ export namespace MongoDB {
       readonly id: string
       readonly name: string
       readonly alias: string
-      readonly profilePictureUrl?: string
+      readonly profilePictureUrl?: string | null
     }
     readonly toUser: {
       readonly id: string
       readonly name: string
       readonly alias: string
-      readonly profilePictureUrl?: string
+      readonly profilePictureUrl?: string | null
     }
   }
 }

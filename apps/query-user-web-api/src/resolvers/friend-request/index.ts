@@ -12,5 +12,5 @@ export type FriendRequestQL_U = {
   id: string
   name: string
   alias: string
-  profilePictureUrl?: string
+  profilePictureUrl?: string | null
 }

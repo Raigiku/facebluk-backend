@@ -44,7 +44,7 @@ export type InfoUpdatedEvent = {
 }
 
 export namespace InfoUpdatedEvent {
-  const tag = 'user-info-updated'
+  export const tag = 'user-info-updated'
 
   export type Payload = TaggedType<typeof tag> & {
     readonly name?: string

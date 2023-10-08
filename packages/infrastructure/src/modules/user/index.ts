@@ -69,7 +69,9 @@ export namespace Supabase {
 export namespace MongoDB {
   export const collectionName = 'user'
 
-  export type Document = User.Aggregate
+  export type Document = Omit<User.Aggregate, 'profilePictureUrl'> & {
+    profilePictureUrl?: string | null
+  }
 }
 
 // elasticsearch
