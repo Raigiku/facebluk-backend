@@ -14,7 +14,7 @@ export const consume: MsgConsumerFn =
       async (_, event) => {
         const mongoUser = await Infra.User.Queries.MongoDb.findById(mongoDb)(event.data.aggregateId)
         const elasticUser = await Infra.User.Queries.ElasticSearch.findById(elasticClient)(event.data.aggregateId)
-        await Infra.User.Mutations.applyRegisteredEvent(mongoDb, elasticClient)(event, mongoUser === null, elasticUser._source !== undefined)
+        await Infra.User.Mutations.applyRegisteredEvent(mongoDb, elasticClient)(event, mongoUser == null, elasticUser._source == null)
       }
     )
   }

@@ -1,8 +1,8 @@
 import { Post } from '@facebluk/domain'
 import { PoolClient } from 'pg'
-import { PostgreSQL as PostInfra } from '.'
-import { insertEvent } from '../event'
-import { Common } from '..'
+import { PostgreSQL as PostInfra } from '..'
+import { insertEvent } from '../../event'
+import { Common } from '../..'
 
 export const create =
   (pgClient: PoolClient): Post.Mutations.Create =>

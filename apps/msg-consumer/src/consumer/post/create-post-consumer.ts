@@ -14,7 +14,7 @@ export const consume: MsgConsumerFn =
       async (pgClient, cmd) => {
         await CMD.CreatePost.handle(cmd, {
           db_findPostCreatedEvent: Infra.Event.findEvent(pgPool),
-          createPost: Infra.Post.create(pgClient),
+          createPost: Infra.Post.Mutations.create(pgClient),
           publishEvent: Infra.Event.publishEvent(rabbitChannel, pgClient),
         })
       }

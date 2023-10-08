@@ -1,4 +1,5 @@
-export * from './create'
+export * as Mutations from './mutations'
+export * as Queries from './queries'
 
 import { Post } from '@facebluk/domain'
 
