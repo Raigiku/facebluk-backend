@@ -17,7 +17,7 @@ export const unfriendUserRoute: FastifyPluginCallback = (fastify, options, done)
         },
         {
           findUserById: Infra.User.Queries.PostgreSQL.findById(fastify.postgreSqlPool),
-          findRelationshipBetweenUsers: Infra.UserRelationship.findBetweenUsers(
+          findRelationshipBetweenUsers: Infra.UserRelationship.Queries.PostgreSQL.findBetweenUsers(
             fastify.postgreSqlPool
           ),
         }

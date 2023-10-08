@@ -14,7 +14,7 @@ export const consume: MsgConsumerFn =
       async (pgClient, cmd) => {
         await CMD.UnfriendUser.handle(cmd, {
           db_findUnfriendedEvent: Infra.Event.findEvent(pgPool),
-          unfriend: Infra.UserRelationship.unfriend(pgClient),
+          unfriend: Infra.UserRelationship.Mutations.unfriend(pgClient),
           publishEvent: Infra.Event.publishEvent(rabbitChannel, pgClient),
         })
       }

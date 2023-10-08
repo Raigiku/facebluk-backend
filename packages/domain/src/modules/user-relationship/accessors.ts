@@ -10,5 +10,8 @@ export namespace DbQueries {
 
 export namespace Mutations {
   export type Friend = (isNew: boolean, event: FriendedUserEvent) => Promise<void>
+
   export type Unfriend = (event: UnfriendedUserEvent, persistEvent: boolean) => Promise<void>
+
+  export type ApplyUnfriendEvent = (event: UnfriendedUserEvent) => Promise<void>
 }

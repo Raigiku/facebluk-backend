@@ -2,7 +2,7 @@ import { UserRelationship } from '@facebluk/domain'
 import { Pool } from 'pg'
 import {
   PostgreSQL as UserRelationshipInfra
-} from '.'
+} from '../..'
 
 export const findBetweenUsers =
   (pool: Pool): UserRelationship.DbQueries.FindBetweenUsers =>

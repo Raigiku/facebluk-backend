@@ -20,5 +20,5 @@ export namespace Mutations {
 
   export type UpdateInfo = (event: InfoUpdatedEvent, persistEvent: boolean) => Promise<void>
 
-  export type ApplyRegisteredEvent = (event: RegisteredEvent, persistInDocumentDb: boolean, persistInTextSearchDb: boolean) => Promise<void>
+  export type ApplyRegisteredEvent = (event: RegisteredEvent) => Promise<void>
 }

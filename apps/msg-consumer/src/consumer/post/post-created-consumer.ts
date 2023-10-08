@@ -1,8 +1,8 @@
-import { CMD, Post } from '@facebluk/domain'
+import { Post } from '@facebluk/domain'
 import { Infra } from '@facebluk/infrastructure'
 import { MsgConsumerFn, consumerHandler } from '..'
 
-export const queueName = CMD.CreatePost.id
+export const queueName = Post.CreatedEvent.tag
 
 export const consume: MsgConsumerFn =
   (rabbitChannel, _, pgPool, log, mongoDb) => async (msg) => {

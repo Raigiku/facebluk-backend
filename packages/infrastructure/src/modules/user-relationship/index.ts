@@ -1,5 +1,5 @@
-export * from './find-one-between-users'
-export * from './unfriend'
+export * as Queries from './queries'
+export * as Mutations from './mutations'
 
 import { UserRelationship } from '@facebluk/domain'
 

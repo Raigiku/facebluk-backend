@@ -1,8 +1,8 @@
 import { UserRelationship } from '@facebluk/domain'
 import { PoolClient } from 'pg'
-import { PostgreSQL as UserRelationshipInfra } from '.'
-import { insertEvent } from '../event'
-import { Common } from '..'
+import { PostgreSQL as UserRelationshipInfra } from '..'
+import { insertEvent } from '../../event'
+import { Common } from '../..'
 
 export const unfriend =
   (pgClient: PoolClient): UserRelationship.Mutations.Unfriend =>

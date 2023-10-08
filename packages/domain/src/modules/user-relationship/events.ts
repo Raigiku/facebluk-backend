@@ -55,7 +55,7 @@ export type UnfriendedUserEvent = {
 }
 
 export namespace UnfriendedUserEvent {
-  const tag = 'user-relationship-unfriended'
+  export const tag = 'user-relationship-unfriended'
 
   export type Payload = TaggedType<typeof tag> & {
     readonly fromUserId: string

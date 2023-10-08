@@ -9,7 +9,7 @@ export type CreatedEvent = {
 }
 
 export namespace CreatedEvent {
-  const tag = 'post-created'
+  export const tag = 'post-created'
 
   export type Payload = TaggedType<typeof tag> & {
     readonly userId: string
