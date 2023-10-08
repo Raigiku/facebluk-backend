@@ -12,9 +12,7 @@ export const consume: MsgConsumerFn =
       log,
       msg,
       async (_, event) => {
-        const mongoPost = await Infra.Post.Queries.MongoDb.findById(mongoDb)(event.data.aggregateId)
-        if (mongoPost == null)
-          await Infra.Post.Mutations.applyCreatedEvent(mongoDb)(event)
+        await Infra.Post.Mutations.applyCreatedEvent(mongoDb)(event)
       }
     )
   }

@@ -79,7 +79,7 @@ export type SentEvent = {
 }
 
 export namespace SentEvent {
-  const tag = 'friend-request-sent'
+  export const tag = 'friend-request-sent'
 
   export type Payload = TaggedType<typeof tag> & {
     readonly fromUserId: string

@@ -1,9 +1,9 @@
 import { FriendRequest, UserRelationship } from '@facebluk/domain'
 import { PoolClient } from 'pg'
-import { insertEvent } from '../event'
-import { Common } from '..'
-import { PostgreSQL as FriendRequestInfra } from '.'
-import { PostgreSQL as UserRelationshipInfra } from '../user-relationship'
+import { insertEvent } from '../../event'
+import { Common } from '../..'
+import { PostgreSQL as FriendRequestInfra } from '..'
+import { PostgreSQL as UserRelationshipInfra } from '../../user-relationship'
 
 export const accept =
   (pgClient: PoolClient): FriendRequest.Mutations.Accept =>

@@ -12,12 +12,17 @@ export namespace DbQueries {
 
 export namespace Mutations {
   export type Send = (event: SentEvent, persistEvent: boolean) => Promise<void>
+
   export type Cancel = (event: CancelledEvent, persistEvent: boolean) => Promise<void>
+
   export type Reject = (event: RejectedEvent, persistEvent: boolean) => Promise<void>
+
   export type Accept = (
     friendRequestEvent: AcceptedEvent,
     persistEvents: boolean,
     userRelationshipEvent: UserRelationship.FriendedUserEvent,
     didCreateNewUserRelationship: boolean
   ) => Promise<void>
+
+  export type ApplySentEvent = (event: SentEvent) => Promise<void>
 }

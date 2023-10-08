@@ -1,10 +1,11 @@
 import { Infra } from '@facebluk/infrastructure'
-import { CMD, FnLog, Post, User, UserRelationship } from '@facebluk/domain'
+import { CMD, FnLog, FriendRequest, Post, User, UserRelationship } from '@facebluk/domain'
 import { RegisterUser, UpdateUserInfo, UserRegistered } from './user'
 import { CreatePost, PostCreated } from './post'
 import {
   AcceptFriendRequest,
   CancelFriendRequest,
+  FriendRequestSent,
   RejectFriendRequest,
   SendFriendRequest,
 } from './friend-request'
@@ -26,10 +27,12 @@ export const queues: MsgConsumer = {
     exchange: User.RegisteredEvent.tag,
     consumer: UserRegistered.consume
   },
+
   [UpdateUserInfo.queueName]: {
     exchange: CMD.UpdateUserInfo.id,
     consumer: UpdateUserInfo.consume,
   },
+
   [CreatePost.queueName]: {
     exchange: CMD.CreatePost.id,
     consumer: CreatePost.consume,
@@ -38,22 +41,31 @@ export const queues: MsgConsumer = {
     exchange: Post.CreatedEvent.tag,
     consumer: PostCreated.consume,
   },
+
   [AcceptFriendRequest.queueName]: {
     exchange: CMD.AcceptFriendRequest.id,
     consumer: AcceptFriendRequest.consume,
   },
+
   [CancelFriendRequest.queueName]: {
     exchange: CMD.CancelFriendRequest.id,
     consumer: CancelFriendRequest.consume,
   },
+
   [RejectFriendRequest.queueName]: {
     exchange: CMD.RejectFriendRequest.id,
     consumer: RejectFriendRequest.consume,
   },
+
   [SendFriendRequest.queueName]: {
     exchange: CMD.SendFriendRequest.id,
     consumer: SendFriendRequest.consume,
   },
+  [FriendRequestSent.queueName]: {
+    exchange: FriendRequest.SentEvent.tag,
+    consumer: FriendRequestSent.consume,
+  },
+
   [UnfriendUser.queueName]: {
     exchange: CMD.UnfriendUser.id,
     consumer: UnfriendUser.consume,

@@ -1,9 +1,5 @@
-export * from './accept'
-export * from './cancel'
-export * from './find-one-by-id'
-export * from './find-one-last-between-users'
-export * from './reject'
-export * from './send'
+export * as Mutations from './mutations'
+export * as Queries from './queries'
 
 import { FriendRequest } from '@facebluk/domain'
 

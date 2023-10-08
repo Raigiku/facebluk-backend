@@ -15,7 +15,7 @@ export const consume: MsgConsumerFn =
         await CMD.AcceptFriendRequest.handle(cmd, {
           db_findAcceptedFriendRequestEvent: Infra.Event.findEvent(pgPool),
           db_findUserRelationshipBetween: Infra.UserRelationship.Queries.PostgreSQL.findBetweenUsers(pgPool),
-          acceptFriendRequest: Infra.FriendRequest.accept(pgClient),
+          acceptFriendRequest: Infra.FriendRequest.Mutations.accept(pgClient),
           publishEvent: Infra.Event.publishEvent(rabbitChannel, pgClient),
         })
       }

@@ -14,7 +14,7 @@ export const consume: MsgConsumerFn =
       async (pgClient, cmd) => {
         await CMD.SendFriendRequest.handle(cmd, {
           db_findFriendRequestSentEvent: Infra.Event.findEvent(pgPool),
-          sendFriendRequest: Infra.FriendRequest.send(pgClient),
+          sendFriendRequest: Infra.FriendRequest.Mutations.send(pgClient),
           publishEvent: Infra.Event.publishEvent(rabbitChannel, pgClient),
         })
       }

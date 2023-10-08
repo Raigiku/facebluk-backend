@@ -16,7 +16,7 @@ export const acceptFriendRequestRoute: FastifyPluginCallback = (fastify, options
           friendRequestId: request.body.friendRequestId,
         },
         {
-          findFriendRequest: Infra.FriendRequest.findById(fastify.postgreSqlPool),
+          findFriendRequest: Infra.FriendRequest.Queries.PostgreSQL.findById(fastify.postgreSqlPool),
         }
       )
 

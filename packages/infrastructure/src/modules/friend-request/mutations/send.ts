@@ -1,8 +1,8 @@
 import { FriendRequest } from '@facebluk/domain'
 import { PoolClient } from 'pg'
-import { PostgreSQL as FriendRequestInfra } from './index'
-import { insertEvent } from '../event'
-import { Common } from '..'
+import { PostgreSQL as FriendRequestInfra } from '../index'
+import { insertEvent } from '../../event'
+import { Common } from '../..'
 
 export const send =
   (pgClient: PoolClient): FriendRequest.Mutations.Send =>

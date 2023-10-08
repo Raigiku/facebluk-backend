@@ -1,6 +1,6 @@
 import { FriendRequest } from '@facebluk/domain'
 import { Pool } from 'pg'
-import { PostgreSQL as FriendRequestInfra } from '.'
+import { PostgreSQL as FriendRequestInfra } from '../..'
 
 export const findLastFriendRequestBetweenUsers =
   (pool: Pool): FriendRequest.DbQueries.FindLastBetweenUsers =>
