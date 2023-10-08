@@ -10,7 +10,7 @@ export type RejectedEvent = {
 }
 
 export namespace RejectedEvent {
-  const tag = 'friend-request-rejected'
+  export const tag = 'friend-request-rejected'
 
   export type Payload = TaggedType<typeof tag>
 
@@ -33,7 +33,7 @@ export type CancelledEvent = {
 }
 
 export namespace CancelledEvent {
-  const tag = 'friend-request-cancelled'
+  export const tag = 'friend-request-cancelled'
 
   export type Payload = TaggedType<typeof tag>
 
@@ -56,7 +56,7 @@ export type AcceptedEvent = {
 }
 
 export namespace AcceptedEvent {
-  const tag = 'friend-request-accepted'
+  export const tag = 'friend-request-accepted'
 
   export type Payload = TaggedType<typeof tag>
 

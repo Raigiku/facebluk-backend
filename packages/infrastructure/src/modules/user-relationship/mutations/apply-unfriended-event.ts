@@ -19,6 +19,6 @@ export const applyUnfriendedEvent =
             }
           }
         }, {
-          upsert: true
+          upsert: false
         })
     }

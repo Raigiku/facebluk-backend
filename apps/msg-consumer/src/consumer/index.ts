@@ -5,6 +5,9 @@ import { CreatePost, PostCreated } from './post'
 import {
   AcceptFriendRequest,
   CancelFriendRequest,
+  FriendRequestAccepted,
+  FriendRequestCancelled,
+  FriendRequestRejected,
   FriendRequestSent,
   RejectFriendRequest,
   SendFriendRequest,
@@ -46,15 +49,27 @@ export const queues: MsgConsumer = {
     exchange: CMD.AcceptFriendRequest.id,
     consumer: AcceptFriendRequest.consume,
   },
+  [FriendRequestAccepted.queueName]: {
+    exchange: FriendRequest.AcceptedEvent.tag,
+    consumer: FriendRequestAccepted.consume,
+  },
 
   [CancelFriendRequest.queueName]: {
     exchange: CMD.CancelFriendRequest.id,
     consumer: CancelFriendRequest.consume,
   },
+  [FriendRequestCancelled.queueName]: {
+    exchange: FriendRequest.CancelledEvent.tag,
+    consumer: FriendRequestCancelled.consume,
+  },
 
   [RejectFriendRequest.queueName]: {
     exchange: CMD.RejectFriendRequest.id,
     consumer: RejectFriendRequest.consume,
+  },
+  [FriendRequestRejected.queueName]: {
+    exchange: FriendRequest.RejectedEvent.tag,
+    consumer: FriendRequestRejected.consume,
   },
 
   [SendFriendRequest.queueName]: {
