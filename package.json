@@ -5,12 +5,16 @@
   "scripts": {
     "start:cmd-user-api": "npx tsc --build && npx ts-node ./apps/cmd-user-web-api/src/index.ts",
     "start:cmd-user-api:prod": "npx tsc --build && npx ts-node --transpile-only ./apps/cmd-user-web-api/src/index.ts",
+    
     "start:query-user-api": "npx tsc --build && npx ts-node ./apps/query-user-web-api/src/index.ts",
     "start:query-user-api:prod": "npx tsc --build && npx ts-node --transpile-only ./apps/query-user-web-api/src/index.ts",
+    
     "start:msg-consumer": "npx tsc --build && npx ts-node ./apps/msg-consumer/src/index.ts",
     "start:msg-consumer:prod": "npx tsc --build && npx ts-node --transpile-only ./apps/msg-consumer/src/index.ts",
+    
     "start:adhoc": "npx tsc --build && npx ts-node ./apps/adhoc/src/index.ts",
     "start:adhoc:prod": "npx tsc --build && npx ts-node --transpile-only ./apps/adhoc/src/index.ts",
+
     "build": "npx tsc --build",
     "clean": "rimraf --glob \"./packages/**/node_modules\" \"./apps/**/node_modules\" \"./packages/**/dist\" \"./apps/**/dist\" \"./packages/**/coverage\" \"./apps/**/coverage\" \"./packages/**/*.tsbuildinfo\" \"./apps/**/*.tsbuildinfo\"",
     "lint": "eslint . --ext .ts",
