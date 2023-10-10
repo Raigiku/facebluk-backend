@@ -176,30 +176,29 @@ export const fastifyCommonPlugin = fp(commonPlugin, {
 
 const userAuthPlugin: FastifyPluginCallback<Infra.Common.Config> = (fastify, options, done) => {
   fastify.addHook('onRequest', async (request) => {
-    const authHeader = request.headers.authorization
-    if (authHeader === undefined) throw new Error('auth header undefined')
+    let authToken = request.headers.authorization ?? ''
+    // split for Bearer xxxxxx
+    const splitToken = authToken.split(' ')
+    if (splitToken.length > 1) authToken = splitToken[1]
 
-    if (!authHeader.toLowerCase().startsWith('bearer '))
-      throw new Error('auth header is not bearer token')
-
-    let userId
-    if (options.environment !== 'production') {
-      try {
-        userId = authHeader.split(' ')[1]
-        await Uuid.validator.validateAsync(userId)
-      } catch (error) {
-        throw new Error('auth header is not an uuid')
+    let requestUserId: string
+    try {
+      const jwtModel: Infra.User.Supabase.JwtModel = await request.jwtVerify()
+      requestUserId = jwtModel.sub
+    } catch (error) {
+      if (options.environment === 'production')
+        throw new Error('user is not authenticated')
+      else {
+        await Uuid.validator.validateAsync(authToken)
+        requestUserId = authToken
       }
-    } else {
-      const jwt: Infra.User.Supabase.JwtModel = await request.jwtVerify()
-      userId = jwt.sub
     }
 
     const userAuthMetadata = await Infra.User.Queries.Supabase.findAuthMetadata(
       fastify.supabaseClient,
       fastify.cLog,
       request.id
-    )(userId)
+    )(requestUserId)
     if (userAuthMetadata === undefined) throw new Error('authenticated user does not exist')
     request.userAuthMetadata = userAuthMetadata
   })

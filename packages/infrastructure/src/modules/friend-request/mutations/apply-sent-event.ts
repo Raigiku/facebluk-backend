@@ -3,24 +3,8 @@ import { FriendRequest as FriendRequestInfra, User as UserInfra } from '../..'
 import { FriendRequest } from '@facebluk/domain'
 
 export const applySentEvent =
-  (mongoDb: Db): FriendRequest.Mutations.ApplySentEvent =>
+  (fromUser: UserInfra.MongoDB.Document, toUser: UserInfra.MongoDB.Document, mongoDb: Db): FriendRequest.Mutations.ApplySentEvent =>
     async (event) => {
-      const fromUser = await mongoDb
-        .collection<UserInfra.MongoDB.Document>(UserInfra.MongoDB.collectionName)
-        .findOne({
-          'aggregate.id': event.payload.fromUserId
-        })
-      if (fromUser == null)
-        throw new Error('from user does not exist to apply friend request sent event')
-
-      const toUser = await mongoDb
-        .collection<UserInfra.MongoDB.Document>(UserInfra.MongoDB.collectionName)
-        .findOne({
-          'aggregate.id': event.payload.toUserId
-        })
-      if (toUser == null)
-        throw new Error('to user does not exist to apply friend request sent event')
-
       await mongoDb
         .collection<FriendRequestInfra.MongoDB.Document>(FriendRequestInfra.MongoDB.collectionName)
         .updateOne({

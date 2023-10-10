@@ -11,6 +11,26 @@ services:
     volumes:
       - ./docker-data/database:/var/lib/postgresql/data
 
+  document-db:
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - ./docker-data/document-db/data:/data/db
+  
+  textsearch-db:
+    image: elasticsearch:8.7.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - http.cors.enabled=true
+      - http.cors.allow-origin=https://app.elasticvue.com
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    volumes:
+      - ./docker-data/textsearch-db:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+
   message-broker:
     image: rabbitmq:3-management
     environment:

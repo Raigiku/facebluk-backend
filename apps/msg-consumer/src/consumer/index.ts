@@ -1,6 +1,6 @@
 import { Infra } from '@facebluk/infrastructure'
 import { CMD, FnLog, FriendRequest, Post, User, UserRelationship } from '@facebluk/domain'
-import { RegisterUser, UpdateUserInfo, UserRegistered } from './user'
+import { RegisterUser, UpdateUserInfo, UserInfoUpdated, UserRegistered } from './user'
 import { CreatePost, PostCreated } from './post'
 import {
   AcceptFriendRequest,
@@ -34,6 +34,10 @@ export const queues: MsgConsumer = {
   [UpdateUserInfo.queueName]: {
     exchange: CMD.UpdateUserInfo.id,
     consumer: UpdateUserInfo.consume,
+  },
+  [UserInfoUpdated.queueName]: {
+    exchange: User.InfoUpdatedEvent.tag,
+    consumer: UserInfoUpdated.consume,
   },
 
   [CreatePost.queueName]: {

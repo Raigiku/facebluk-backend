@@ -43,7 +43,7 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
       requestId: request.id,
       userAuthMetadata: request.userAuthMetadata!,
       name: formData.name,
-      alias: formData.alias,
+      alias: formData.alias.toLowerCase(),
       profilePictureUrl,
     } as CMD.RegisterUser.Request)
 

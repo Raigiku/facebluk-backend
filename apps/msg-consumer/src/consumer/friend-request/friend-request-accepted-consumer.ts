@@ -12,7 +12,15 @@ export const consume: MsgConsumerFn =
       log,
       msg,
       async (_, event) => {
-        await Infra.FriendRequest.Mutations.applyAcceptedEvent(mongoDb)(event)
+        const friendRequest = await mongoDb
+          .collection<Infra.FriendRequest.MongoDB.Document>(Infra.FriendRequest.MongoDB.collectionName)
+          .findOne({
+            'aggregate.id': event.data.aggregateId
+          })
+        if (friendRequest == null)
+          throw new Error('friend request does not exist')
+
+        await Infra.FriendRequest.Mutations.applyAcceptedEvent(friendRequest, mongoDb)(event)
       }
     )
   }
