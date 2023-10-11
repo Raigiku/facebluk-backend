@@ -8,6 +8,7 @@ declare module 'fastify' {
     postgreSqlPool: Infra.PostgreSQL.Pool
     rabbitMqConnection: Infra.RabbitMQ.Connection
     supabaseClient: Infra.Supabase.SupabaseClient
+    influxDbClients: [Infra.InfluxDB.WriteApi, Infra.InfluxDB.QueryApi]
     commonConfig: Infra.Common.Config
     cLog: FnLog
   }
@@ -155,6 +156,19 @@ export const fastifySupabase = fp(supabasePlugin, {
   name: 'fastify-supabase-plugin',
 })
 
+const influxDbPlugin: FastifyPluginCallback<Infra.InfluxDB.Config> = (fastify, options, done) => {
+  if (fastify.influxDbClients != null) {
+    done()
+    return
+  }
+  fastify.decorate('influxDbClients', Infra.InfluxDB.createClients(options))
+
+  done()
+}
+export const fastifyInfluxDbPlugin = fp(influxDbPlugin, {
+  name: 'fastify-influxdb-plugin',
+})
+
 const commonPlugin: FastifyPluginCallback<Infra.Common.Config> = (fastify, options, done) => {
   if (fastify.commonConfig != null) {
     done()
@@ -166,7 +180,7 @@ const commonPlugin: FastifyPluginCallback<Infra.Common.Config> = (fastify, optio
     done()
     return
   }
-  fastify.decorate('cLog', Infra.Common.log(fastify.log))
+  fastify.decorate('cLog', Infra.Common.logImpl(fastify.log, fastify.influxDbClients[0]))
 
   done()
 }

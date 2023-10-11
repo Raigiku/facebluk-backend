@@ -7,7 +7,8 @@ const main = async () => {
   dotenv.config()
 
   const commonConfig = Infra.Common.createConfig()
-  const log = Infra.Common.createLogFn(commonConfig.environment)
+  const influxDbClients = await setupInfluxDb()
+  const log = Infra.Common.createLogFn(commonConfig.environment, influxDbClients[0])
 
   const rabbitChannel = await setupRabbitMq(log)
   const supabaseClient = setupSupabase(log)
@@ -83,6 +84,21 @@ const setupRabbitMq = async (log: FnLog) => {
   log('info', '', 'RabbitMQ: channel created')
 
   return rabbitChannel
+}
+
+const setupInfluxDb = async () => {
+  let influxDbClients: [Infra.InfluxDB.WriteApi, Infra.InfluxDB.QueryApi]
+  try {
+    influxDbClients = Infra.InfluxDB.createClients(Infra.InfluxDB.createConfig())
+    await influxDbClients[1].queryRaw(`from(bucket: "logs")
+      |> range(start: -10m)
+      |> filter(fn: (r) => r._measurement == "logs")`
+    );
+  } catch (error) {
+    throw new Error('InfluxDb: could not create clients', { cause: error })
+  }
+  console.log('info', '', 'InfluxDb: clients established')
+  return influxDbClients
 }
 
 const setupSupabase = (log: FnLog) => {

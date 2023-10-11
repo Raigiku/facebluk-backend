@@ -6,7 +6,7 @@ import fastifyResponseValidation from '@fastify/response-validation'
 import { fastifySwagger } from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import { FastifyInstance } from 'fastify'
-import { fastifyCommonPlugin, fastifyPostgreSql, fastifyRabbitMq, fastifySupabase } from '.'
+import { fastifyCommonPlugin, fastifyInfluxDbPlugin, fastifyPostgreSql, fastifyRabbitMq, fastifySupabase } from '.'
 import * as Config from '../config'
 
 export const setupPlugins = async (
@@ -18,6 +18,7 @@ export const setupPlugins = async (
   const userAuthConfig = Infra.Supabase.createConfig()
   const postgreSqlConfig = Infra.PostgreSQL.createConfig()
   const rabbitMqConfig = Infra.RabbitMQ.createConfig()
+  const influxDbConfg = Infra.InfluxDB.createConfig()
   // setup fastify plugins
   await server.register(fastifyMultipart, {
     addToBody: true,
@@ -44,6 +45,7 @@ export const setupPlugins = async (
       routePrefix: '/swagger',
     })
   // setup our plugins
+  await server.register(fastifyInfluxDbPlugin, influxDbConfg)
   await server.register(fastifyCommonPlugin, commonConfig)
   await server.register(fastifySupabase, userAuthConfig)
   await server.register(fastifyRabbitMq, rabbitMqConfig)

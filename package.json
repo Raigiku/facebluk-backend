@@ -17,7 +17,7 @@
 
     "build": "npx tsc --build",
     "clean": "rimraf --glob \"./packages/**/node_modules\" \"./apps/**/node_modules\" \"./packages/**/dist\" \"./apps/**/dist\" \"./packages/**/coverage\" \"./apps/**/coverage\" \"./packages/**/*.tsbuildinfo\" \"./apps/**/*.tsbuildinfo\"",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint apps packages --ext .ts",
     "format": "prettier --write \"packages/**/*.{js,json,yml,md,ts}\""
   },
   "keywords": [],

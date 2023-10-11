@@ -9,6 +9,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "^8.10.0",
     "@facebluk/domain": "workspace:*",
+    "@influxdata/influxdb-client": "^1.33.2",
     "@supabase/supabase-js": "^2.7.1",
     "amqplib": "^0.10.3",
     "mongodb": "^6.1.0",

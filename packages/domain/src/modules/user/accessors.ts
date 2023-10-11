@@ -1,4 +1,3 @@
-import { CreatedEvent } from '../post'
 import { InfoUpdatedEvent, RegisteredEvent } from './events'
 import { Aggregate, AuthMetadata } from './models'
 
