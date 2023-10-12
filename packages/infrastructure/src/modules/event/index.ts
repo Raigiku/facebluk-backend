@@ -20,11 +20,11 @@ export const determineTableName = (event: Event.AnyEvent) =>
   event.payload.tag.includes('post')
     ? Post.PostgreSQL.eventTableName
     : event.payload.tag.includes('friend-request')
-    ? FriendRequest.PostgreSQL.eventTableName
-    : event.payload.tag.includes('user-relationship')
-    ? UserRelationship.PostgreSQL.eventTableName
-    : event.payload.tag.includes('user')
-    ? User.PostgreSQL.eventTableName
-    : (() => {
-        throw new Error('undefined table')
-      })()
+      ? FriendRequest.PostgreSQL.eventTableName
+      : event.payload.tag.includes('user-relationship')
+        ? UserRelationship.PostgreSQL.eventTableName
+        : event.payload.tag.includes('user')
+          ? User.PostgreSQL.eventTableName
+          : (() => {
+            throw new Error('undefined table')
+          })()

@@ -23,12 +23,4 @@ export namespace Mutations {
     userRelationshipEvent: UserRelationship.FriendedUserEvent,
     didCreateNewUserRelationship: boolean
   ) => Promise<void>
-
-  export type ApplySentEvent = (event: SentEvent) => Promise<void>
-
-  export type ApplyAcceptedEvent = (event: AcceptedEvent) => Promise<void>
-
-  export type ApplyRejectedEvent = (event: RejectedEvent) => Promise<void>
-
-  export type ApplyCancelledEvent = (event: CancelledEvent) => Promise<void>
 }

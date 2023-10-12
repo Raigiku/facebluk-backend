@@ -2,6 +2,7 @@ export * as Queries from './queries'
 export * as Mutations from './mutations'
 
 import { UserRelationship } from '@facebluk/domain'
+import { DocumentWithEvents } from '../common'
 
 // postgresql
 export namespace PostgreSQL {
@@ -55,5 +56,5 @@ export namespace PostgreSQL {
 export namespace MongoDB {
   export const collectionName = 'user_relationship'
 
-  export type Document = UserRelationship.Aggregate<UserRelationship.BlockStatus, UserRelationship.FriendStatus>
+  export type Document = UserRelationship.Aggregate<UserRelationship.BlockStatus, UserRelationship.FriendStatus> & DocumentWithEvents
 }

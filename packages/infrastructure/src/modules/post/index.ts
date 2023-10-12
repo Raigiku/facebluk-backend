@@ -1,6 +1,7 @@
 export * as Mutations from './mutations'
 
 import { Post } from '@facebluk/domain'
+import { DocumentWithEvents } from '../common'
 
 // postgresql
 export namespace PostgreSQL {
@@ -30,5 +31,5 @@ export namespace PostgreSQL {
 export namespace MongoDB {
   export const collectionName = 'post'
 
-  export type Document = Post.Aggregate
+  export type Document = Post.Aggregate & DocumentWithEvents
 }

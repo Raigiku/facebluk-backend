@@ -2,6 +2,7 @@ export * as Mutations from './mutations'
 export * as Queries from './queries'
 
 import { FriendRequest } from '@facebluk/domain'
+import { DocumentWithEvents } from '../common'
 
 // postgresql
 export namespace PostgreSQL {
@@ -49,7 +50,7 @@ export namespace MongoDB {
   export type Document = Omit<
     FriendRequest.Aggregate<FriendRequest.AggregateStatus>,
     'fromUserId' | 'toUserId'
-  > & {
+  > & DocumentWithEvents & {
     readonly fromUser: {
       readonly id: string
       readonly name: string

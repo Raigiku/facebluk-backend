@@ -2,6 +2,7 @@ export * as Queries from './queries'
 export * as Mutations from './mutations'
 
 import { User } from '@facebluk/domain'
+import { DocumentWithEvents } from '../common'
 
 // postgresql
 export namespace PostgreSQL {
@@ -69,7 +70,7 @@ export namespace Supabase {
 export namespace MongoDB {
   export const collectionName = 'user'
 
-  export type Document = Omit<User.Aggregate, 'profilePictureUrl'> & {
+  export type Document = Omit<User.Aggregate, 'profilePictureUrl'> & DocumentWithEvents & {
     profilePictureUrl?: string | null
   }
 }
@@ -78,7 +79,7 @@ export namespace MongoDB {
 export namespace ElasticSeach {
   export const indexName = 'user'
 
-  export type Document = {
+  export type Document = DocumentWithEvents & {
     readonly createdAt: Date
     readonly name: string
     readonly alias: string

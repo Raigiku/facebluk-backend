@@ -1,5 +1,6 @@
 import { EnvironmentVar, LogLevel } from '@facebluk/domain'
 
+export * from './document-with-events'
 export * from './pg-transaction'
 export * from './logger'
 

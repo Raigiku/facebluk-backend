@@ -3,8 +3,8 @@ import { FriendRequest as FriendRequestInfra, User as UserInfra } from '../..'
 import { FriendRequest } from '@facebluk/domain'
 
 export const applySentEvent =
-  (fromUser: UserInfra.MongoDB.Document, toUser: UserInfra.MongoDB.Document, mongoDb: Db): FriendRequest.Mutations.ApplySentEvent =>
-    async (event) => {
+  (fromUser: UserInfra.MongoDB.Document, toUser: UserInfra.MongoDB.Document, mongoDb: Db) =>
+    async (event: FriendRequest.SentEvent) => {
       await mongoDb
         .collection<FriendRequestInfra.MongoDB.Document>(FriendRequestInfra.MongoDB.collectionName)
         .updateOne({
@@ -24,7 +24,15 @@ export const applySentEvent =
               alias: toUser.alias,
               name: toUser.name,
               profilePictureUrl: toUser.profilePictureUrl
-            }
+            },
+            appliedEvents: [
+              {
+                id: event.data.eventId,
+                createdAt: event.data.createdAt,
+                tag: event.payload.tag,
+                appliedAt: new Date(),
+              }
+            ]
           }
         }, {
           upsert: true
