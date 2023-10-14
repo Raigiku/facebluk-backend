@@ -14,6 +14,7 @@ const main = async () => {
   const supabaseClient = setupSupabase(log)
   const pgPool = await setupPostgreSQL(log)
   const mongoDb = setupMongoDb(log)
+  const redisClient = await setupRedis(log)
   const elasticClient = setupElasticSearch(log)
 
   for (const queueName in queues) {
@@ -30,7 +31,15 @@ const main = async () => {
 
     void rabbitChannel.consume(
       queueName,
-      queues[queueName].consumer(rabbitChannel, supabaseClient, pgPool, log, mongoDb, elasticClient),
+      queues[queueName].consumer(
+        rabbitChannel,
+        supabaseClient,
+        pgPool,
+        log,
+        mongoDb,
+        elasticClient,
+        redisClient
+      ),
       {
         noAck: false,
       }
@@ -50,6 +59,20 @@ const setupElasticSearch = (log: FnLog) => {
   log('info', '', 'ElasticSearch: connected')
 
   return elasticClient
+}
+
+const setupRedis = async (log: FnLog) => {
+  const redisConfig = Infra.Redis.createConfig()
+  let redisClient: Infra.Redis.RedisClientType
+  try {
+    redisClient = Infra.Redis.createClient(redisConfig)
+    await redisClient.ping()
+  } catch (error) {
+    throw new Error('Reedis: could not connect', { cause: error })
+  }
+  log('info', '', 'Redis: db connected')
+
+  return redisClient
 }
 
 const setupMongoDb = (log: FnLog) => {

@@ -38,6 +38,15 @@ const main = async () => {
     throw new Error('ElasticSearch: could not connect', { cause: error })
   }
 
+  const redisConfig = Infra.Redis.createConfig()
+  const redisConn = Infra.Redis.createClient(redisConfig)
+  // check redis connection
+  try {
+    await redisConn.ping()
+  } catch (error) {
+    throw new Error('Redis: could not connect', { cause: error })
+  }
+
   // setup server
   const server = Fastify()
   await server.register(healthCheckRoute)
@@ -63,7 +72,13 @@ const main = async () => {
   })
   await server.register(fastifyApollo(apollo), {
     path: '/api',
-    context: initContext(mongoConn, elasticSearchConn, commonConfig, supabaseConfig),
+    context: initContext(
+      mongoConn,
+      elasticSearchConn,
+      commonConfig,
+      supabaseConfig,
+      redisConn
+    ),
   })
 
   await server.listen({

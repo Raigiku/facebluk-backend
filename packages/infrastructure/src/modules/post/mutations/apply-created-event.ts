@@ -1,9 +1,10 @@
 import { Db } from 'mongodb'
 import { Post as PostInfra } from '../..'
 import { Post } from '@facebluk/domain'
+import { RedisClientType } from 'redis'
 
 export const applyCreatedEvent =
-  (mongoDb: Db) =>
+  (mongoDb: Db, redisClient: RedisClientType) =>
     async (event: Post.CreatedEvent) => {
       await mongoDb
         .collection<PostInfra.MongoDB.Document>(PostInfra.MongoDB.collectionName)
@@ -27,4 +28,18 @@ export const applyCreatedEvent =
         }, {
           upsert: true
         })
+
+      const redisPost: PostInfra.Redis.Value = {
+        aggregate: {
+          id: event.data.aggregateId,
+          createdAt: event.data.createdAt,
+        },
+        description: event.payload.description,
+        taggedUserIds: event.payload.taggedUserIds,
+        userId: event.payload.userId
+      }
+      await redisClient.zAdd(PostInfra.Redis.keyName, {
+        score: event.data.createdAt.getUTCSeconds(),
+        value: JSON.stringify(redisPost)
+      })
     }

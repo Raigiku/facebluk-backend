@@ -33,3 +33,10 @@ export namespace MongoDB {
 
   export type Document = Post.Aggregate & DocumentWithEvents
 }
+
+// redis
+export namespace Redis {
+  export const keyName = 'post'
+
+  export type Value = Post.Aggregate
+}

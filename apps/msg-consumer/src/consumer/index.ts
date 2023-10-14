@@ -102,6 +102,7 @@ export type MsgConsumerFn = (
   log: FnLog,
   mongoDb: Infra.MongoDB.Db,
   elasticClient: Infra.ElasticSearch.Client,
+  redisClient: Infra.Redis.RedisClientType
 ) => (msg: Infra.RabbitMQ.ConsumeMessage | null) => void
 
 export const consumerHandler = async <T>(

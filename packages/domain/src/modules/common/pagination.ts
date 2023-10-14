@@ -6,7 +6,7 @@ export namespace Pagination {
 
   export type Response<T> = {
     readonly nextPage?: number
-    readonly data: T[]
+    data: T[]
   }
 
   export const getOffset = (pagination: Request) => (pagination.page - 1) * pagination.pageSize

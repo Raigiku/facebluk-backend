@@ -3,12 +3,13 @@ import { PostQL } from '..'
 import { SharedContext } from '../../../shared-context'
 import { ArgsFilterA } from './resolver'
 import { Infra } from '@facebluk/infrastructure'
+import { DateTime } from 'luxon'
 
-type PostView = Infra.Post.MongoDB.Document & {
+type MongoPostView = Infra.Post.MongoDB.Document & {
   user: Infra.User.MongoDB.Document
 }
 
-type FriendView = Infra.UserRelationship.MongoDB.Document & {
+type MongoFriendView = Infra.UserRelationship.MongoDB.Document & {
   friendUserId: string
 }
 
@@ -43,10 +44,30 @@ export const queryByFilterA = async (
         },
       },
     ])
-    .toArray()) as FriendView[]
-
+    .toArray()) as MongoFriendView[]
   const friendUserIds = friendResults.map((x) => x.friendUserId)
-  const postResults = (await context.mongoDbConn
+
+  const paginationOffset = Pagination.getOffset(pagination)
+  const twelveHoursAgoInSeconds = DateTime.utc().minus({ hours: 12 }).toSeconds()
+
+  const redisPostsFrom12HoursAgo: Infra.Post.Redis.Value[] = (
+    await context.redisConn
+      .zRangeByScore(Infra.Post.Redis.keyName, twelveHoursAgoInSeconds, '+inf')
+  ).map(x => JSON.parse(x))
+  const redisPostsFromFriendsOrUser = redisPostsFrom12HoursAgo
+    .filter(x => friendUserIds.includes(x.userId) || x.userId === context.requestUserId)
+
+  let redisSelectedPosts: Infra.Post.Redis.Value[] = []
+  if (redisPostsFromFriendsOrUser.length > 0) {
+    if (redisPostsFromFriendsOrUser.length - 1 > paginationOffset) {
+      redisSelectedPosts = redisPostsFromFriendsOrUser.slice(
+        paginationOffset,
+        Math.min(redisPostsFromFriendsOrUser.length, paginationOffset + pagination.pageSize)
+      )
+    }
+  }
+
+  const mongoPostResults = (await context.mongoDbConn
     .collection<Infra.Post.MongoDB.Document>(Infra.Post.MongoDB.collectionName)
     .aggregate([
       {
@@ -55,8 +76,13 @@ export const queryByFilterA = async (
         },
       },
       { $sort: { 'aggregate.createdAt': -1 } },
-      { $skip: Pagination.getOffset(pagination) },
+      { $skip: paginationOffset },
       { $limit: pagination.pageSize + 1 },
+      {
+        $match: {
+          'aggregate.id': { $nin: redisSelectedPosts.map(x => x.aggregate.id) }
+        },
+      },
       {
         $lookup: {
           from: Infra.User.MongoDB.collectionName,
@@ -71,19 +97,44 @@ export const queryByFilterA = async (
         },
       },
     ])
-    .toArray()) as PostView[]
+    .toArray()) as MongoPostView[]
+
+  let redisPostQL: PostQL[] = []
+  if (redisSelectedPosts.length > 0) {
+    const usersForCachedPosts = await context.mongoDbConn
+      .collection<Infra.User.MongoDB.Document>(Infra.User.MongoDB.collectionName)
+      .find({
+        'aggregate.id': { $in: redisSelectedPosts.map(x => x.userId) }
+      }).toArray()
+
+    redisPostQL = redisSelectedPosts.map<PostQL>(post => {
+      const user = usersForCachedPosts.find(user => user.aggregate.id === post.userId)
+      return {
+        id: post.aggregate.id,
+        description: post.description,
+        user: {
+          id: user!.aggregate.id,
+          alias: user!.alias,
+          name: user!.name,
+          profilePictureUrl: user!.profilePictureUrl
+        }
+      }
+    })
+  }
+
+  const mongoPostQL = mongoPostResults.map((x) => ({
+    id: x.aggregate.id,
+    description: x.description,
+    user: {
+      id: x.user.aggregate.id,
+      name: StringTransform.toTitleCase(x.user.name),
+      alias: x.user.alias,
+      profilePictureUrl: x.user.profilePictureUrl,
+    },
+  }))
 
   return {
-    nextPage: Pagination.getNextPage(postResults.length, pagination),
-    data: postResults.slice(0, pagination.pageSize).map((x) => ({
-      id: x.aggregate.id,
-      description: x.description,
-      user: {
-        id: x.user.aggregate.id,
-        name: StringTransform.toTitleCase(x.user.name),
-        alias: x.user.alias,
-        profilePictureUrl: x.user.profilePictureUrl,
-      },
-    })),
+    nextPage: Pagination.getNextPage(mongoPostResults.length + redisPostQL.length, pagination),
+    data: redisPostQL.concat(mongoPostQL),
   }
 }

@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken'
 export type SharedContext = {
   mongoDbConn: Infra.MongoDB.Db
   elasticSearchConn: Infra.ElasticSearch.Client
+  redisConn: Infra.Redis.RedisClientType
   requestUserId: string
 }
 
@@ -21,7 +22,8 @@ export const initContext =
     mongoDbConn: Infra.MongoDB.Db,
     elasticSearchConn: Infra.ElasticSearch.Client,
     commonConfig: Infra.Common.Config,
-    supabaseConfig: Infra.Supabase.Config
+    supabaseConfig: Infra.Supabase.Config,
+    redisConn: Infra.Redis.RedisClientType
   ): ApolloFastifyContextFunction<SharedContext> =>
   ({ headers }) => {
     let authToken = headers.authorization ?? ''
@@ -42,5 +44,6 @@ export const initContext =
       requestUserId,
       mongoDbConn,
       elasticSearchConn,
+      redisConn
     })
   }
