@@ -19,11 +19,12 @@ export namespace FriendedUserEvent {
 
   export const createNewRelationship = (
     requestId: string,
+    friendRequestId: string,
     fromUserId: string,
     toUserId: string
   ): FriendedUserEvent => {
     return {
-      data: Event.create(requestId, AggregateData.create()),
+      data: Event.create(requestId, AggregateData.createWithId(friendRequestId)),
       payload: {
         tag: 'user-relationship-friended',
         fromUserId,

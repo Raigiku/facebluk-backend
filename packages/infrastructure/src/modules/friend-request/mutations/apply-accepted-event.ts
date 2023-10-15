@@ -33,6 +33,12 @@ export const applyAcceptedEvent =
           'aggregate.id': event.data.aggregateId,
           appliedEvents: { $not: { $elemMatch: { id: event.data.eventId } } }
         }, {
+          $setOnInsert: {
+            aggregate: {
+              id: event.data.aggregateId,
+              createdAt: event.data.createdAt
+            },
+          },
           $set: {
             friendStatus: {
               tag: 'friended',

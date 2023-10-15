@@ -20,6 +20,7 @@ export const handle = async (req: Request, deps: Dependencies) => {
     userRelationshipLookup === undefined
       ? UserRelationship.FriendedUserEvent.createNewRelationship(
           req.requestId,
+          req.friendRequest.aggregate.id,
           req.friendRequest.fromUserId,
           req.friendRequest.toUserId
         )
