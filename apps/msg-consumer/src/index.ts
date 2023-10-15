@@ -11,11 +11,11 @@ const main = async () => {
   const log = Infra.Common.createLogFn(commonConfig.environment, influxDbClients[0])
 
   const rabbitChannel = await setupRabbitMq(log)
-  const supabaseClient = setupSupabase(log)
+  const supabaseClient = await setupSupabase(log)
   const pgPool = await setupPostgreSQL(log)
-  const mongoDb = setupMongoDb(log)
+  const mongoDb = await setupMongoDb(log)
   const redisClient = await setupRedis(log)
-  const elasticClient = setupElasticSearch(log)
+  const elasticClient = await setupElasticSearch(log)
 
   for (const queueName in queues) {
     const deadLetterExchange = `${queues[queueName].exchange}-dlx`
@@ -44,11 +44,11 @@ const main = async () => {
         noAck: false,
       }
     )
-    log('info', '', `RabbitMQ: queue ${queueName} consumer created`)
+    await log('info', '', `RabbitMQ: queue ${queueName} consumer created`)
   }
 }
 
-const setupElasticSearch = (log: FnLog) => {
+const setupElasticSearch = async (log: FnLog) => {
   const elasticConfig = Infra.ElasticSearch.createConfig()
   let elasticClient: Infra.ElasticSearch.Client
   try {
@@ -56,7 +56,7 @@ const setupElasticSearch = (log: FnLog) => {
   } catch (error) {
     throw new Error('ElasticSearch: could not connect', { cause: error })
   }
-  log('info', '', 'ElasticSearch: connected')
+  await log('info', '', 'ElasticSearch: connected')
 
   return elasticClient
 }
@@ -70,12 +70,12 @@ const setupRedis = async (log: FnLog) => {
   } catch (error) {
     throw new Error('Reedis: could not connect', { cause: error })
   }
-  log('info', '', 'Redis: db connected')
+  await log('info', '', 'Redis: db connected')
 
   return redisClient
 }
 
-const setupMongoDb = (log: FnLog) => {
+const setupMongoDb = async (log: FnLog) => {
   const mongoConfig = Infra.MongoDB.createConfig()
   let mongoDb: Infra.MongoDB.Db
   try {
@@ -84,7 +84,7 @@ const setupMongoDb = (log: FnLog) => {
   } catch (error) {
     throw new Error('MongoDb: could not connect', { cause: error })
   }
-  log('info', '', 'MongoDb: db connected')
+  await log('info', '', 'MongoDb: db connected')
 
   return mongoDb
 }
@@ -96,7 +96,7 @@ const setupRabbitMq = async (log: FnLog) => {
   } catch (error) {
     throw new Error('RabbitMQ: could not connect', { cause: error })
   }
-  log('info', '', 'RabbitMQ: connection established')
+  await log('info', '', 'RabbitMQ: connection established')
 
   let rabbitChannel: Infra.RabbitMQ.Channel
   try {
@@ -104,7 +104,7 @@ const setupRabbitMq = async (log: FnLog) => {
   } catch (error) {
     throw new Error('RabbitMQ: could create channel', { cause: error })
   }
-  log('info', '', 'RabbitMQ: channel created')
+  await log('info', '', 'RabbitMQ: channel created')
 
   return rabbitChannel
 }
@@ -124,14 +124,14 @@ const setupInfluxDb = async () => {
   return influxDbClients
 }
 
-const setupSupabase = (log: FnLog) => {
+const setupSupabase = async (log: FnLog) => {
   let supabaseClient: Infra.Supabase.SupabaseClient
   try {
     supabaseClient = Infra.Supabase.createClient(Infra.Supabase.createConfig())
   } catch (error) {
     throw new Error('Supabase: could not create client', { cause: error })
   }
-  log('info', '', 'Supabase: client created')
+  await log('info', '', 'Supabase: client created')
   return supabaseClient
 }
 
@@ -150,7 +150,7 @@ const setupPostgreSQL = async (log: FnLog) => {
   } catch (error) {
     throw new Error('PostgreSQL: could not connect pool', { cause: error })
   }
-  log('info', '', 'PostgreSQL: pool connected')
+  await log('info', '', 'PostgreSQL: pool connected')
   return pgPool
 }
 
