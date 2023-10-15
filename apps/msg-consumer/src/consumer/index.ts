@@ -1,5 +1,5 @@
 import { Infra } from '@facebluk/infrastructure'
-import { CMD, FnLog, FriendRequest, Post, User, UserRelationship } from '@facebluk/domain'
+import { CMD, FnLog, FriendRequest, Post, User, UserRelationship, jsonDeserialize } from '@facebluk/domain'
 import { RegisterUser, UpdateUserInfo, UserInfoUpdated, UserRegistered } from './user'
 import { CreatePost, PostCreated } from './post'
 import {
@@ -120,7 +120,7 @@ export const consumerHandler = async <T>(
   await log('info', msg.properties.messageId, JSON.stringify(msg.fields))
 
   try {
-    const parsedBrokerMsg = JSON.parse(msg.content.toString())
+    const parsedBrokerMsg = jsonDeserialize(msg.content.toString())
     const pgClient = await pgPool.connect()
     await handle(pgClient, parsedBrokerMsg)
     rabbitChannel.ack(msg)

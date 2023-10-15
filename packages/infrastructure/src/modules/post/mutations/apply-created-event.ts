@@ -38,8 +38,9 @@ export const applyCreatedEvent =
         taggedUserIds: event.payload.taggedUserIds,
         userId: event.payload.userId
       }
+      const creationDateInEpochSeconds = Math.floor(redisPost.aggregate.createdAt.getTime() / 1000)
       await redisClient.zAdd(PostInfra.Redis.keyName, {
-        score: event.data.createdAt.getUTCSeconds(),
+        score: creationDateInEpochSeconds,
         value: JSON.stringify(redisPost)
       })
     }

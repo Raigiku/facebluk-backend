@@ -1,4 +1,4 @@
-import { Pagination, StringTransform, UserRelationship } from '@facebluk/domain'
+import { Pagination, StringTransform, UserRelationship, jsonDeserialize } from '@facebluk/domain'
 import { PostQL } from '..'
 import { SharedContext } from '../../../shared-context'
 import { ArgsFilterA } from './resolver'
@@ -53,13 +53,13 @@ export const queryByFilterA = async (
   const redisPostsFrom12HoursAgo: Infra.Post.Redis.Value[] = (
     await context.redisConn
       .zRangeByScore(Infra.Post.Redis.keyName, twelveHoursAgoInSeconds, '+inf')
-  ).map(x => JSON.parse(x))
+  ).map(x => jsonDeserialize(x))
   const redisPostsFromFriendsOrUser = redisPostsFrom12HoursAgo
     .filter(x => friendUserIds.includes(x.userId) || x.userId === context.requestUserId)
 
   let redisSelectedPosts: Infra.Post.Redis.Value[] = []
   if (redisPostsFromFriendsOrUser.length > 0) {
-    if (redisPostsFromFriendsOrUser.length - 1 > paginationOffset) {
+    if (redisPostsFromFriendsOrUser.length - 1 >= paginationOffset) {
       redisSelectedPosts = redisPostsFromFriendsOrUser.slice(
         paginationOffset,
         Math.min(redisPostsFromFriendsOrUser.length, paginationOffset + pagination.pageSize)

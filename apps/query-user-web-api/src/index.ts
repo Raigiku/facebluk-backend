@@ -39,9 +39,10 @@ const main = async () => {
   }
 
   const redisConfig = Infra.Redis.createConfig()
-  const redisConn = Infra.Redis.createClient(redisConfig)
   // check redis connection
+  const redisConn = Infra.Redis.createClient(redisConfig)
   try {
+    await redisConn.connect()
     await redisConn.ping()
   } catch (error) {
     throw new Error('Redis: could not connect', { cause: error })

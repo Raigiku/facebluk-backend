@@ -1,4 +1,4 @@
-import redis, { RedisClientType } from 'redis'
+import { RedisClientType, createClient as redisCreateClient } from 'redis'
 
 export type Config = {
   connectionString: string
@@ -9,7 +9,7 @@ export const createConfig = (): Config => ({
 })
 
 export const createClient = (config: Config): RedisClientType => {
-  return redis.createClient({
+  return redisCreateClient({
     url: config.connectionString
   })
 }

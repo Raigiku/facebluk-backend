@@ -66,6 +66,7 @@ const setupRedis = async (log: FnLog) => {
   let redisClient: Infra.Redis.RedisClientType
   try {
     redisClient = Infra.Redis.createClient(redisConfig)
+    await redisClient.connect()
     await redisClient.ping()
   } catch (error) {
     throw new Error('Reedis: could not connect', { cause: error })
