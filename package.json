@@ -11,6 +11,9 @@
     
     "start:msg-consumer": "npx tsc --build && npx ts-node ./apps/msg-consumer/src/index.ts",
     "start:msg-consumer:prod": "npx tsc --build && npx ts-node --transpile-only ./apps/msg-consumer/src/index.ts",
+
+    "start:scheduler": "npx tsc --build && npx ts-node ./apps/scheduler/src/index.ts",
+    "start:scheduler:prod": "npx tsc --build && npx ts-node --transpile-only ./apps/scheduler/src/index.ts",
     
     "start:adhoc": "npx tsc --build && npx ts-node ./apps/adhoc/src/index.ts",
     "start:adhoc:prod": "npx tsc --build && npx ts-node --transpile-only ./apps/adhoc/src/index.ts",
