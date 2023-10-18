@@ -77,7 +77,7 @@ type ValidateDeps = {
   findLastFriendRequestBetweenUsers: FriendRequest.DbQueries.FindLastBetweenUsers
 }
 
-const syntaxValidator = Joi.object({
+const syntaxValidator = Joi.object<ValidatePayload, true>({
   fromUserId: Uuid.validator.required(),
   toUserId: Uuid.validator.disallow(Joi.ref('userId')).required().messages({
     'any.invalid': 'you cannot send yourself a friend request',

@@ -60,7 +60,7 @@ type ValidateDeps = {
   db_aliasExists: User.DbQueries.AliasExists
 }
 
-const syntaxValidator = Joi.object({
+const syntaxValidator = Joi.object<ValidatePayload, true>({
   name: User.nameValidator.required(),
   alias: User.aliasValidator.required(),
   profilePictureUrl: Joi.string().uri(),

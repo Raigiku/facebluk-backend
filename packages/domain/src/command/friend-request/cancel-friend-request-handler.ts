@@ -66,7 +66,7 @@ type ValidateResponse = {
   readonly friendRequest: FriendRequest.Aggregate<FriendRequest.PendingStatus>
 }
 
-const syntaxValidator = Joi.object({
+const syntaxValidator = Joi.object<ValidatePayload, true>({
   friendRequestId: Uuid.validator.required(),
   userId: Uuid.validator.required(),
 })

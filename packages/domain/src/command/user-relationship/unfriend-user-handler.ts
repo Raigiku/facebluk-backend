@@ -10,11 +10,11 @@ export const handle = async (req: Request, deps: Dependencies) => {
   const unfriendedEvent =
     unfriendedLookup === undefined
       ? UserRelationship.UnfriendedUserEvent.create(
-          req.requestId,
-          req.userRelationship,
-          req.fromUserId,
-          req.toUserId
-        )
+        req.requestId,
+        req.userRelationship,
+        req.fromUserId,
+        req.toUserId
+      )
       : unfriendedLookup as UserRelationship.UnfriendedUserEvent
 
   await deps.unfriend(unfriendedEvent, unfriendedLookup === undefined)
@@ -77,7 +77,7 @@ type ValidateResponse = {
   >
 }
 
-const syntaxValidator = Joi.object({
+const syntaxValidator = Joi.object<ValidatePayload, true>({
   fromUserId: Uuid.validator.required(),
   toUserId: Uuid.validator.disallow(Joi.ref('userId')).required().messages({
     'any.invalid': 'you cannot unfriend yourself',

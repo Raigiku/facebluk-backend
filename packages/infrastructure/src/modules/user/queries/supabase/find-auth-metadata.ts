@@ -6,7 +6,7 @@ export const findAuthMetadata =
     async (id: string) => {
       const { data, error } = await supabase.auth.admin.getUserById(id)
       if (error !== null) {
-        await log('error', requestId, error.message)
+        void log('error', requestId, error.message)
         return undefined
       }
       if (data.user === null) return undefined

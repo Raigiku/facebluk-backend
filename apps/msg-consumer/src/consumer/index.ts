@@ -113,11 +113,11 @@ export const consumerHandler = async <T>(
   handle: (pgClient: Infra.PostgreSQL.PoolClient, brokerMsg: T) => Promise<void>
 ) => {
   if (msg == null) {
-    await log('fatal', '', 'null msg')
+    void log('fatal', '', 'null msg')
     return
   }
 
-  await log('info', msg.properties.messageId, JSON.stringify(msg.fields))
+  void log('info', msg.properties.messageId, JSON.stringify(msg.fields))
 
   try {
     const parsedBrokerMsg = jsonDeserialize(msg.content.toString())
@@ -126,7 +126,7 @@ export const consumerHandler = async <T>(
     rabbitChannel.ack(msg)
   } catch (error) {
     if (error instanceof Error)
-      await log('error', msg.properties.messageId, 'unknown error consuming message', undefined, error)
+      void log('error', msg.properties.messageId, 'unknown error consuming message', undefined, error)
     rabbitChannel.reject(msg, false)
   }
 }

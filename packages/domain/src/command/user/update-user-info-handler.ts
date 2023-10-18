@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { BusinessRuleError, Event, User } from '../../modules'
+import { BusinessRuleError, Event, User, Uuid } from '../../modules'
 
 export const handle = async (req: Request, deps: Dependencies) => {
   const infoUpdatedLookup = await deps.db_findInfoUpdatedEvent(req.requestId, 'user-info-updated')
@@ -59,7 +59,8 @@ type ValidateResponse = {
   user: User.Aggregate
 }
 
-const syntaxValidator = Joi.object({
+const syntaxValidator = Joi.object<ValidatePayload, true>({
   name: User.nameValidator,
   profilePictureUrl: Joi.string().uri(),
+  userId: Uuid.validator.required()
 })

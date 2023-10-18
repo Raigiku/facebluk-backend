@@ -44,7 +44,7 @@ const main = async () => {
         noAck: false,
       }
     )
-    await log('info', '', `RabbitMQ: queue ${queueName} consumer created`)
+    void log('info', '', `RabbitMQ: queue ${queueName} consumer created`)
   }
 }
 

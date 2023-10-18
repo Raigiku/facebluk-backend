@@ -8,15 +8,15 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
     const formData = await buildFormData(request.body as RawFormData, request.id)
 
     const fileBucket = 'images'
-    const fileRemotePath =
-      formData.profilePicture === undefined
-        ? undefined
-        : `users/${request.userAuthMetadata!.userId}/${
-            formData.profilePicture.id
-          }.${RequestImage.fileExtension(formData.profilePicture.fileType)}`
+    let fileRemotePath: string | null | undefined
+    if (formData.profilePicture == null)
+      fileRemotePath = formData.profilePicture
+    else {
+      const fileExt = `${RequestImage.fileExtension(formData.profilePicture.fileType)}`
+      fileRemotePath = `users/${request.userAuthMetadata!.userId}/${formData.profilePicture.hash}.${fileExt}`
+    }
     const profilePictureUrl =
-      fileRemotePath === undefined
-        ? undefined
+      fileRemotePath == null ? fileRemotePath
         : Infra.File.generateFileUrl(fastify.supabaseClient)(fileBucket, fileRemotePath)
 
     await CMD.RegisterUser.validate(
@@ -60,9 +60,9 @@ const buildFormData = async (rawFormData: RawFormData, requestId: string) => {
     rawFormData.profilePicture === undefined || rawFormData.profilePicture.length === 0
       ? undefined
       : RequestImage.create(
-          rawFormData.profilePicture[0].data,
-          rawFormData.profilePicture[0].mimetype
-        )
+        rawFormData.profilePicture[0].data,
+        rawFormData.profilePicture[0].mimetype
+      )
   await RequestImage.validator.validateAsync(parsedProfilePicture)
 
   return {

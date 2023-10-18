@@ -1,18 +1,23 @@
 import Joi from 'joi'
-import { Uuid } from '.'
+import crypto from 'crypto'
 
 export type RequestImage = {
-  readonly id: string
+  readonly hash: string
   readonly bytes: Buffer
   readonly fileType: string
 }
 
 export namespace RequestImage {
-  export const create = (bytes: Buffer, fileType: string): RequestImage => ({
-    id: Uuid.create(),
-    bytes,
-    fileType,
-  })
+  export const create = (bytes: Buffer, fileType: string): RequestImage => {
+    const cryptoGen = crypto.createHash('sha256')
+    cryptoGen.update(bytes)
+    const hash = cryptoGen.digest('hex')
+    return {
+      hash,
+      bytes,
+      fileType,
+    }
+  }
 
   export const fileExtension = (fileType: string): string => {
     const temp = fileType.split('/')

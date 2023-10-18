@@ -45,7 +45,7 @@ type ValidatePayload = {
   readonly taggedUserIds: string[]
 }
 
-const syntaxValidator = Joi.object({
+const syntaxValidator = Joi.object<ValidatePayload, true>({
   description: Post.descriptionValidator.required(),
   taggedUserIds: Post.taggedUserIdsValidator.required(),
 })
