@@ -123,6 +123,7 @@ export const consumerHandler = async <T>(
     const parsedBrokerMsg = jsonDeserialize(msg.content.toString())
     const pgClient = await pgPool.connect()
     await handle(pgClient, parsedBrokerMsg)
+    pgClient.release()
     rabbitChannel.ack(msg)
   } catch (error) {
     if (error instanceof Error)

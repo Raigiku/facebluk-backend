@@ -1,10 +1,11 @@
 import { CMD, RequestImage } from '@facebluk/domain'
 import { Infra } from '@facebluk/infrastructure'
-import { FastifyPluginCallback } from 'fastify'
-import { FormFile } from '../common'
+import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
+import { FormFile, businessRuleErrorResponseSchema } from '../common'
+import { Static, Type } from '@sinclair/typebox'
 
 export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, done) => {
-  fastify.post('/update-user-info/v1', async (request, reply) => {
+  fastify.post<{ Reply: Static<typeof okResponseSchema> }>('/update-user-info/v1', routeOptions, async (request, reply) => {
     const formData = buildFormData(request.body as RawFormData)
 
     const fileBucket = 'images'
@@ -44,7 +45,9 @@ export const updateUserInfoRoute: FastifyPluginCallback = (fastify, options, don
       user: valRes.user,
     } as CMD.UpdateUserInfo.Request)
 
-    await reply.status(200).send()
+    await reply.status(200).send({
+      profilePictureUrl: profilePictureUrl == null ? undefined : profilePictureUrl
+    })
   })
   done()
 }
@@ -55,7 +58,7 @@ const buildFormData = (rawFormData: RawFormData) => {
     profilePicture:
       rawFormData.profilePicture === null
         ? null
-        : rawFormData.profilePicture === undefined || rawFormData.profilePicture.length === 0
+        : rawFormData.profilePicture === undefined || rawFormData.profilePicture.length === 0 || rawFormData.profilePicture[0].data === undefined
           ? undefined
           : RequestImage.create(
             rawFormData.profilePicture[0].data,
@@ -67,4 +70,19 @@ const buildFormData = (rawFormData: RawFormData) => {
 type RawFormData = {
   name?: string
   profilePicture?: FormFile[] | null
+}
+
+const okResponseSchema = Type.Object({
+  profilePictureUrl: Type.Optional(Type.String())
+})
+
+const responseSchema = {
+  200: okResponseSchema,
+  ...businessRuleErrorResponseSchema,
+}
+
+const routeOptions: RouteShorthandOptions = {
+  schema: {
+    response: responseSchema,
+  },
 }

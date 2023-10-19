@@ -147,7 +147,8 @@ const setupPostgreSQL = async (log: FnLog) => {
       password: pgConfig.password,
       port: pgConfig.port,
     })
-    await pgPool.connect()
+    const pgClient = await pgPool.connect()
+    pgClient.release();
   } catch (error) {
     throw new Error('PostgreSQL: could not connect pool', { cause: error })
   }

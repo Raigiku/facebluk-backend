@@ -1,10 +1,11 @@
 import { BusinessRuleError, CMD, RequestImage } from '@facebluk/domain'
 import { Infra } from '@facebluk/infrastructure'
-import { FastifyPluginCallback } from 'fastify'
-import { FormFile } from '../common'
+import { FastifyPluginCallback, RouteShorthandOptions } from 'fastify'
+import { FormFile, businessRuleErrorResponseSchema } from '../common'
+import { Static, Type } from '@sinclair/typebox'
 
 export const registerUserRoute: FastifyPluginCallback = (fastify, options, done) => {
-  fastify.post('/register-user/v1', async (request, reply) => {
+  fastify.post<{ Reply: Static<typeof okResponseSchema> }>('/register-user/v1', routeOptions, async (request, reply) => {
     const formData = await buildFormData(request.body as RawFormData, request.id)
 
     const fileBucket = 'images'
@@ -47,7 +48,9 @@ export const registerUserRoute: FastifyPluginCallback = (fastify, options, done)
       profilePictureUrl,
     } as CMD.RegisterUser.Request)
 
-    await reply.status(200).send()
+    await reply.status(200).send({
+      profilePictureUrl
+    })
   })
   done()
 }
@@ -57,7 +60,7 @@ const buildFormData = async (rawFormData: RawFormData, requestId: string) => {
   if (rawFormData.alias === undefined) throw new BusinessRuleError(requestId, '"alias" is required')
 
   const parsedProfilePicture =
-    rawFormData.profilePicture === undefined || rawFormData.profilePicture.length === 0
+    rawFormData.profilePicture === undefined || rawFormData.profilePicture.length === 0 || rawFormData.profilePicture[0].data === undefined
       ? undefined
       : RequestImage.create(
         rawFormData.profilePicture[0].data,
@@ -76,4 +79,18 @@ type RawFormData = {
   name?: string
   alias?: string
   profilePicture?: FormFile[]
+}
+const okResponseSchema = Type.Object({
+  profilePictureUrl: Type.Optional(Type.String())
+})
+
+const responseSchema = {
+  200: okResponseSchema,
+  ...businessRuleErrorResponseSchema,
+}
+
+const routeOptions: RouteShorthandOptions = {
+  schema: {
+    response: responseSchema,
+  },
 }
