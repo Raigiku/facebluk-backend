@@ -17,6 +17,9 @@ The backend codebase uses the following tech: TypeScript, Fastify, REST API, Gra
 - RabbitMQ: for sending commands and events.
 - Supabase: for user auth management and file storage.
 
+Here is a diagram of the backend architecture:
+![FaceblukBackend](https://github.com/Raigiku/facebluk-backend/assets/31873735/c6585a47-0dfd-40cb-ba39-cf2bb50e8b37)
+
 The frontend codebase is not the main highlight of the project, it uses the following tech: TypeScript, Next.js, React Query, and TailwindCSS. It can be found here https://github.com/Raigiku/facebluk-web-app
 
 Work-in-progress additions: a graph db for better relationship navigation, websockets for chat communication.
