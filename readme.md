@@ -8,6 +8,15 @@ The project is composed of a backend and frontend codebase. It draws inspiration
 
 The backend codebase uses the following tech: TypeScript, Fastify, REST API, GraphQL, PostgreSQL, ElasticSearch, InfluxDB, Redis, MongoDB, RabbitMQ, Supabase.
 
+- Fastify: for the command REST API and the query GraphQL API.
+- PostgreSQL: for storing events and also data state for validation of commands.
+- ElasticSearch: for searching other users.
+- InfluxDB: for storing logs.
+- Redis: as a cache for storing posts to later retrieve in the homepage.
+- MongoDB: for queries to state data.
+- RabbitMQ: for sending commands and events.
+- Supabase: for user auth management and file storage.
+
 The frontend codebase is not the main highlight of the project, it uses the following tech: TypeScript, Next.js, React Query, and TailwindCSS. It can be found here https://github.com/Raigiku/facebluk-web-app
 
 Work-in-progress additions: a graph db for better relationship navigation, websockets for chat communication.
