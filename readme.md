@@ -1,3 +1,21 @@
+# Facebluk
+
+The web app is currently disabled to save costs.
+
+Facebluk is my "magnum opus" project, a simple prototype social network that showcases the implementation of various backend software design and architecture patterns.
+
+The project is composed of a backend and frontend codebase. It draws inspiration from various methodologies and principles such as Domain-Driven Design (DDD), Event Sourcing, Command Query Responsibility Segregation (CQRS), Clean Architecture, Event-Driven Architecture, Polyglot Persistence and Functional Programming.
+
+The backend codebase uses the following tech: TypeScript, Fastify, REST API, GraphQL, PostgreSQL, ElasticSearch, InfluxDB, Redis, MongoDB, RabbitMQ, Supabase.
+
+The frontend codebase is not the main highlight of the project, it uses the following tech: TypeScript, Next.js, React Query, and TailwindCSS. It can be found here https://github.com/Raigiku/facebluk-web-app
+
+Work-in-progress additions: a graph db for better relationship navigation, websockets for chat communication.
+
+-----
+
+### Dev note
+
 1. Create the package
 
 npm init -y --scope @facebluk -w packages/n
