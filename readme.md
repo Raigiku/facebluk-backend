@@ -2,7 +2,7 @@
 
 The web app is currently disabled to save costs.
 
-Facebluk is my "magnum opus" project, a simple prototype social network that showcases the implementation of various backend software design and architecture patterns.
+Facebluk a simple prototype social network that showcases the implementation of various backend software design and architecture patterns.
 
 The project is composed of a backend and frontend codebase. It draws inspiration from various methodologies and principles such as Domain-Driven Design (DDD), Event Sourcing, Command Query Responsibility Segregation (CQRS), Clean Architecture, Event-Driven Architecture, Polyglot Persistence and Functional Programming.
 
